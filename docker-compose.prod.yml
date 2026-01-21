@@ -1,0 +1,186 @@
+# ============================================
+# ClaraVerse Production Docker Compose
+# ============================================
+# Uses pre-built images from GitHub Container Registry
+# No git clone needed - just download this file and run!
+#
+# Quick start:
+#   curl -fsSL https://raw.githubusercontent.com/yourusername/ClaraVerse-Scarlet-OSS/main/install.sh | bash
+#
+# Or manually:
+#   curl -O https://raw.githubusercontent.com/yourusername/ClaraVerse-Scarlet-OSS/main/docker-compose.prod.yml
+#   docker compose -f docker-compose.prod.yml up -d
+# ============================================
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: claraverse-mongodb
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=claraverse
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    networks:
+      - claraverse-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: claraverse-redis
+    command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      start_period: 5s
+      retries: 5
+    networks:
+      - claraverse-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: claraverse-mysql
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - mysql-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-claraverse_root_2024}
+      - MYSQL_DATABASE=claraverse
+      - MYSQL_USER=claraverse_user
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-claraverse_pass_2024}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "claraverse_user", "-pclaraverse_pass_2024", "claraverse", "-e", "SELECT 1"]
+      interval: 5s
+      timeout: 5s
+      start_period: 60s
+      retries: 12
+    networks:
+      - claraverse-network
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: claraverse-searxng
+    environment:
+      - SEARXNG_BASE_URL=http://searxng:8080/
+      - SEARXNG_HOSTNAME=searxng
+    restart: unless-stopped
+    networks:
+      - claraverse-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 3s
+      start_period: 15s
+      retries: 3
+
+  e2b-service:
+    image: ghcr.io/yourusername/claraverse-e2b:latest
+    container_name: claraverse-e2b
+    environment:
+      - E2B_MODE=${E2B_MODE:-local}
+      - E2B_LOCAL_USE_DOCKER=${E2B_LOCAL_USE_DOCKER:-true}
+      - E2B_SANDBOX_POOL_SIZE=${E2B_SANDBOX_POOL_SIZE:-3}
+      - E2B_EXECUTION_TIMEOUT=${E2B_EXECUTION_TIMEOUT:-30000}
+      - E2B_RATE_LIMIT_PER_MIN=${E2B_RATE_LIMIT_PER_MIN:-20}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      start_period: 5s
+      retries: 3
+    networks:
+      - claraverse-network
+
+  backend:
+    image: ghcr.io/yourusername/claraverse-backend:latest
+    container_name: claraverse-backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - backend-data:/app/data
+      - backend-uploads:/app/uploads
+      - backend-logs:/app/logs
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - DATABASE_URL=mysql://claraverse_user:${MYSQL_PASSWORD:-claraverse_pass_2024}@mysql:3306/claraverse?parseTime=true
+      - MYSQL_DATABASE=claraverse
+      - UPLOAD_DIR=/app/uploads
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost,http://localhost:80}
+      - SEARXNG_URLS=http://searxng:8080
+      - SEARXNG_URL=http://searxng:8080
+      - E2B_SERVICE_URL=http://e2b-service:8001
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:80}
+      - BACKEND_URL=${BACKEND_URL:-http://localhost:3001}
+      - MONGODB_URI=mongodb://mongodb:27017/claraverse
+      - REDIS_URL=redis://redis:6379
+      - ENCRYPTION_MASTER_KEY=${ENCRYPTION_MASTER_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_ACCESS_TOKEN_EXPIRY=${JWT_ACCESS_TOKEN_EXPIRY:-15m}
+      - JWT_REFRESH_TOKEN_EXPIRY=${JWT_REFRESH_TOKEN_EXPIRY:-168h}
+      - DEV_API_KEY=${DEV_API_KEY:-claraverse-dev-key-2024}
+      - SUPERADMIN_USER_IDS=${SUPERADMIN_USER_IDS:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      searxng:
+        condition: service_healthy
+      e2b-service:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 10s
+      retries: 3
+    networks:
+      - claraverse-network
+
+  frontend:
+    image: ghcr.io/yourusername/claraverse-frontend:latest
+    container_name: claraverse-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+    networks:
+      - claraverse-network
+
+volumes:
+  backend-data:
+  backend-uploads:
+  backend-logs:
+  mongodb-data:
+  mysql-data:
+  redis-data:
+
+networks:
+  claraverse-network:
+    driver: bridge

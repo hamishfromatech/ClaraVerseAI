@@ -689,6 +689,7 @@ func main() {
 		// Authentication routes (v2.0 - Local JWT)
 		if localAuthHandler != nil {
 			auth := api.Group("/auth")
+			auth.Get("/status", localAuthHandler.GetStatus) // Public - check if users exist
 			auth.Post("/register", localAuthHandler.Register)
 			auth.Post("/login", localAuthHandler.Login)
 			auth.Post("/refresh", localAuthHandler.RefreshToken)

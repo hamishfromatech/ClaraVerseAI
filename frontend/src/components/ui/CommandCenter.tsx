@@ -503,7 +503,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           formData.append('file', audioBlob, 'recording.webm');
 
           // Upload to backend transcription endpoint
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
           const response = await fetch(`${apiBaseUrl}/api/audio/transcribe`, {
             method: 'POST',
             body: formData,

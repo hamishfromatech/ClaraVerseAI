@@ -198,7 +198,7 @@ const router = createBrowserRouter([
 ]);
 
 export const AppRouter = () => {
-  const { initialize, isAuthenticated, isAdmin } = useAuthStore();
+  const { initialize, isAuthenticated } = useAuthStore();
   const { fetchSubscription } = useSubscriptionStore();
 
   // Initialize auth on mount
@@ -214,12 +214,8 @@ export const AppRouter = () => {
     }
   }, [isAuthenticated, fetchSubscription]);
 
-  // Redirect admin users to admin dashboard if they land on home
-  useEffect(() => {
-    if (isAuthenticated && isAdmin && window.location.pathname === '/') {
-      window.location.href = '/admin/dashboard';
-    }
-  }, [isAuthenticated, isAdmin]);
+  // Note: Admin redirect happens on login (AuthForm.tsx), not on dashboard load
+  // This allows admins to access regular dashboard if they navigate there manually
 
   return <RouterProvider router={router} />;
 };

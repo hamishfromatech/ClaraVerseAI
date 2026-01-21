@@ -126,9 +126,9 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
     }
   },
 
-  // Refresh subscription, plans, and usage
+  // Refresh subscription and plans (usage disabled in OSS version)
   refreshAll: async () => {
-    await Promise.all([get().fetchSubscription(), get().fetchPlans(), get().fetchUsageStats()]);
+    await Promise.all([get().fetchSubscription(), get().fetchPlans()]);
   },
 
   // Sync subscription from payment provider (useful after checkout)

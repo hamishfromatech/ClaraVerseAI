@@ -365,3 +365,20 @@ func (h *LocalAuthHandler) GetCurrentUser(c *fiber.Ctx) error {
 
 	return c.JSON(user.ToResponse())
 }
+
+// GetStatus returns system status for unauthenticated users
+// GET /api/auth/status
+func (h *LocalAuthHandler) GetStatus(c *fiber.Ctx) error {
+	ctx := context.Background()
+
+	// Check if any users exist
+	userCount, err := h.userService.GetUserCount(ctx)
+	if err != nil {
+		log.Printf("⚠️ Failed to get user count: %v", err)
+		userCount = 0
+	}
+
+	return c.JSON(fiber.Map{
+		"has_users": userCount > 0,
+	})
+}

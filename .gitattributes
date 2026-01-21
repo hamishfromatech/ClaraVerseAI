@@ -1,0 +1,44 @@
+# Auto-detect text files and perform LF normalization
+* text=auto
+
+# Shell scripts should always use LF (Unix-style)
+*.sh text eol=lf
+
+# Windows batch files should always use CRLF (Windows-style)
+*.bat text eol=crlf
+
+# Docker files should always use LF
+Dockerfile* text eol=lf
+docker-compose*.yml text eol=lf
+.dockerignore text eol=lf
+
+# Configuration files
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+
+# Source code
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.jsx text eol=lf
+*.go text eol=lf
+*.py text eol=lf
+
+# Documentation
+*.md text eol=lf
+
+# Environment files
+.env* text eol=lf
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.woff binary
+*.woff2 binary

@@ -57,11 +57,11 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-claraverse_pass_2024}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-claraverse_root_2024}"]
-      interval: 10s
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "claraverse_user", "-pclaraverse_pass_2024", "claraverse", "-e", "SELECT 1"]
+      interval: 5s
       timeout: 5s
-      start_period: 30s
-      retries: 5
+      start_period: 60s
+      retries: 12
     networks:
       - claraverse-network
 

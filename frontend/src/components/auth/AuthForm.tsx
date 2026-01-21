@@ -101,7 +101,12 @@ export const AuthForm: React.FC<AuthFormProps> = ({
         // Store session with tokens
         useAuthStore.getState().setSession(response.session);
         setError(null);
-        navigate(redirectUrl);
+        // Redirect admin users to admin dashboard, others to regular redirect URL
+        if (response.user.role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate(redirectUrl);
+        }
       } else if (mode === 'signup' && response.user) {
         setError('Account created! Please check your email to confirm.');
         setIsLoading(false);

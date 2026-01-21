@@ -1,7 +1,8 @@
 import { useSubscriptionStore } from '@/store/useSubscriptionStore';
 import { authClient } from '@/lib/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// Use relative URL when not specified (works with nginx proxy in all-in-one container)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 export class ApiError extends Error {
   status: number;

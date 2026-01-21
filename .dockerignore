@@ -1,0 +1,33 @@
+# Ignore secure files (permission issues)
+backend/secure_files
+backend/data
+backend/uploads
+backend/logs
+
+# Git
+.git
+.gitignore
+
+# Node modules
+**/node_modules
+
+# Build artifacts
+**/dist
+**/*.log
+
+# IDE
+.vscode
+.idea
+
+# Env files
+.env
+.env.local
+
+# Docker
+docker-compose*.yml
+!docker-compose.yml
+
+# Docs
+docs/
+*.md
+!README.md

@@ -8,7 +8,7 @@ import { cleanLLMOutput, cleanLLMOutputLight } from '@/utils';
 import { ImageGalleryModal, type GalleryImage } from '@/components/chat/ImageGalleryModal';
 import './MarkdownRenderer.css';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 // Language display aliases (like OpenAI uses short names)
 const LANGUAGE_ALIASES: Record<string, string> = {

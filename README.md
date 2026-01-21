@@ -38,46 +38,96 @@
 
 ---
 
-## 🚀 Quick Start (5 Minutes)
+## 🚀 Quick Start (60 Seconds!)
 
-**Version 2.0 - Fully Local! No External APIs Required!**
+**One command. That's it. Works on Linux, macOS, and Windows.**
 
-ClaraVerse v2.0 runs completely locally without any external service dependencies. No Supabase, no E2B API keys - just Docker.
+### 🐳 Option 1: One-Liner (No Git Required!)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/yourusername/ClaraVerse-Scarlet-OSS/main/install.sh | bash
+```
+
+This downloads everything and starts ClaraVerse automatically. Done!
+
+### 📦 Option 2: Clone & Run
+
+**Linux / macOS:**
+```bash
+git clone https://github.com/yourusername/ClaraVerse-Scarlet-OSS.git
+cd ClaraVerse-Scarlet-OSS
+./quickstart.sh
+```
+
+**Windows:**
+```batch
+git clone https://github.com/yourusername/ClaraVerse-Scarlet-OSS.git
+cd ClaraVerse-Scarlet-OSS
+quickstart.bat
+```
+
+### What Just Happened?
+
+The quickstart script automatically:
+- ✅ Checks Docker is installed
+- ✅ Creates `.env` with auto-generated secure keys (ENCRYPTION_MASTER_KEY, JWT_SECRET)
+- ✅ Starts all 7 services (frontend, backend, MongoDB, MySQL, Redis, SearXNG, E2B)
+- ✅ Waits for everything to be healthy
+- ✅ Shows you the URLs to access
+
+**Access ClaraVerse:**
+- Frontend: [http://localhost:80](http://localhost:80)
+- Backend API: [http://localhost:3001](http://localhost:3001)
+- Health Check: [http://localhost:3001/health](http://localhost:3001/health)
+
+### First Steps
+
+1. Open [http://localhost:80](http://localhost:80) in your browser
+2. **Register your account** (first user becomes admin!)
+3. Add your AI provider API keys in Settings
+
+### Version 2.0 - Fully Local! 🎉
+
+No external APIs required for core functionality:
+- ✅ **Local JWT Authentication** - No Supabase required
+- ✅ **E2B Local Docker Mode** - Code execution without E2B API key
+- ✅ **All Users Get Pro Tier** - No payment gateway needed
+- ✅ **Self-Hosted Search** - SearXNG included
+- ✅ **Fully Offline Capable** - Everything runs locally
+
+<details>
+<summary><b>📋 Advanced Setup (Manual Installation)</b></summary>
 
 ### Prerequisites
 - Docker & Docker Compose installed
 - 4GB RAM minimum (8GB recommended)
 - Git
 
-### Installation
+### Manual Installation Steps
 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/yourusername/ClaraVerse-Scarlet-OSS.git
 cd ClaraVerse-Scarlet-OSS
 
-# 2. Configure environment variables
-# Make sure .env has valid values for:
-# - ENCRYPTION_MASTER_KEY (generate with: openssl rand -hex 32)
-# - JWT_SECRET (generate with: openssl rand -hex 64)
+# 2. Create .env file
+cp .env.default .env
 
-# 3. Start all services
-docker-compose up -d
+# 3. Generate secure keys
+openssl rand -hex 32  # ENCRYPTION_MASTER_KEY
+openssl rand -hex 64  # JWT_SECRET
 
-# 4. Open your browser
-# Backend API: http://localhost:3001
-# Frontend: http://localhost:5173 (when started)
-```
+# 4. Edit .env and replace auto-generated-on-first-run with the keys above
 
-### Default Admin Account
+# 5. Start all services
+docker compose up -d
+
+# 6. Check status
+docker compose ps
 ```
-Email: admin@localhost
-Password: admin
-```
-**⚠️ Change the password on first login!**
 
 ### What's Running?
-- **Frontend** (React + Vite): http://localhost:5173
+- **Frontend** (React + Nginx): http://localhost:80
 - **Backend** (Go API): http://localhost:3001
 - **MongoDB**: Conversations & workflows
 - **MySQL**: Provider & model data
@@ -85,17 +135,26 @@ Password: admin
 - **E2B Service**: Local Python code execution (no API key!)
 - **SearXNG**: Self-hosted web search
 
-### No External APIs Needed! 🎉
-- ✅ **Local JWT Authentication** - No Supabase required
-- ✅ **E2B Local Docker Mode** - Code execution without E2B API key
-- ✅ **All Users Get Pro Tier** - No payment gateway needed
-- ✅ **Self-Hosted Search** - SearXNG included
-- ✅ **Fully Offline Capable** - Everything runs locally
+### Troubleshooting
 
-### Next Steps
-- Configure AI providers (OpenAI, Anthropic, etc.) with your API keys
-- Explore the visual workflow builder
-- Check out the documentation below
+Run diagnostics:
+```bash
+./diagnose.sh     # Linux/Mac
+diagnose.bat      # Windows
+```
+
+View logs:
+```bash
+docker compose logs -f
+docker compose logs -f backend  # Just one service
+```
+
+Stop services:
+```bash
+docker compose down
+```
+
+</details>
 
 ---
 

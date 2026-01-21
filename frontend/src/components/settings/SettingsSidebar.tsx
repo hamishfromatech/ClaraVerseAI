@@ -95,8 +95,8 @@ export const SettingsSidebar: React.FC<SettingsSidebarProps> = ({
     },
   ];
 
-  // Filter out billing tab - hidden but code preserved
-  const filteredNavItems = navItems.filter(item => item.id !== 'billing');
+  // Filter out billing and usage tabs - hidden in OSS version (no payment/usage tracking)
+  const filteredNavItems = navItems.filter(item => item.id !== 'billing' && item.id !== 'usage');
 
   return (
     <Sidebar

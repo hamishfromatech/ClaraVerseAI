@@ -472,6 +472,12 @@ func (h *AdminHandler) CreateProvider(c *fiber.Ctx) error {
 	}
 
 	log.Printf("✅ [ADMIN] Created provider: %s (ID %d)", provider.Name, provider.ID)
+
+	// Reload image providers if this is an image provider
+	if config.ImageOnly || config.ImageEditOnly {
+		h.reloadImageProviders()
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(provider)
 }
 
@@ -575,6 +581,13 @@ func (h *AdminHandler) UpdateProvider(c *fiber.Ctx) error {
 	}
 
 	log.Printf("✅ [ADMIN] Updated provider: %s (ID %d)", updated.Name, updated.ID)
+
+	// Reload image providers if image flags changed
+	if (req.ImageOnly != nil && *req.ImageOnly) || (req.ImageEditOnly != nil && *req.ImageEditOnly) ||
+		updated.ImageOnly || updated.ImageEditOnly {
+		h.reloadImageProviders()
+	}
+
 	return c.JSON(updated)
 }
 
@@ -672,21 +685,62 @@ func convertAliasesMapToInterface(aliases map[string]models.ModelAlias) map[stri
 	result := make(map[string]interface{})
 	for key, alias := range aliases {
 		result[key] = fiber.Map{
-			"actual_model":                alias.ActualModel,
-			"display_name":                alias.DisplayName,
-			"description":                 alias.Description,
-			"supports_vision":             alias.SupportsVision,
-			"agents":                      alias.Agents,
-			"smart_tool_router":           alias.SmartToolRouter,
-			"free_tier":                   alias.FreeTier,
-			"structured_output_support":   alias.StructuredOutputSupport,
+			"actual_model":                 alias.ActualModel,
+			"display_name":                 alias.DisplayName,
+			"description":                  alias.Description,
+			"supports_vision":              alias.SupportsVision,
+			"agents":                       alias.Agents,
+			"smart_tool_router":            alias.SmartToolRouter,
+			"free_tier":                    alias.FreeTier,
+			"structured_output_support":    alias.StructuredOutputSupport,
 			"structured_output_compliance": alias.StructuredOutputCompliance,
-			"structured_output_warning":   alias.StructuredOutputWarning,
-			"structured_output_speed_ms":  alias.StructuredOutputSpeedMs,
-			"structured_output_badge":     alias.StructuredOutputBadge,
-			"memory_extractor":            alias.MemoryExtractor,
-			"memory_selector":             alias.MemorySelector,
+			"structured_output_warning":    alias.StructuredOutputWarning,
+			"structured_output_speed_ms":   alias.StructuredOutputSpeedMs,
+			"structured_output_badge":      alias.StructuredOutputBadge,
+			"memory_extractor":             alias.MemoryExtractor,
+			"memory_selector":              alias.MemorySelector,
 		}
 	}
 	return result
+}
+
+// reloadImageProviders reloads image providers from the database
+// Called after creating/updating providers with image_only or image_edit_only flags
+func (h *AdminHandler) reloadImageProviders() {
+	log.Println("🔄 [ADMIN] Reloading image providers...")
+
+	// Get all providers from database
+	allProviders, err := h.providerService.GetAll()
+	if err != nil {
+		log.Printf("⚠️ [ADMIN] Failed to reload providers: %v", err)
+		return
+	}
+
+	// Convert to ProviderConfig format
+	var providerConfigs []models.ProviderConfig
+	for _, p := range allProviders {
+		providerConfigs = append(providerConfigs, models.ProviderConfig{
+			Name:          p.Name,
+			BaseURL:       p.BaseURL,
+			APIKey:        p.APIKey,
+			Enabled:       p.Enabled,
+			Secure:        p.Secure,
+			AudioOnly:     p.AudioOnly,
+			ImageOnly:     p.ImageOnly,
+			ImageEditOnly: p.ImageEditOnly,
+			DefaultModel:  p.DefaultModel,
+			SystemPrompt:  p.SystemPrompt,
+			Favicon:       p.Favicon,
+		})
+	}
+
+	// Reload image providers
+	imageProviderService := services.GetImageProviderService()
+	imageProviderService.LoadFromProviders(providerConfigs)
+
+	// Reload image edit providers
+	imageEditProviderService := services.GetImageEditProviderService()
+	imageEditProviderService.LoadFromProviders(providerConfigs)
+
+	log.Println("✅ [ADMIN] Image providers reloaded")
 }

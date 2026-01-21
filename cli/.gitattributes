@@ -1,0 +1,4 @@
+# Ensure proper line endings for scripts
+claraverse text eol=lf
+install.sh text eol=lf
+install.ps1 text eol=crlf

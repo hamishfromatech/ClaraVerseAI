@@ -15,7 +15,16 @@ import { toast } from '@/store/useToastStore';
 type MessageCallback = (message: ServerMessage) => void;
 type StateCallback = (state: WebSocketState) => void;
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:3001';
+// Dynamically construct WebSocket URL from current location if not provided
+const getWsUrl = (): string => {
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+  // Use current page's protocol and host
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}`;
+};
+const WS_URL = getWsUrl();
 const WS_ENDPOINT = '/ws/chat';
 
 class WebSocketService {

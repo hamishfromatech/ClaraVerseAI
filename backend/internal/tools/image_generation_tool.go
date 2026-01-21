@@ -442,8 +442,20 @@ func executeOpenAIImageGeneration(config *ImageProviderConfig, prompt, model str
 		return "", fmt.Errorf("failed to marshal request: %w", err)
 	}
 
+	// Normalize base URL - handle cases where /v1 is already included
+	// Users may enter: https://api.openai.com or https://api.openai.com/v1
+	baseURL := strings.TrimSuffix(config.BaseURL, "/")
+	var url string
+	if strings.HasSuffix(baseURL, "/v1") {
+		// Base URL already has /v1, just append the endpoint
+		url = fmt.Sprintf("%s/images/generations", baseURL)
+	} else {
+		// Base URL doesn't have /v1, add the full path
+		url = fmt.Sprintf("%s/v1/images/generations", baseURL)
+	}
+	log.Printf("🎨 [IMAGE-GEN] Using URL: %s", url)
+
 	// Create HTTP request
-	url := fmt.Sprintf("%s/v1/images/generations", config.BaseURL)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to create request: %w", err)

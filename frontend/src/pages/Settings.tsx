@@ -29,15 +29,12 @@ export const Settings = () => {
     const plan = searchParams.get('plan');
     const checkout = searchParams.get('checkout');
 
-    // Redirect billing tab to usage (billing hidden but code preserved)
-    if (tab === 'billing') {
-      searchParams.set('tab', 'usage');
+    // Redirect billing and usage tabs to ai (hidden in OSS version)
+    if (tab === 'billing' || tab === 'usage') {
+      searchParams.set('tab', 'ai');
       setSearchParams(searchParams, { replace: true });
-      setActiveTab('usage');
-    } else if (
-      tab &&
-      ['ai', 'api-keys', 'credentials', 'usage', 'privacy', 'account'].includes(tab)
-    ) {
+      setActiveTab('ai');
+    } else if (tab && ['ai', 'api-keys', 'credentials', 'privacy', 'account'].includes(tab)) {
       setActiveTab(tab as SettingsTab);
     }
 
