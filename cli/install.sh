@@ -2,7 +2,7 @@
 # ============================================
 # ClaraVerse CLI Installer
 # ============================================
-# Usage: curl -fsSL https://get.claraverse.ai | bash
+# Usage: curl -fsSL https://get.claraverse.app | bash
 # ============================================
 
 set -e
@@ -18,7 +18,7 @@ NC='\033[0m'
 BOLD='\033[1m'
 
 # URLs
-GITHUB_REPO="ClaraVerseOSS/ClaraVerse"
+GITHUB_REPO="claraverse-space/ClaraVerseAI"
 CLI_URL="https://raw.githubusercontent.com/${GITHUB_REPO}/main/cli/claraverse"
 INSTALL_PATH="/usr/local/bin/claraverse"
 
@@ -118,7 +118,7 @@ install_cli() {
             use_sudo="sudo"
         else
             log_error "This script requires root privileges"
-            log_info "Run with: sudo bash -c '\$(curl -fsSL https://get.claraverse.ai)'"
+            log_info "Run with: sudo bash -c '\$(curl -fsSL https://get.claraverse.app)'"
             exit 1
         fi
     fi
@@ -174,7 +174,7 @@ main() {
         echo "For Windows, we recommend using WSL2 (Windows Subsystem for Linux):"
         echo "  1. Install WSL2: wsl --install"
         echo "  2. Open Ubuntu terminal"
-        echo "  3. Run: curl -fsSL https://get.claraverse.ai | bash"
+        echo "  3. Run: curl -fsSL https://get.claraverse.app | bash"
         echo ""
         echo "Alternatively, use Docker Desktop with the all-in-one image:"
         echo "  docker run -d -p 80:80 claraverseoss/claraverse"
