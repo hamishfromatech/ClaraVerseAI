@@ -9,10 +9,9 @@
 <p>
 
 [![License](https://img.shields.io/badge/license-AGPL--3.0-blue.svg)](LICENSE)
-[![GitHub Stars](https://img.shields.io/github/stars/claraverse-space/ClaraVerse-Scarlet?style=social)](https://github.com/claraverse-space/ClaraVerse-Scarlet/stargazers)
-[![Docker Pulls](https://img.shields.io/docker/pulls/claraverse/scarlet?color=blue)](https://hub.docker.com/r/claraverse/scarlet)
-[![GitHub Release](https://img.shields.io/github/v/release/claraverse-space/ClaraVerse-Scarlet)](https://github.com/claraverse-space/ClaraVerse-Scarlet/releases)
-[![Discord](https://img.shields.io/discord/1332357374635888713?color=7289da&label=Discord&logo=discord&logoColor=white)](https://discord.com/invite/j633fsrAne)
+[![GitHub Stars](https://img.shields.io/github/stars/claraverse-space/ClaraVerseAI?style=social)](https://github.com/claraverse-space/ClaraVerseAI/stargazers)
+[![Docker Pulls](https://img.shields.io/docker/pulls/claraverseoss/claraverse?color=blue)](https://hub.docker.com/r/claraverseoss/claraverse)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da?logo=discord&logoColor=white)](https://discord.com/invite/j633fsrAne)
 
 [Website](https://claraverse.space) · [Documentation](#-documentation) · [Quick Start](#-quick-start) · [Community](#-community) · [Contributing](#-contributing)
 
@@ -44,7 +43,7 @@ docker run -d -p 80:80 -p 3001:3001 -v claraverse-data:/data claraverseoss/clara
 
 **Clone & Run:**
 ```bash
-git clone https://github.com/ClaraVerse/ClaraVerse-OSS.git && cd ClaraVerse-OSS && ./quickstart.sh
+git clone https://github.com/claraverse-space/ClaraVerseAI.git && cd ClaraVerseAI && ./quickstart.sh
 ```
 
 </details>
@@ -94,8 +93,8 @@ Everything runs locally - no external APIs needed:
 
 ```bash
 # 1. Clone
-git clone https://github.com/ClaraVerse/ClaraVerse-OSS.git
-cd ClaraVerse-OSS
+git clone https://github.com/claraverse-space/ClaraVerseAI.git
+cd ClaraVerseAI
 
 # 2. Configure
 cp .env.default .env
@@ -487,7 +486,7 @@ Coordinate multiple AI agents for complex workflows:
 - [ ] Kubernetes deployment templates
 - [ ] Enterprise SSO integration
 
-[View full roadmap →](https://github.com/claraverse-space/ClaraVerse-Scarlet/projects)
+[View full roadmap →](https://github.com/claraverse-space/ClaraVerseAI/projects)
 
 ---
 
@@ -509,7 +508,7 @@ We welcome contributions from developers of all skill levels! ClaraVerse is buil
 
 We especially welcome help in these areas:
 
-- <img src="https://cdn.simpleicons.org/databricks/FF3621" width="16" height="16" alt="Bug"/> **Bug Fixes**: Check [open issues](https://github.com/claraverse-space/ClaraVerse-Scarlet/issues)
+- <img src="https://cdn.simpleicons.org/databricks/FF3621" width="16" height="16" alt="Bug"/> **Bug Fixes**: Check [open issues](https://github.com/claraverse-space/ClaraVerseAI/issues)
 - <img src="https://cdn.simpleicons.org/readthedocs/8CA1AF" width="16" height="16" alt="Docs"/> **Documentation**: Improve guides, add examples, fix typos
 - <img src="https://cdn.simpleicons.org/googletranslate/4285F4" width="16" height="16" alt="Language"/> **Translations**: Help us reach non-English speakers
 - <img src="https://cdn.simpleicons.org/figma/F24E1E" width="16" height="16" alt="Design"/> **UI/UX**: Design improvements and accessibility
@@ -609,7 +608,7 @@ ClaraVerse is built on the shoulders of giants. Special thanks to:
 - <img src="https://cdn.simpleicons.org/searxng/3050FF" width="16"/> **[SearXNG](https://github.com/searxng/searxng)** - Privacy-respecting search
 - **[E2B](https://e2b.dev/)** - Code execution sandboxes (now running in local Docker mode!)
 - **[Argon2](https://github.com/P-H-C/phc-winner-argon2)** - Password hashing library
-- All our [contributors](https://github.com/claraverse-space/ClaraVerse-Scarlet/graphs/contributors) and community members
+- All our [contributors](https://github.com/claraverse-space/ClaraVerseAI/graphs/contributors) and community members
 
 **Note**: v2.0 moved from Supabase to local JWT authentication for complete offline capability
 
@@ -684,7 +683,7 @@ make install
 For more help:
 - <img src="https://cdn.simpleicons.org/bookstack/0288D1" width="16" height="16" alt="Guide"/> [Full troubleshooting guide](backend/docs/TROUBLESHOOTING.md)
 - <img src="https://cdn.simpleicons.org/discord/5865F2" width="16" height="16" alt="Discord"/> [Discord support channel](https://discord.com/invite/j633fsrAne)
-- <img src="https://cdn.simpleicons.org/databricks/FF3621" width="16" height="16" alt="Bug"/> [Report an issue](https://github.com/claraverse-space/ClaraVerse-Scarlet/issues)
+- <img src="https://cdn.simpleicons.org/databricks/FF3621" width="16" height="16" alt="Bug"/> [Report an issue](https://github.com/claraverse-space/ClaraVerseAI/issues)
 
 ---
 
@@ -693,8 +692,8 @@ For more help:
 - <img src="https://cdn.simpleicons.org/googlechrome/4285F4" width="16" height="16" alt="Website"/> **Website**: [claraverse.space](https://claraverse.space)
 - <img src="https://cdn.simpleicons.org/gmail/EA4335" width="16" height="16" alt="Email"/> **Email**: [hello@claraverse.space](mailto:hello@claraverse.space)
 - <img src="https://cdn.simpleicons.org/databricks/FF3621" width="16" height="16" alt="Enterprise"/> **Enterprise**: [enterprise@claraverse.space](mailto:enterprise@claraverse.space)
-- <img src="https://cdn.simpleicons.org/github/181717" width="16" height="16" alt="Bug"/> **Bug Reports**: [GitHub Issues](https://github.com/claraverse-space/ClaraVerse-Scarlet/issues)
-- <img src="https://cdn.simpleicons.org/gitbook/3884FF" width="16" height="16" alt="Ideas"/> **Feature Requests**: [GitHub Discussions](https://github.com/claraverse-space/ClaraVerse-Scarlet/discussions)
+- <img src="https://cdn.simpleicons.org/github/181717" width="16" height="16" alt="Bug"/> **Bug Reports**: [GitHub Issues](https://github.com/claraverse-space/ClaraVerseAI/issues)
+- <img src="https://cdn.simpleicons.org/gitbook/3884FF" width="16" height="16" alt="Ideas"/> **Feature Requests**: [GitHub Discussions](https://github.com/claraverse-space/ClaraVerseAI/discussions)
 
 ---
 
