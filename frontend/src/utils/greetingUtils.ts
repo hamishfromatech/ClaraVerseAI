@@ -3,7 +3,7 @@
  */
 
 // Store/retrieve user name from localStorage
-const USER_NAME_KEY = 'claraverse_user_name';
+const USER_NAME_KEY = 'kaylahgpt_user_name';
 
 // Helper function to get user-specific storage key
 function getUserSpecificKey(): string {

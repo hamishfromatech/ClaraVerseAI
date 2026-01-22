@@ -113,14 +113,14 @@ This design system includes **everything** you need for a production AI chat app
 - Message actions
 - Streaming text animations
 
-All components follow the **Rose Pink** design system with a premium dark theme.`;
+All components follow the **Teal & Champagne** design system with a premium dark theme.`;
 
   return (
     <div className="chat-demo">
       {/* Header */}
       <div className="chat-demo-header">
         <div>
-          <Typography variant="h3">ClaraVerse AI Chat</Typography>
+          <Typography variant="h3">KaylahGPT AI Chat</Typography>
           <Typography variant="sm" className="chat-demo-subtitle">
             Complete AI Chat Design System
           </Typography>

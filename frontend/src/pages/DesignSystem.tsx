@@ -74,10 +74,10 @@ export const DesignSystem = () => {
       {/* Hero Section */}
       <section className="ds-section ds-hero">
         <Typography variant="display" gradient align="center">
-          ClaraVerse Design System
+          KaylahGPT Design System
         </Typography>
         <Typography variant="lg" align="center" className="ds-hero-subtitle">
-          Premium Dark Theme with Rose Pink Accent
+          Premium Dark Theme with Teal & Champagne Accent
         </Typography>
         <div className="ds-hero-badges">
           <Badge variant="accent" dot>
@@ -534,9 +534,9 @@ export const DesignSystem = () => {
             items={[
               {
                 id: '1',
-                title: 'What is ClaraVerse?',
+                title: 'What is KaylahGPT?',
                 content:
-                  'ClaraVerse is a modern design system with a beautiful rose pink accent color.',
+                  'KaylahGPT is a modern design system with a beautiful teal and champagne accent color.',
               },
               {
                 id: '2',
@@ -713,7 +713,7 @@ export const DesignSystem = () => {
           Color Palette
         </Typography>
         <Typography variant="base" className="ds-section-description">
-          Rose Pink accent with dark mode surfaces
+          Teal & Champagne accent with dark mode surfaces
         </Typography>
 
         <div className="ds-color-grid">
@@ -905,10 +905,10 @@ console.log(greeting);
             </Typography>
           </Card>
 
-          <Card variant="feature" icon="🌸">
-            <Typography variant="h5">Rose Pink Accent</Typography>
+          <Card variant="feature" icon="🌊">
+            <Typography variant="h5">Teal & Champagne Accent</Typography>
             <Typography variant="sm">
-              Strategic use of #e91e63 for maximum visual impact on key interactions
+              Strategic use of #267C7E and #D9CBB3 for maximum visual impact on key interactions
             </Typography>
           </Card>
 
@@ -945,10 +945,10 @@ console.log(greeting);
       {/* Footer */}
       <section className="ds-footer">
         <Typography variant="sm" align="center">
-          Built with ❤️ for ClaraVerse | v1.0.0 Rose Pink Edition
+          Built with ❤️ for Greater Whitsunday Innovation | v1.0.0 Teal & Champagne Edition
         </Typography>
         <Typography variant="xs" align="center">
-          @badboysm890
+          Maintained and Provided by The A-Tech Corporation PTY LTD Under Permissive Licence
         </Typography>
       </section>
 

@@ -1,107 +1,117 @@
 /* ============================================
-   ClaraVerse Design System v1.0
-   CSS Variables - Rose Pink Edition 🌸
+   KaylahGPT Design System v1.0
+   CSS Variables - Teal & Champagne Edition
    ============================================ */
 
 /* Christmas Theme - Active Dec 15 - Jan 1 */
 [data-theme='christmas'] {
   /* Christmas Red Accent */
-  --color-accent: #c41e3a;
-  --color-accent-hover: #d63b57;
-  --color-accent-active: #a01830;
-  --color-accent-light: rgba(196, 30, 58, 0.1);
-  --color-accent-border: rgba(196, 30, 58, 0.3);
+  --color-accent: #267C7E;
+  --color-accent-hover: #2D8F91;
+  --color-accent-active: #1F6365;
+  --color-accent-light: rgba(38, 124, 126, 0.1);
+  --color-accent-border: rgba(38, 124, 126, 0.3);
 
   /* Gradients with Christmas red */
-  --gradient-accent: linear-gradient(135deg, #c41e3a 0%, #d63b57 100%);
-  --gradient-glow: radial-gradient(circle, rgba(196, 30, 58, 0.3) 0%, transparent 70%);
-  --gradient-shine: linear-gradient(90deg, transparent, rgba(196, 30, 58, 0.5), transparent);
+  --gradient-accent: linear-gradient(135deg, #267C7E 0%, #1D4148 100%);
+  --gradient-glow: radial-gradient(circle, rgba(38, 124, 126, 0.3) 0%, transparent 70%);
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(38, 124, 126, 0.5), transparent);
 
   /* Glow shadows */
-  --shadow-glow-sm: 0 0 20px rgba(196, 30, 58, 0.2);
-  --shadow-glow-md: 0 10px 30px rgba(196, 30, 58, 0.3);
-  --shadow-glow-lg: 0 20px 60px rgba(196, 30, 58, 0.4);
+  --shadow-glow-sm: 0 0 20px rgba(38, 124, 126, 0.2);
+  --shadow-glow-md: 0 10px 30px rgba(38, 124, 126, 0.3);
+  --shadow-glow-lg: 0 20px 60px rgba(38, 124, 126, 0.4);
 
   /* HSL for shadcn components */
-  --primary: 350 74% 44%;
-  --ring: 350 74% 44%;
+  --primary: 177 54% 31%;
+  --ring: 177 54% 31%;
 
   /* Border focus with Christmas red */
-  --color-border-focus: rgba(196, 30, 58, 0.5);
+  --color-border-focus: rgba(38, 124, 126, 0.5);
 }
 
 :root {
   /* ==================== COLORS ==================== */
 
-  /* Background & Surfaces */
-  --color-background: #0f0f0f;
-  --color-surface: rgba(255, 255, 255, 0.03);
-  --color-surface-elevated: rgba(255, 255, 255, 0.05);
-  --color-surface-hover: rgba(255, 255, 255, 0.08);
+  /* Background & Surfaces - KaylahGPT Theme */
+  --color-background: #1D4148;
+  --color-surface: rgba(242, 238, 228, 0.05);
+  --color-surface-elevated: rgba(242, 238, 228, 0.08);
+  --color-surface-hover: rgba(242, 238, 228, 0.12);
 
-  /* Borders */
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.2);
-  --color-border-focus: rgba(233, 30, 99, 0.5);
+  /* Borders - Champagne tinted */
+  --color-border: rgba(217, 203, 179, 0.15);
+  --color-border-hover: rgba(217, 203, 179, 0.25);
+  --color-border-focus: rgba(38, 124, 126, 0.5);
 
-  /* Text Colors */
-  --color-text-primary: #ffffff;
-  --color-text-secondary: #d0d0d0; /* Brighter for better readability */
-  --color-text-tertiary: #9a9a9a;
-  --color-text-disabled: #5a5a5a;
+  /* Text Colors - Cream base */
+  --color-text-primary: #F2EEE4;
+  --color-text-secondary: rgba(242, 238, 228, 0.85);
+  --color-text-tertiary: rgba(242, 238, 228, 0.6);
+  --color-text-disabled: rgba(242, 238, 228, 0.3);
 
-  /* Rose Pink Accent (Primary) */
-  --color-accent: #e91e63;
-  --color-accent-hover: #f06292;
-  --color-accent-active: #c2185b;
-  --color-accent-light: rgba(233, 30, 99, 0.1);
-  --color-accent-border: rgba(233, 30, 99, 0.3);
+  /* Vibrant Teal Accent (Primary) - KaylahGPT */
+  --color-accent: #267C7E;
+  --color-accent-hover: #2D8F91;
+  --color-accent-active: #1F6365;
+  --color-accent-light: rgba(38, 124, 126, 0.1);
+  --color-accent-border: rgba(38, 124, 126, 0.3);
+
+  /* Champagne Gold for premium accents */
+  --color-champagne: #D9CBB3;
+  --color-champagne-hover: #E5D9C5;
+  --color-champagne-light: rgba(217, 203, 179, 0.15);
+
+  /* Deep Charcoal for high contrast areas */
+  --color-charcoal: #2D2D2D;
+  --color-charcoal-light: #3D3D3D;
 
   /* Status Colors */
-  --color-success: #30d158;
-  --color-success-light: rgba(48, 209, 88, 0.1);
-  --color-success-border: rgba(48, 209, 88, 0.3);
+  --color-success: #4CAF50;
+  --color-success-light: rgba(76, 175, 80, 0.15);
+  --color-success-border: rgba(76, 175, 80, 0.3);
 
-  --color-warning: #ffd60a;
-  --color-warning-light: rgba(255, 214, 10, 0.1);
-  --color-warning-border: rgba(255, 214, 10, 0.3);
+  --color-warning: #FFB74D;
+  --color-warning-light: rgba(255, 183, 77, 0.15);
+  --color-warning-border: rgba(255, 183, 77, 0.3);
 
-  --color-error: #ff453a;
-  --color-error-light: rgba(255, 69, 58, 0.1);
-  --color-error-border: rgba(255, 69, 58, 0.3);
+  --color-error: #EF5350;
+  --color-error-light: rgba(239, 83, 80, 0.15);
+  --color-error-border: rgba(239, 83, 80, 0.3);
 
-  --color-info: #64d2ff;
-  --color-info-light: rgba(100, 210, 255, 0.1);
-  --color-info-border: rgba(100, 210, 255, 0.3);
+  --color-info: #64B5F6;
+  --color-info-light: rgba(100, 181, 246, 0.15);
+  --color-info-border: rgba(100, 181, 246, 0.3);
 
-  /* Gradients */
-  --gradient-text: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
-  --gradient-accent: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
-  --gradient-glow: radial-gradient(circle, rgba(233, 30, 99, 0.3) 0%, transparent 70%);
-  --gradient-shine: linear-gradient(90deg, transparent, rgba(233, 30, 99, 0.5), transparent);
+  /* Gradients - KaylahGPT Theme */
+  --gradient-text: linear-gradient(180deg, #F2EEE4 0%, rgba(242, 238, 228, 0.7) 100%);
+  --gradient-accent: linear-gradient(135deg, #267C7E 0%, #1D4148 100%);
+  --gradient-glow: radial-gradient(circle, rgba(38, 124, 126, 0.3) 0%, transparent 70%);
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(217, 203, 179, 0.4), transparent);
+  --gradient-champagne: linear-gradient(135deg, #D9CBB3 0%, #C9BCA2 100%);
 
   /* ==================== SHADCN THEME VARIABLES ==================== */
 
   /* Base colors using HSL */
-  --background: 0 0% 0%;
-  --foreground: 0 0% 96%;
-  --card: 0 0% 4%;
-  --card-foreground: 0 0% 96%;
-  --popover: 0 0% 4%;
-  --popover-foreground: 0 0% 96%;
-  --primary: 340 82% 52%;
+  --background: 177 29% 20%;
+  --foreground: 34 17% 94%;
+  --card: 177 25% 12%;
+  --card-foreground: 34 17% 94%;
+  --popover: 177 25% 12%;
+  --popover-foreground: 34 17% 94%;
+  --primary: 177 54% 31%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 15%;
-  --secondary-foreground: 0 0% 96%;
-  --muted: 0 0% 15%;
-  --muted-foreground: 0 0% 63%;
-  --accent: 0 0% 15%;
-  --accent-foreground: 0 0% 96%;
+  --secondary: 180 10% 10%;
+  --secondary-foreground: 34 17% 94%;
+  --muted: 180 10% 10%;
+  --muted-foreground: 34 17% 60%;
+  --accent: 180 10% 10%;
+  --accent-foreground: 34 17% 94%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 96%;
-  --border: 0 0% 15%;
-  --input: 0 0% 15%;
-  --ring: 340 82% 52%;
+  --border: 35 18% 22%;
+  --input: 35 18% 22%;
+  --ring: 177 54% 31%;
   --radius: 1rem;
 
   /* ==================== SPACING ==================== */
@@ -177,10 +187,10 @@
   --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.5);
   --shadow-2xl: 0 40px 100px rgba(0, 0, 0, 0.6);
 
-  /* Accent Glow Shadows */
-  --shadow-glow-sm: 0 0 20px rgba(233, 30, 99, 0.2);
-  --shadow-glow-md: 0 10px 30px rgba(233, 30, 99, 0.3);
-  --shadow-glow-lg: 0 20px 60px rgba(233, 30, 99, 0.4);
+  /* Accent Glow Shadows - KaylahGPT Teal */
+  --shadow-glow-sm: 0 0 20px rgba(38, 124, 126, 0.2);
+  --shadow-glow-md: 0 10px 30px rgba(38, 124, 126, 0.3);
+  --shadow-glow-lg: 0 20px 60px rgba(38, 124, 126, 0.4);
 
   /* Border Radius */
   --radius-none: 0;

@@ -6,7 +6,7 @@ ARG VITE_API_BASE_URL=http://localhost:3001
 ARG VITE_WS_URL=ws://localhost:3001
 ARG VITE_SUPABASE_URL
 ARG VITE_SUPABASE_ANON_KEY
-ARG VITE_APP_NAME=ClaraVerse
+ARG VITE_APP_NAME=KaylahGPT
 ARG VITE_APP_VERSION=1.0.0
 ARG VITE_ENABLE_ANALYTICS=false
 ARG VITE_TURNSTILE_SITE_KEY
@@ -25,10 +25,10 @@ ENV VITE_TURNSTILE_SITE_KEY=$VITE_TURNSTILE_SITE_KEY
 WORKDIR /app
 
 # Copy package files first (for better layer caching)
-COPY package.json package-lock.json ./
+COPY package.json ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .

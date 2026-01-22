@@ -53,7 +53,7 @@ class ErrorBoundary extends Component<Props, State> {
 
     return `
 ═══════════════════════════════════════════════════
-           CLARAVERSE ERROR REPORT
+           KAYLAHGPT ERROR REPORT
 ═══════════════════════════════════════════════════
 
 📅 Timestamp: ${timestamp}
@@ -108,7 +108,7 @@ ${errorInfo?.componentStack || 'No component stack available'}
     const payload = {
       embeds: [
         {
-          title: '🚨 ClaraVerse Error Report',
+          title: '🚨 KaylahGPT Error Report',
           color: 15158332, // Red color
           fields: [
             {
@@ -194,7 +194,7 @@ ${errorInfo?.componentStack || 'No component stack available'}
           {/* Error Message */}
           <h1 className={styles.title}>Oops! Something went wrong</h1>
           <p className={styles.subtitle}>
-            Clara ran into an unexpected error. You can help us fix this by sending an error report.
+            KaylahGPT ran into an unexpected error. You can help us fix this by sending an error report.
           </p>
 
           {/* Diagnostics Checkbox */}
@@ -205,12 +205,12 @@ ${errorInfo?.componentStack || 'No component stack available'}
               onChange={this.toggleSendDiagnostics}
               className={styles.checkbox}
             />
-            <span>Send anonymous diagnostics to help improve Clara</span>
+            <span>Send anonymous diagnostics to help improve KaylahGPT</span>
           </label>
 
           {/* Privacy Note */}
           <p className={styles.privacyNote}>
-            Error reports are sent to ClaraVerse's Discord and contain only technical error
+            Error reports are sent to KaylahGPT's Discord and contain only technical error
             information (error message, stack trace). No personal data or chat content is included.
           </p>
 
@@ -228,7 +228,7 @@ ${errorInfo?.componentStack || 'No component stack available'}
             ) : (
               <>
                 <RefreshCw size={18} />
-                {sendDiagnostics ? 'Restart & Send Diagnostics' : 'Restart Clara'}
+                {sendDiagnostics ? 'Restart & Send Diagnostics' : 'Restart KaylahGPT'}
               </>
             )}
           </button>

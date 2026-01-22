@@ -2,13 +2,13 @@ services:
   # MongoDB (for conversations, workflows, and data persistence)
   mongodb:
     image: mongo:7
-    container_name: claraverse-mongodb
+    container_name: kaylahgpt-mongodb
     ports:
       - "27017:27017"
     volumes:
       - mongodb-data:/data/db
     environment:
-      - MONGO_INITDB_DATABASE=claraverse
+      - MONGO_INITDB_DATABASE=kaylahgpt
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
@@ -17,13 +17,13 @@ services:
       start_period: 30s
       retries: 3
     networks:
-      - claraverse-network
+      - kaylahgpt-network
 
   # Redis (for scheduled jobs + WebSocket pub/sub)
   # Required for: scheduled agent triggers, cross-instance messaging
   redis:
     image: redis:7-alpine
-    container_name: claraverse-redis
+    container_name: kaylahgpt-redis
     command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
     ports:
       - "6379:6379"
@@ -37,13 +37,13 @@ services:
       start_period: 5s
       retries: 5
     networks:
-      - claraverse-network
+      - kaylahgpt-network
 
   # MySQL (for providers, models, and capabilities)
   # Replaces SQLite for production-ready persistence
   mysql:
     image: mysql:8.0
-    container_name: claraverse-mysql
+    container_name: kaylahgpt-mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       - "3306:3306"
@@ -51,23 +51,23 @@ services:
       - mysql-data-new:/var/lib/mysql
       - ./backend/migrations:/docker-entrypoint-initdb.d:ro
     environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-claraverse_root_2024}
-      - MYSQL_DATABASE=claraverse
-      - MYSQL_USER=claraverse_user
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-claraverse_pass_2024}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-kaylahgpt_root_2024}
+      - MYSQL_DATABASE=kaylahgpt
+      - MYSQL_USER=kaylahgpt_user
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD:-kaylahgpt_pass_2024}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "claraverse_user", "-pclaraverse_pass_2024", "claraverse", "-e", "SELECT 1"]
+      test: ["CMD", "mysql", "-h", "127.0.0.1", "-u", "kaylahgpt_user", "-pkaylahgpt_pass_2024", "kaylahgpt", "-e", "SELECT 1"]
       interval: 5s
       timeout: 5s
       start_period: 60s
       retries: 12
     networks:
-      - claraverse-network
+      - kaylahgpt-network
 
   searxng:
     image: searxng/searxng:latest
-    container_name: claraverse-searxng
+    container_name: kaylahgpt-searxng
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
     environment:
@@ -78,7 +78,7 @@ services:
       - SETGID
     restart: unless-stopped
     networks:
-      - claraverse-network
+      - kaylahgpt-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -90,7 +90,7 @@ services:
     build:
       context: ./backend/e2b-service
       dockerfile: Dockerfile
-    container_name: claraverse-e2b
+    container_name: kaylahgpt-e2b
     environment:
       # E2B Local Mode Configuration (v2.0 - no API key needed!)
       - E2B_MODE=${E2B_MODE:-local}
@@ -113,7 +113,7 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - claraverse-network
+      - kaylahgpt-network
 
   backend:
     build:
@@ -121,9 +121,9 @@ services:
       dockerfile: Dockerfile
       args:
         SKIP_TESTS: ${SKIP_TESTS:-false}
-    container_name: claraverse-backend
+    container_name: kaylahgpt-backend
     ports:
-      - "3001:3001"
+      - "3002:3001"
     volumes:
       # Persistent data
       - backend-data:/app/data
@@ -133,8 +133,8 @@ services:
       # All values from root .env file (single source of truth)
       - ENVIRONMENT=${ENVIRONMENT:-development}
       # Override paths for Docker environment
-      - DATABASE_URL=mysql://claraverse_user:${MYSQL_PASSWORD:-claraverse_pass_2024}@mysql:3306/claraverse?parseTime=true
-      - MYSQL_DATABASE=claraverse
+      - DATABASE_URL=mysql://kaylahgpt_user:${MYSQL_PASSWORD:-kaylahgpt_pass_2024}@mysql:3306/kaylahgpt?parseTime=true
+      - MYSQL_DATABASE=kaylahgpt
       - UPLOAD_DIR=/app/uploads
       # Supabase Authentication
       - SUPABASE_URL=${SUPABASE_URL}
@@ -151,7 +151,7 @@ services:
       # Backend public URL for generating absolute download URLs
       - BACKEND_URL=${BACKEND_URL:-http://localhost:3001}
       # MongoDB
-      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/claraverse}
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/kaylahgpt}
       # Redis (for scheduler + pub/sub)
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       # Encryption key for user data
@@ -161,7 +161,7 @@ services:
       - JWT_ACCESS_TOKEN_EXPIRY=${JWT_ACCESS_TOKEN_EXPIRY:-15m}
       - JWT_REFRESH_TOKEN_EXPIRY=${JWT_REFRESH_TOKEN_EXPIRY:-168h}
       # Development API key for testing (only works when ENVIRONMENT != production)
-      - DEV_API_KEY=${DEV_API_KEY:-claraverse-dev-key-2024}
+      - DEV_API_KEY=${DEV_API_KEY:-kaylahgpt-dev-key-2024}
       # Admin
       - SUPERADMIN_USER_IDS=${SUPERADMIN_USER_IDS:-}
 
@@ -194,7 +194,7 @@ services:
       start_period: 10s
       retries: 3
     networks:
-      - claraverse-network
+      - kaylahgpt-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -205,12 +205,12 @@ services:
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3001}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3002}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3002}
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
-    container_name: claraverse-frontend
+    container_name: kaylahgpt-frontend
     ports:
-      - "80:80"
+      - "81:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -222,7 +222,7 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - claraverse-network
+      - kaylahgpt-network
 
 volumes:
   backend-data:
@@ -239,5 +239,5 @@ volumes:
     driver: local
 
 networks:
-  claraverse-network:
+  kaylahgpt-network:
     driver: bridge

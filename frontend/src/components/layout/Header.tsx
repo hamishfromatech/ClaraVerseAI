@@ -32,7 +32,7 @@ export const Header = () => {
                 textDecoration: 'none',
               }}
             >
-              ClaraVerse
+              KaylahGPT
             </Link>
           </div>
           <div className="flex gap-4 items-center">
