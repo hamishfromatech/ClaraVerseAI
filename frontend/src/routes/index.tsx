@@ -18,6 +18,7 @@ import {
   DesignSystem,
   Credentials,
   PrivacyPolicy,
+  Home,
 } from '@/pages';
 import { ResetPassword } from '@/pages/ResetPassword';
 import { ProtectedRoute, AdminRoute } from '@/components/auth';
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
             <Dashboard />
           </ProtectedRoute>
         ),
+      },
+      {
+        path: '/home',
+        element: <Home />,
       },
       {
         path: '/signin',
