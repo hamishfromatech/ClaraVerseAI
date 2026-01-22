@@ -14,7 +14,7 @@ services:
       # Development environment
       - ENVIRONMENT=development
       # Relaxed CORS for local development (includes both Vite ports and port 80)
-      - ALLOWED_ORIGINS=http://localhost,http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:8080
+      - ALLOWED_ORIGINS=http://localhost:81,http://localhost,http://localhost:5173,http://localhost:5174,http://localhost:3000,http://localhost:8080
 
     # Remove restart policy for development (easier to debug crashes)
     restart: "no"

@@ -267,7 +267,7 @@ function MobileBlockSettingsModal({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col">
       {/* Solid background layer to ensure opacity */}
-      <div className="absolute inset-0 bg-[#0a0a0a]" />
+      <div className="absolute inset-0 bg-[var(--color-charcoal)]" />
       {/* Glass effect layer */}
       <div className="absolute inset-0 bg-[var(--color-bg-secondary)]/80 backdrop-blur-xl" />
 

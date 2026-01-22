@@ -1137,7 +1137,7 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
                   className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[420px] z-[10000] px-4"
                 >
-                  <div className="bg-[#0a0a0a] border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+                  <div className="bg-[var(--color-charcoal)] border border-white/10 rounded-xl shadow-2xl overflow-hidden">
                     {/* Header */}
                     <div className="px-4 py-3 bg-gradient-to-r from-[var(--color-accent)]/20 to-purple-500/20 border-b border-white/10">
                       <div className="flex items-center gap-2.5">

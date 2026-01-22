@@ -984,7 +984,7 @@ function BlockNodeComponent({ data, selected }: BlockNodeProps) {
                   className={cn(
                     'nodrag nowheel',
                     'w-full px-2.5 py-1.5 text-xs rounded-lg cursor-pointer text-left',
-                    'bg-[#1a1a1a] border transition-colors flex items-center gap-2',
+                    'bg-[var(--color-charcoal)] border transition-colors flex items-center gap-2',
                     !variableConfig?.workflowModelId
                       ? 'border-amber-500/50'
                       : 'border-[var(--color-border)]',
@@ -1035,7 +1035,7 @@ function BlockNodeComponent({ data, selected }: BlockNodeProps) {
                     />
                     {/* Dropdown container */}
                     <div
-                      className="nowheel absolute top-full left-0 mt-1 z-[101] w-full rounded-lg bg-[#1a1a1a]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl overflow-hidden"
+                      className="nowheel absolute top-full left-0 mt-1 z-[101] w-full rounded-lg bg-[var(--color-charcoal)]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl overflow-hidden"
                       onWheel={e => e.stopPropagation()}
                     >
                       {/* Search input */}
@@ -1231,7 +1231,7 @@ function BlockNodeComponent({ data, selected }: BlockNodeProps) {
                           }}
                         />
                         <div
-                          className="absolute top-full right-0 mt-1 z-[101] w-[100px] rounded-lg bg-[#1a1a1a]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl py-1 overflow-hidden"
+                          className="absolute top-full right-0 mt-1 z-[101] w-[100px] rounded-lg bg-[var(--color-charcoal)]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl py-1 overflow-hidden"
                           onWheelCapture={e => {
                             // Use capture phase to stop the event before React Flow sees it
                             e.stopPropagation();

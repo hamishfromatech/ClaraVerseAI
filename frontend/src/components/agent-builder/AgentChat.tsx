@@ -1164,7 +1164,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                     setModelSearchQuery('');
                   }}
                 />
-                <div className="fixed left-4 right-4 top-20 z-[9999] max-h-[60vh] rounded-2xl bg-[#1a1a1a] border border-[var(--color-border)] shadow-2xl overflow-hidden flex flex-col">
+                <div className="fixed left-4 right-4 top-20 z-[9999] max-h-[60vh] rounded-2xl bg-[var(--color-charcoal)] border border-[var(--color-border)] shadow-2xl overflow-hidden flex flex-col">
                   {/* Search input */}
                   <div className="p-3 border-b border-[var(--color-border)]">
                     <div className="relative">
@@ -1247,7 +1247,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                   className="fixed inset-0 z-[9998] bg-black/70"
                   onClick={() => setIsHistoryOpen(false)}
                 />
-                <div className="fixed left-4 right-4 top-20 z-[9999] max-h-[60vh] rounded-2xl bg-[#1a1a1a] border border-[var(--color-border)] shadow-2xl overflow-hidden flex flex-col">
+                <div className="fixed left-4 right-4 top-20 z-[9999] max-h-[60vh] rounded-2xl bg-[var(--color-charcoal)] border border-[var(--color-border)] shadow-2xl overflow-hidden flex flex-col">
                   {/* Header */}
                   <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
                     <span className="text-sm font-semibold text-[var(--color-text-primary)]">
@@ -1354,7 +1354,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                   {/* Backdrop */}
                   <div className="fixed inset-0 z-10" onClick={() => setIsHistoryOpen(false)} />
                   {/* History dropdown */}
-                  <div className="absolute top-full right-0 mt-1 z-20 w-64 max-h-[320px] overflow-y-auto rounded-xl bg-[#1a1a1a]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl">
+                  <div className="absolute top-full right-0 mt-1 z-20 w-64 max-h-[320px] overflow-y-auto rounded-xl backdrop-blur-xl border border-[var(--color-border)] shadow-xl" style={{ backgroundColor: 'rgba(45, 45, 45, 0.95)' }}>
                     {/* Header */}
                     <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--color-border)]">
                       <span className="text-xs font-medium text-[var(--color-text-primary)]">
@@ -1659,7 +1659,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                           }}
                         />
                         {/* Dropdown container */}
-                        <div className="absolute bottom-full right-0 mb-2 z-50 w-[240px] rounded-xl bg-[#1a1a1a]/95 backdrop-blur-xl border border-[var(--color-border)] shadow-xl overflow-hidden">
+                        <div className="absolute bottom-full right-0 mb-2 z-50 w-[240px] rounded-xl backdrop-blur-xl border border-[var(--color-border)] shadow-xl overflow-hidden" style={{ backgroundColor: 'rgba(45, 45, 45, 0.95)' }}>
                           {/* Search input */}
                           <div className="p-2 border-b border-[var(--color-border)]">
                             <div className="relative">

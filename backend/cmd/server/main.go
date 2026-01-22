@@ -775,6 +775,21 @@ func main() {
 			api.Post("/conversations/:id/extract-memories", middleware.LocalAuthMiddleware(jwtAuth), memoryHandler.TriggerMemoryExtraction)
 		}
 
+		// Chat sync routes (requires authentication + chat sync service)
+		if chatSyncHandler != nil {
+			chats := api.Group("/chats", middleware.LocalAuthMiddleware(jwtAuth))
+			chats.Get("/", chatSyncHandler.List)           // List chats
+			chats.Get("/sync", chatSyncHandler.SyncAll)      // Sync all chats
+			chats.Post("/", chatSyncHandler.CreateOrUpdate) // Create or update chat
+			chats.Post("/sync", chatSyncHandler.BulkSync)   // Bulk sync multiple chats
+			chats.Get("/:id", chatSyncHandler.Get)         // Get single chat
+			chats.Put("/:id", chatSyncHandler.Update)      // Update chat
+			chats.Delete("/:id", chatSyncHandler.Delete)   // Delete chat
+			chats.Delete("/", chatSyncHandler.DeleteAll)   // Delete all chats (GDPR)
+			chats.Post("/:id/messages", chatSyncHandler.AddMessage) // Add message to chat
+			log.Println("✅ Chat sync routes registered (/api/chats/*)")
+		}
+
 		// Agent builder routes (requires authentication + MongoDB)
 		if agentHandler != nil {
 			agents := api.Group("/agents", middleware.LocalAuthMiddleware(jwtAuth))

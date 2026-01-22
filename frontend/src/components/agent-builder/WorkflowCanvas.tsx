@@ -730,7 +730,7 @@ export function WorkflowCanvas({ className }: WorkflowCanvasProps) {
                   />
                   {/* Dropdown */}
                   <div
-                    className="absolute top-full right-0 mt-2 z-[101] w-72 max-h-[300px] overflow-y-auto rounded-xl bg-[#1a1a1a] border border-[var(--color-border)] shadow-xl"
+                    className="absolute top-full right-0 mt-2 z-[101] w-72 max-h-[300px] overflow-y-auto rounded-xl bg-[var(--color-charcoal)] border border-[var(--color-border)] shadow-xl"
                     onWheelCapture={e => {
                       // Use capture phase to stop the event before React Flow sees it
                       e.stopPropagation();
@@ -834,7 +834,7 @@ export function WorkflowCanvas({ className }: WorkflowCanvasProps) {
                   />
                   {/* Dropdown */}
                   <div
-                    className="absolute top-full right-0 mt-2 z-[101] w-80 max-h-[400px] overflow-y-auto rounded-xl bg-[#1a1a1a] border border-[var(--color-border)] shadow-xl"
+                    className="absolute top-full right-0 mt-2 z-[101] w-80 max-h-[400px] overflow-y-auto rounded-xl bg-[var(--color-charcoal)] border border-[var(--color-border)] shadow-xl"
                     onWheelCapture={e => {
                       // Use capture phase to stop the event before React Flow sees it
                       e.stopPropagation();

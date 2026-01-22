@@ -96,9 +96,9 @@ export function ModelTooltip({ model, children }: ModelTooltipProps) {
               left: `${position.left}px`,
             }}
           >
-            <div className="w-[320px] bg-[#0d0d0d] border border-[var(--color-border)] rounded-xl shadow-2xl overflow-hidden">
+            <div className="w-[320px] bg-[var(--color-background)] border border-[var(--color-border)] rounded-xl shadow-2xl overflow-hidden">
               {/* Header */}
-              <div className="px-4 py-3 bg-[#151515] border-b border-[var(--color-border)]">
+              <div className="px-4 py-3 bg-[var(--color-surface-elevated)] border-b border-[var(--color-border)]">
                 <div className="flex items-start gap-3">
                   {model.provider_favicon ? (
                     <img

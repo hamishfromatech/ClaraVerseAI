@@ -500,19 +500,19 @@ export function ExecutionHistoryPanel({
               onChange={e => setStatusFilter(e.target.value)}
               className="flex-1 px-2 py-1.5 rounded-md bg-[var(--color-bg-primary)] border border-[var(--color-border)] text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-accent)] [color-scheme:dark]"
             >
-              <option value="all" className="bg-[#1a1a1a] text-white">
+              <option value="all" className="bg-[var(--color-charcoal)] text-white">
                 All Status
               </option>
-              <option value="completed" className="bg-[#1a1a1a] text-white">
+              <option value="completed" className="bg-[var(--color-charcoal)] text-white">
                 Completed
               </option>
-              <option value="failed" className="bg-[#1a1a1a] text-white">
+              <option value="failed" className="bg-[var(--color-charcoal)] text-white">
                 Failed
               </option>
-              <option value="running" className="bg-[#1a1a1a] text-white">
+              <option value="running" className="bg-[var(--color-charcoal)] text-white">
                 Running
               </option>
-              <option value="pending" className="bg-[#1a1a1a] text-white">
+              <option value="pending" className="bg-[var(--color-charcoal)] text-white">
                 Pending
               </option>
             </select>

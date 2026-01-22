@@ -135,8 +135,8 @@ export function AgentSidebar({
 
   return (
     <div
-      className={cn('h-full flex flex-col bg-[#080808] overflow-hidden', className)}
-      style={{ borderRight: '1px solid var(--color-border)' }}
+      className={cn('h-full flex flex-col overflow-hidden', className)}
+      style={{ backgroundColor: 'var(--color-background)', borderRight: '1px solid var(--color-border)' }}
     >
       {/* Header - Logo + Title + Toggle */}
       <header

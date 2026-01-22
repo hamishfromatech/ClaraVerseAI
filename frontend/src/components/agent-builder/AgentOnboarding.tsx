@@ -469,9 +469,9 @@ export function AgentOnboarding() {
 
             {/* Model Dropdown */}
             {isModelDropdownOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-h-[400px] overflow-hidden rounded-lg bg-[#1a1a1a]/95 backdrop-blur-xl shadow-2xl z-50">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-h-[400px] overflow-hidden rounded-lg bg-[var(--color-charcoal)]/95 backdrop-blur-xl shadow-2xl z-50">
                 {/* Search */}
-                <div className="p-2 bg-[#1a1a1a]">
+                <div className="p-2 bg-[var(--color-charcoal)]">
                   <div className="relative">
                     <Search
                       size={14}
@@ -482,14 +482,14 @@ export function AgentOnboarding() {
                       value={modelSearchQuery}
                       onChange={e => setModelSearchQuery(e.target.value)}
                       placeholder="Search models..."
-                      className="w-full pl-9 pr-3 py-2 text-sm bg-[#0d0d0d] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                      className="w-full pl-9 pr-3 py-2 text-sm bg-[var(--color-background)] rounded-lg text-[var(--color-text-primary)] placeholder:text-[var(--color-text-tertiary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                       autoFocus
                     />
                   </div>
                 </div>
 
                 {/* Model List */}
-                <div className="max-h-[300px] overflow-y-auto p-1 bg-[#1a1a1a]">
+                <div className="max-h-[300px] overflow-y-auto p-1 bg-[var(--color-charcoal)]">
                   {filteredModels.length === 0 ? (
                     <div className="px-3 py-4 text-center text-sm text-[var(--color-text-tertiary)]">
                       No models found
@@ -509,7 +509,7 @@ export function AgentOnboarding() {
                               'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors',
                               model.id === localSelectedModelId
                                 ? 'bg-[var(--color-accent)]/20 text-[var(--color-accent)]'
-                                : 'hover:bg-[#252525] text-[var(--color-text-primary)]'
+                                : 'hover:bg-[var(--color-surface-hover)] text-[var(--color-text-primary)]'
                             )}
                           >
                             {model.provider_favicon ? (
@@ -564,7 +564,7 @@ export function AgentOnboarding() {
                 </div>
 
                 {/* Hint */}
-                <div className="px-3 py-2 bg-[#151515]">
+                <div className="px-3 py-2 bg-[var(--color-surface-elevated)]">
                   <p className="text-xs text-[var(--color-text-tertiary)]">
                     This model will generate your workflow structure
                   </p>

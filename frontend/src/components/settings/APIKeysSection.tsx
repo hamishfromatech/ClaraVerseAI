@@ -210,14 +210,14 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
           <h1 className="text-2xl font-semibold leading-tight tracking-tight text-white">
             API Keys
           </h1>
-          <p className="text-[0.9375rem] font-normal text-[#a1a1aa] leading-relaxed">
+          <p className="text-[0.9375rem] font-normal text-[var(--color-text-tertiary)] leading-relaxed">
             Manage your secret keys for authentication and integration.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <button
             onClick={() => setShowCreateForm(true)}
-            className="flex items-center justify-center gap-2 bg-[#e91e63] hover:bg-[#d81b60] text-white font-medium text-sm px-5 py-2.5 rounded-[0.5rem] transition-colors shadow-lg shadow-[#e91e63]/20"
+            className="flex items-center justify-center gap-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white font-medium text-sm px-5 py-2.5 rounded-[0.5rem] transition-colors shadow-lg shadow-[var(--color-accent)]/20"
           >
             <Plus size={20} />
             <span>Create New Secret Key</span>
@@ -240,9 +240,9 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
       )}
 
       {/* Main Content */}
-      <div className="bg-[#161616] rounded-[0.5rem] border border-[#27272a] shadow-sm mb-8 overflow-hidden min-h-[350px] flex flex-col">
+      <div className="bg-[var(--color-charcoal)] rounded-[0.5rem] border border-[var(--color-border)] shadow-sm mb-8 overflow-hidden min-h-[350px] flex flex-col">
         {/* Table Header */}
-        <div className="px-6 py-4 border-b border-[#27272a] flex justify-between items-center bg-[#161616]">
+        <div className="px-6 py-4 border-b border-[var(--color-border)] flex justify-between items-center bg-[var(--color-charcoal)]">
           <h3 className="text-base font-semibold text-white">Active Keys</h3>
           <div className="flex gap-2">
             <span className="text-xs px-2 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/20 font-medium">
@@ -256,17 +256,17 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
           {/* Loading State */}
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 size={24} className="animate-spin text-[#a1a1aa]" />
+              <Loader2 size={24} className="animate-spin text-[var(--color-text-tertiary)]" />
             </div>
           ) : (
             <>
               {activeKeys.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full min-h-[250px] text-center">
-                  <div className="bg-[#e91e63]/20 w-16 h-16 rounded-[0.5rem] flex items-center justify-center text-[#e91e63] mb-4">
+                  <div className="bg-[var(--color-accent)]/20 w-16 h-16 rounded-[0.5rem] flex items-center justify-center text-[var(--color-accent)] mb-4">
                     <Key size={32} />
                   </div>
-                  <p className="text-[#a1a1aa] text-base">No API keys yet.</p>
-                  <p className="text-[#a1a1aa] text-sm mt-1">Create one to get started.</p>
+                  <p className="text-[var(--color-text-tertiary)] text-base">No API keys yet.</p>
+                  <p className="text-[var(--color-text-tertiary)] text-sm mt-1">Create one to get started.</p>
                 </div>
               ) : isMobile ? (
                 /* Mobile Card Layout */
@@ -327,20 +327,20 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                 <div className="overflow-x-auto api-keys-table">
                   <table className="w-full text-left border-collapse">
                     <thead>
-                      <tr className="border-b border-[#27272a] bg-[#252525]/30">
-                        <th className="px-6 py-3 text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                      <tr className="border-b border-[var(--color-border)] bg-[var(--color-surface-hover)]/30">
+                        <th className="px-6 py-3 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Name
                         </th>
-                        <th className="px-6 py-3 text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Secret Key
                         </th>
-                        <th className="px-6 py-3 text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Created
                         </th>
-                        <th className="px-6 py-3 text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider">
+                        <th className="px-6 py-3 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider">
                           Last Used
                         </th>
-                        <th className="px-6 py-3 text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider text-right">
+                        <th className="px-6 py-3 text-xs font-semibold text-[var(--color-text-tertiary)] uppercase tracking-wider text-right">
                           Actions
                         </th>
                       </tr>
@@ -354,7 +354,7 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                         return (
                           <tr
                             key={key.id}
-                            className="hover:bg-[#252525] transition-colors group border-b border-[#27272a]"
+                            className="hover:bg-[var(--color-surface-hover)] transition-colors group border-b border-[var(--color-border)]"
                           >
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center gap-3">
@@ -365,9 +365,9 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap font-mono text-sm">
-                              <span className="text-[#a1a1aa]">{maskKeyPrefix(key.keyPrefix)}</span>
+                              <span className="text-[var(--color-text-tertiary)]">{maskKeyPrefix(key.keyPrefix)}</span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-[#a1a1aa]">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--color-text-tertiary)]">
                               {new Date(key.createdAt).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
@@ -391,7 +391,7 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                               <button
                                 onClick={() => handleRevoke(key.id)}
                                 disabled={revokingId === key.id}
-                                className="text-[#a1a1aa] hover:text-red-400 font-medium text-sm transition-colors flex items-center justify-end gap-1 ml-auto"
+                                className="text-[var(--color-text-tertiary)] hover:text-red-400 font-medium text-sm transition-colors flex items-center justify-end gap-1 ml-auto"
                               >
                                 {revokingId === key.id ? (
                                   <Loader2 size={14} className="animate-spin" />
@@ -411,8 +411,8 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
         </div>
 
         {/* Table Footer - now will always be at bottom */}
-        <div className="px-6 py-3 border-t border-[#27272a] flex items-center justify-between bg-[#161616]">
-          <span className="text-xs text-[#a1a1aa]">
+        <div className="px-6 py-3 border-t border-[var(--color-border)] flex items-center justify-between bg-[var(--color-charcoal)]">
+          <span className="text-xs text-[var(--color-text-tertiary)]">
             Showing {activeKeys.length} of {activeKeys.length} keys
           </span>
         </div>
@@ -421,18 +421,18 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
       {/* Revoked Keys (collapsed section) */}
       {revokedKeys.length > 0 && (
         <details className="mt-6">
-          <summary className="text-sm text-[#a1a1aa] cursor-pointer hover:text-[#ededed]">
+          <summary className="text-sm text-[var(--color-text-tertiary)] cursor-pointer hover:text-[var(--color-text-primary)]">
             {revokedKeys.length} revoked key{revokedKeys.length !== 1 ? 's' : ''}
           </summary>
           <div className="mt-3 space-y-2 opacity-60">
             {revokedKeys.map(key => (
               <div
                 key={key.id}
-                className="p-3 rounded-[0.5rem] bg-[#161616] border border-[#27272a]"
+                className="p-3 rounded-[0.5rem] bg-[var(--color-charcoal)] border border-[var(--color-border)]"
               >
                 <div className="flex items-center gap-2">
-                  <Key size={14} className="text-[#a1a1aa]" />
-                  <span className="text-sm text-[#a1a1aa] line-through">{key.name}</span>
+                  <Key size={14} className="text-[var(--color-text-tertiary)]" />
+                  <span className="text-sm text-[var(--color-text-tertiary)] line-through">{key.name}</span>
                   <span className="px-1.5 py-0.5 text-[10px] rounded bg-red-500/20 text-red-400">
                     Revoked
                   </span>
@@ -446,20 +446,20 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
       {/* How to use section */}
       <div className="flex flex-col gap-4">
         <h2 className="text-xl font-bold text-white px-1">How to use your API Key</h2>
-        <div className="bg-[#161616] rounded-[0.5rem] border border-[#27272a] shadow-sm p-6 md:p-8">
+        <div className="bg-[var(--color-charcoal)] rounded-[0.5rem] border border-[var(--color-border)] shadow-sm p-6 md:p-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex flex-col gap-4">
               <div className="flex items-center gap-4">
-                <div className="bg-[#e91e63]/10 w-12 h-12 rounded-[0.5rem] flex items-center justify-center text-[#e91e63] shrink-0 border border-[#e91e63]/20">
+                <div className="bg-[var(--color-accent)]/10 w-12 h-12 rounded-[0.5rem] flex items-center justify-center text-[var(--color-accent)] shrink-0 border border-[var(--color-accent)]/20">
                   <Terminal size={24} />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#a1a1aa] bg-[#252525] px-2 py-1 rounded border border-[#27272a]">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] bg-[var(--color-surface-hover)] px-2 py-1 rounded border border-[var(--color-border)]">
                   Step 1
                 </span>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">Create Agent</h3>
-                <p className="text-[#a1a1aa] text-sm leading-relaxed">
+                <p className="text-[var(--color-text-tertiary)] text-sm leading-relaxed">
                   Navigate to the Agents section to create an agent for your specific workflow.
                 </p>
               </div>
@@ -470,13 +470,13 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                 <div className="bg-blue-500/10 w-12 h-12 rounded-[0.5rem] flex items-center justify-center text-blue-400 shrink-0 border border-blue-500/20">
                   <Zap size={24} />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#a1a1aa] bg-[#252525] px-2 py-1 rounded border border-[#27272a]">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] bg-[var(--color-surface-hover)] px-2 py-1 rounded border border-[var(--color-border)]">
                   Step 2
                 </span>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">Deploy Agent</h3>
-                <p className="text-[#a1a1aa] text-sm leading-relaxed">
+                <p className="text-[var(--color-text-tertiary)] text-sm leading-relaxed">
                   Deploy the created agent to make it accessible and ready for requests.
                 </p>
               </div>
@@ -487,16 +487,16 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
                 <div className="bg-orange-500/10 w-12 h-12 rounded-[0.5rem] flex items-center justify-center text-orange-400 shrink-0 border border-orange-500/20">
                   <Key size={24} />
                 </div>
-                <span className="text-xs font-bold uppercase tracking-wider text-[#a1a1aa] bg-[#252525] px-2 py-1 rounded border border-[#27272a]">
+                <span className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-tertiary)] bg-[var(--color-surface-hover)] px-2 py-1 rounded border border-[var(--color-border)]">
                   Step 3
                 </span>
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">Access Documentation</h3>
-                <p className="text-[#a1a1aa] text-sm leading-relaxed">
+                <p className="text-[var(--color-text-tertiary)] text-sm leading-relaxed">
                   Access the API documentation for that deployed agent, where you will find the
                   necessary{' '}
-                  <code className="bg-[#252525] border border-[#27272a] px-1.5 py-0.5 rounded text-xs font-mono text-white">
+                  <code className="bg-[var(--color-surface-hover)] border border-[var(--color-border)] px-1.5 py-0.5 rounded text-xs font-mono text-white">
                     curl
                   </code>{' '}
                   code to utilize your API key.
@@ -504,10 +504,10 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
               </div>
             </div>
           </div>
-          <div className="mt-8 pt-6 border-t border-[#27272a] flex justify-end">
+          <div className="mt-8 pt-6 border-t border-[var(--color-border)] flex justify-end">
             <a
               href="/agents"
-              className="text-[#e91e63] hover:text-[#d81b60] text-sm font-medium flex items-center gap-2 transition-colors group"
+              className="text-[var(--color-accent)] hover:text-[var(--color-accent-hover)] text-sm font-medium flex items-center gap-2 transition-colors group"
             >
               <span>Go to Agents</span>
               <ChevronRight
@@ -525,7 +525,7 @@ export function APIKeysSection({ className }: APIKeysSectionProps) {
         onClose={() => setShowCreateForm(false)}
         title={
           <span className="flex items-center gap-2">
-            <KeyRound size={20} className="text-[#e91e63]" />
+            <KeyRound size={20} className="text-[var(--color-accent)]" />
             Create API Key
           </span>
         }

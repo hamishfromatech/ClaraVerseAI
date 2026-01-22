@@ -415,7 +415,7 @@ export function SchedulePanel({
                   className="w-full px-3 py-2 rounded-lg bg-[var(--color-bg-primary)] border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent [color-scheme:dark]"
                 >
                   {COMMON_TIMEZONES.map(tz => (
-                    <option key={tz.value} value={tz.value} className="bg-[#1a1a1a] text-white">
+                    <option key={tz.value} value={tz.value} className="bg-[var(--color-charcoal)] text-white">
                       {tz.label}
                     </option>
                   ))}

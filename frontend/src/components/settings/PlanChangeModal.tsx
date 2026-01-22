@@ -99,9 +99,9 @@ export const PlanChangeModal: React.FC<PlanChangeModalProps> = ({
       title={
         <span className="flex items-center gap-2">
           {isUpgradeAction ? (
-            <Zap size={20} className="text-[#e91e63]" />
+            <Zap size={20} className="text-[var(--color-accent)]" />
           ) : (
-            <CreditCard size={20} className="text-[#e91e63]" />
+            <CreditCard size={20} className="text-[var(--color-accent)]" />
           )}
           {isUpgradeAction ? 'Upgrade Your Plan' : 'Change Your Plan'}
         </span>
