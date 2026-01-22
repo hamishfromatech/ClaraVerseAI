@@ -119,26 +119,42 @@ export interface AgentSuggestion {
 
 export const AGENT_SUGGESTIONS: AgentSuggestion[] = [
   // General suggestions (no integration required) - always available
-  { text: 'Build a research assistant that searches the web and summarizes findings' },
-  { text: 'Create an agent that analyzes CSV data and generates insights' },
-  { text: 'Make a code reviewer that checks scripts for best practices' },
-  { text: 'Build a web scraper that extracts product prices from websites' },
-  { text: 'Create a math tutor that solves equations step by step' },
-  { text: 'Make an agent that transcribes audio files and summarizes them' },
-  { text: 'Build a document analyzer that extracts key insights from PDFs' },
-  { text: 'Create a sentiment analyzer for customer reviews' },
-  { text: 'Make an agent that generates SQL queries from natural language' },
-  { text: 'Build a data cleaner that processes and validates spreadsheets' },
-  { text: 'Create an image describer that analyzes and captions photos' },
-  { text: 'Make a timezone converter that schedules across time zones' },
-  { text: 'Build an API tester that validates endpoint responses' },
-  { text: 'Create a content writer that researches and drafts articles' },
-  { text: 'Make an agent that compares prices across multiple websites' },
-  { text: 'Build a recipe finder based on available ingredients' },
-  { text: 'Create a language translator that preserves context and tone' },
-  { text: 'Make an agent that generates meeting agendas from topics' },
-  { text: 'Build a study guide generator from textbook chapters' },
-  { text: 'Create a changelog generator from git commits' },
+  // Grant Research & Applications
+  { text: 'Build a grant researcher that finds relevant funding opportunities' },
+  { text: 'Create an agent that helps write compelling grant applications' },
+  { text: 'Make an assistant that tracks grant deadlines and requirements' },
+
+  // Project Reporting
+  { text: 'Build a project reporter that summarizes progress and outcomes' },
+  { text: 'Create an agent that generates impact reports from project data' },
+  { text: 'Make a data analyzer that tracks project metrics and KPIs' },
+
+  // Event & Workshop Organization
+  { text: 'Build an event planner that helps organize workshops and networking events' },
+  { text: 'Create an agent that generates event itineraries and schedules' },
+  { text: 'Make a reminder system for upcoming events and deadlines' },
+
+  // Content Creation & Promotion
+  { text: 'Build a content writer that creates promotional material for the business' },
+  { text: 'Create an agent that drafts social media posts and newsletters' },
+  { text: 'Make a copywriter that writes engaging website content' },
+  { text: 'Build an assistant that generates press releases and announcements' },
+
+  // Business Education & Resources
+  { text: 'Build a research assistant that finds business education resources' },
+  { text: 'Create an agent that curates learning materials and courses' },
+  { text: 'Make a summarizer that extracts key insights from business articles' },
+
+  // Networking & Community
+  { text: 'Build an email writer that sends networking invitations' },
+  { text: 'Create an agent that manages member communications' },
+  { text: 'Make a contact organizer that tracks networking connections' },
+
+  // Administrative Tasks
+  { text: 'Build an assistant that schedules meetings and coordinates calendars' },
+  { text: 'Create an agent that transcribes meeting notes and summaries' },
+  { text: 'Make a document analyzer that extracts info from reports and PDFs' },
+  { text: 'Build a spreadsheet processor that analyzes membership and attendance data' },
 
   // Discord suggestions
   {

@@ -28,6 +28,8 @@ import {
   Smartphone,
   Home,
   Bot,
+  Calendar,
+  Briefcase,
 } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { getIconByName } from '@/utils/iconMapper';
@@ -2340,44 +2342,44 @@ export const Chat = () => {
                     promptAnswersValid={promptAnswersValid}
                     suggestions={[
                       {
-                        label: 'Write',
+                        label: 'Grant Research',
+                        icon: <Search size={16} />,
+                        prompt:
+                          "I need help researching grant opportunities. Could you help me find funding options for our non-profit organization?",
+                        systemInstruction:
+                          'You are an expert grant researcher for non-profit organizations. Help find relevant funding opportunities based on the organization\'s mission and activities.',
+                      },
+                      {
+                        label: 'Project Report',
+                        icon: <FileText size={16} />,
+                        prompt:
+                          "I need to create a project report. Could you help me document the progress, outcomes, and impact of our current project?",
+                        systemInstruction:
+                          "You are an expert project manager for non-profit organizations. Help create comprehensive reports that highlight achievements and demonstrate impact.",
+                      },
+                      {
+                        label: 'Event Planning',
+                        icon: <Calendar size={16} />,
+                        prompt:
+                          "I'm organizing an event or workshop. Could you help me plan the logistics, schedule, and communication for this event?",
+                        systemInstruction:
+                          "You are an expert event coordinator. Help organize workshops, networking events, and community activities with detailed planning.",
+                      },
+                      {
+                        label: 'Content Creation',
                         icon: <PenLine size={16} />,
                         prompt:
-                          "I'd like to write something. Could you help me get started? Please ask me what kind of content I want to create.",
+                          "I need to create promotional content. Could you help me write engaging material to promote our organization and its activities?",
                         systemInstruction:
-                          'You are an expert writing assistant. Help the user draft, edit, and refine content. Start by understanding their goals.',
+                          "You are a professional copywriter for non-profit organizations. Create compelling content that tells the story and engages the community.",
                       },
                       {
-                        label: 'Learn',
-                        icon: <GraduationCap size={16} />,
+                        label: 'Business Support',
+                        icon: <Briefcase size={16} />,
                         prompt:
-                          "I want to learn something new. Please act as a tutor and ask me what topic I'm interested in.",
+                          "I need business advice or support. Could you help me with tasks related to our coworking space, business education, or networking?",
                         systemInstruction:
-                          "You are a knowledgeable and patient tutor. Explain concepts clearly and adapt to the user's understanding.",
-                      },
-                      {
-                        label: 'Code',
-                        icon: <Code2 size={16} />,
-                        prompt:
-                          "I have a coding task. Please act as a senior developer and ask me about the programming language and the problem I'm solving.",
-                        systemInstruction:
-                          'You are an expert software engineer. Provide secure, efficient, and idiomatic code solutions.',
-                      },
-                      {
-                        label: 'Life stuff',
-                        icon: <Coffee size={16} />,
-                        prompt:
-                          "I'd like some advice on life. Please act as a supportive coach and ask me what's on my mind.",
-                        systemInstruction:
-                          'You are a supportive and empathetic life coach. Listen actively and offer constructive advice.',
-                      },
-                      {
-                        label: "Clara's choice",
-                        icon: <Sparkles size={16} />,
-                        prompt:
-                          'Surprise me with something interesting! It could be a fun fact, a short story, or a creative idea.',
-                        systemInstruction:
-                          'You are Clara, a creative and entertaining AI assistant. Be spontaneous and engaging.',
+                          "You are a knowledgeable business consultant for coworking spaces and community organizations. Provide practical advice on operations, networking, and member services.",
                       },
                     ]}
                     isLoading={isLoading}

@@ -9,6 +9,9 @@ import type {
 } from '@/types/subscription';
 import { SubscriptionTier, SubscriptionStatus } from '@/types/subscription';
 
+// Feature flag to disable subscription for local/self-hosted deployments
+const DISABLE_SUBSCRIPTION = import.meta.env.VITE_DISABLE_SUBSCRIPTION === 'true';
+
 // Limit exceeded data structure
 export interface LimitExceededData {
   type: 'messages' | 'file_uploads' | 'image_generations';
@@ -54,11 +57,22 @@ interface SubscriptionState {
   reset: () => void;
 }
 
-// Default free subscription for users without a subscription
+// Default subscription for users without a subscription
 const defaultFreeSubscription: Subscription = {
   id: '',
   user_id: '',
   tier: SubscriptionTier.FREE,
+  status: SubscriptionStatus.ACTIVE,
+  cancel_at_period_end: false,
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+};
+
+// Default unlimited subscription for local/self-hosted deployments
+const defaultUnlimitedSubscription: Subscription = {
+  id: 'local-hosted',
+  user_id: 'local',
+  tier: SubscriptionTier.PRO, // Pro tier with unlimited features
   status: SubscriptionStatus.ACTIVE,
   cancel_at_period_end: false,
   created_at: new Date().toISOString(),
@@ -82,6 +96,16 @@ export const useSubscriptionStore = create<SubscriptionState>((set, get) => ({
   // Fetch current subscription
   fetchSubscription: async () => {
     set({ isLoadingSubscription: true, subscriptionError: null });
+
+    // If subscription is disabled, return unlimited subscription immediately
+    if (DISABLE_SUBSCRIPTION) {
+      set({
+        subscription: defaultUnlimitedSubscription,
+        isLoadingSubscription: false,
+      });
+      return;
+    }
+
     try {
       const subscription = await subscriptionService.getCurrentSubscription();
       set({ subscription, isLoadingSubscription: false });
