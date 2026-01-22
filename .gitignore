@@ -1,11 +1,8 @@
 frontend/.env
 .env
-*.md
 *.csv
-*.json
 *.xlsx
 *.xls
-*.txt
 *.pdf
 *.docx
 *.doc
@@ -13,7 +10,24 @@ frontend/.env
 *.ppt
 *.odt
 *.odp
-frontend/nginx.conf
+
+# Ignore txt files except requirements.txt
+*.txt
+!requirements.txt
+
+# Ignore markdown except README
+*.md
+!README.md
+
+# Ignore JSON files except essential ones
+*.json
+!package.json
+!package-lock.json
+!tsconfig.json
+!tsconfig.*.json
+!eslint.config.json
+!**/fixtures/**/*.json
+!providers.example.json
 .claude/settings.local.json
 __pycache__/
 frontend/.claude/settings.local.json
