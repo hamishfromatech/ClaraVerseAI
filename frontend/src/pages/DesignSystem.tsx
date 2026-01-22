@@ -74,10 +74,10 @@ export const DesignSystem = () => {
       {/* Hero Section */}
       <section className="ds-section ds-hero">
         <Typography variant="display" gradient align="center">
-          ClaraVerse Design System
+          A-Tech AI Design System
         </Typography>
         <Typography variant="lg" align="center" className="ds-hero-subtitle">
-          Premium Dark Theme with Rose Pink Accent
+          Premium Dark Theme with Black, White & Gray
         </Typography>
         <div className="ds-hero-badges">
           <Badge variant="accent" dot>
@@ -534,9 +534,9 @@ export const DesignSystem = () => {
             items={[
               {
                 id: '1',
-                title: 'What is ClaraVerse?',
+                title: 'What is A-Tech AI?',
                 content:
-                  'ClaraVerse is a modern design system with a beautiful rose pink accent color.',
+                  'A-Tech AI is a modern design system with a beautiful black, white and gray color scheme.',
               },
               {
                 id: '2',
@@ -945,7 +945,7 @@ console.log(greeting);
       {/* Footer */}
       <section className="ds-footer">
         <Typography variant="sm" align="center">
-          Built with ❤️ for ClaraVerse | v1.0.0 Rose Pink Edition
+          Built with ❤️ for A-Tech AI | v1.0.0 Black White Gray Edition
         </Typography>
         <Typography variant="xs" align="center">
           @badboysm890

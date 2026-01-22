@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 
 /**
  * Custom hook to update the document title
- * @param title - The title to set (will be appended to "Claraverse | ")
- * @param baseTitle - Optional base title (defaults to "Claraverse")
+ * @param title - The title to set (will be appended to "A-Tech AI | ")
+ * @param baseTitle - Optional base title (defaults to "A-Tech AI")
  */
-export function useDocumentTitle(title?: string, baseTitle = 'Claraverse') {
+export function useDocumentTitle(title?: string, baseTitle = 'A-Tech AI') {
   useEffect(() => {
     const previousTitle = document.title;
 

@@ -1,4 +1,4 @@
-export const APP_NAME = 'ClaraVerse';
+export const APP_NAME = 'A-Tech AI';
 export const APP_VERSION = '1.0.0';
 
 export const ROUTES = {

@@ -233,7 +233,7 @@ export function AgentDeployPanel({
               ) : (
                 <button
                   onClick={onDeploy}
-                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-accent)] text-white text-sm font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-[var(--color-accent)] text-black text-sm font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
                 >
                   <Play size={14} />
                   Deploy
@@ -280,7 +280,7 @@ export function AgentDeployPanel({
             ) : (
               <button
                 onClick={onDeploy}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-white text-xs font-medium"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-black text-xs font-medium"
               >
                 <Play size={12} />
                 Deploy

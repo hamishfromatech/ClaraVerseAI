@@ -157,7 +157,7 @@ export function BlockSettingsPanel({ className }: BlockSettingsPanelProps) {
         <footer className="px-4 py-3 bg-white/5">
           <button
             onClick={handleSave}
-            className="w-full py-2 rounded-lg bg-[var(--color-accent)] text-white font-medium text-sm hover:bg-[var(--color-accent-hover)] transition-colors"
+            className="w-full py-2 rounded-lg bg-[var(--color-accent)] text-black font-medium text-sm hover:bg-[var(--color-accent-hover)] transition-colors"
           >
             Save Changes
           </button>
@@ -663,7 +663,7 @@ function VariableBlockSettings({ config, onUpdate }: VariableBlockSettingsProps)
                     onClick={() => handleInputTypeChange('text')}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-colors ${
                       inputType === 'text'
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-[var(--color-accent)] text-black'
                         : 'bg-white/5 text-[var(--color-text-secondary)] hover:bg-white/10'
                     }`}
                   >
@@ -674,7 +674,7 @@ function VariableBlockSettings({ config, onUpdate }: VariableBlockSettingsProps)
                     onClick={() => handleInputTypeChange('json')}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-colors ${
                       inputType === 'json'
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-[var(--color-accent)] text-black'
                         : 'bg-white/5 text-[var(--color-text-secondary)] hover:bg-white/10'
                     }`}
                   >
@@ -685,7 +685,7 @@ function VariableBlockSettings({ config, onUpdate }: VariableBlockSettingsProps)
                     onClick={() => handleInputTypeChange('file')}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-colors ${
                       inputType === 'file'
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-[var(--color-accent)] text-black'
                         : 'bg-white/5 text-[var(--color-text-secondary)] hover:bg-white/10'
                     }`}
                   >

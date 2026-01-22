@@ -131,7 +131,7 @@ export const Analytics = () => {
         </div>
         <button
           onClick={loadAnalytics}
-          className="px-4 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-lg transition-colors"
+          className="px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg transition-colors"
         >
           Retry
         </button>
@@ -455,7 +455,7 @@ export const Analytics = () => {
                   onClick={() => setDateRange(range)}
                   className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
                     dateRange === range
-                      ? 'bg-[var(--color-accent)] text-white'
+                      ? 'bg-[var(--color-accent)] text-black'
                       : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                   }`}
                 >
@@ -523,7 +523,7 @@ export const Analytics = () => {
                     onClick={() => setDateRange(range)}
                     className={`px-3 py-1.5 text-xs font-medium rounded transition-all ${
                       dateRange === range
-                        ? 'bg-[var(--color-accent)] text-white'
+                        ? 'bg-[var(--color-accent)] text-black'
                         : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                     }`}
                   >

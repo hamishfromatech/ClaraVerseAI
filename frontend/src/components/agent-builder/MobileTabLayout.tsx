@@ -197,8 +197,8 @@ export function MobileTabLayout({ onOpenSidebar, onCloseSidebar }: MobileTabLayo
               className={cn(
                 'w-14 h-14 rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform',
                 isRunning
-                  ? 'bg-[var(--color-accent)]/70 text-white'
-                  : 'bg-[var(--color-accent)] text-white'
+                  ? 'bg-[var(--color-accent)] text-black'
+                  : 'bg-[var(--color-accent)] text-black'
               )}
               aria-label="Run workflow"
             >
@@ -241,7 +241,7 @@ export function MobileTabLayout({ onOpenSidebar, onCloseSidebar }: MobileTabLayo
                 )}
                 {/* Count badge */}
                 {showCount && (
-                  <span className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-[var(--color-accent)] text-white rounded-full flex items-center justify-center shadow-sm">
+                  <span className="absolute -top-1.5 -right-3 min-w-[18px] h-[18px] px-1 text-[10px] font-bold bg-[var(--color-accent)] text-black rounded-full flex items-center justify-center shadow-sm">
                     {tab.badge as number}
                   </span>
                 )}

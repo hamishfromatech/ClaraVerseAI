@@ -133,7 +133,7 @@ export function AgentAPIKeysPanel({ agentId, className }: AgentAPIKeysPanelProps
         </div>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-white text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--color-accent)] text-black text-xs font-medium hover:bg-[var(--color-accent-hover)] transition-colors"
         >
           <Plus size={14} />
           Create Key
@@ -290,7 +290,7 @@ export function AgentAPIKeysPanel({ agentId, className }: AgentAPIKeysPanelProps
             <button
               onClick={handleCreateKey}
               disabled={isCreating || !keyName.trim()}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-accent)] text-white text-sm font-medium hover:bg-[var(--color-accent-hover)] disabled:opacity-50 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[var(--color-accent)] text-black text-sm font-medium hover:bg-[var(--color-accent-hover)] disabled:opacity-50 transition-colors"
             >
               {isCreating && <Loader2 size={14} className="animate-spin" />}
               Create Key

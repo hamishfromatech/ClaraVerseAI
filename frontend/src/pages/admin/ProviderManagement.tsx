@@ -190,7 +190,7 @@ export const ProviderManagement = () => {
         </div>
         <button
           onClick={loadProviders}
-          className="px-4 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-lg transition-colors"
+          className="px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg transition-colors"
         >
           Retry
         </button>
@@ -213,7 +213,7 @@ export const ProviderManagement = () => {
         <button
           onClick={handleCreateProvider}
           data-tour="add-provider"
-          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-lg transition-colors font-medium"
+          className="flex items-center gap-2 px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg transition-colors font-medium"
           style={{ backdropFilter: 'blur(20px)' }}
         >
           <Plus size={18} />
@@ -242,7 +242,7 @@ export const ProviderManagement = () => {
             onClick={() => setFilter('all')}
             className={`px-4 py-2 rounded-lg font-medium transition-all ${
               filter === 'all'
-                ? 'bg-[var(--color-accent)] text-white'
+                ? 'bg-[var(--color-accent)] text-black'
                 : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
             }`}
             style={{ backdropFilter: 'blur(20px)' }}

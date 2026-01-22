@@ -199,7 +199,7 @@ export function SetupRequiredPanel({
                           {/* Add All Credentials Button */}
                           <button
                             onClick={() => onOpenCredentials(allMissingIntegrationTypes)}
-                            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-[var(--color-accent)]/10 text-white/40 hover:text-[var(--color-accent)] transition-colors"
+                            className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-[var(--color-accent)] text-black/40 hover:text-[var(--color-accent)] transition-colors"
                           >
                             <Key size={16} />
                             <span className="text-sm font-medium">Open Credentials Manager</span>
@@ -319,7 +319,7 @@ export function SetupRequiredPanel({
                 {hasCredentialIssues && (
                   <button
                     onClick={() => onOpenCredentials(allMissingIntegrationTypes)}
-                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white transition-colors text-sm font-medium"
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-accent)] text-black transition-colors text-sm font-medium"
                   >
                     <Key size={16} />
                     Add Credentials

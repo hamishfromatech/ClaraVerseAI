@@ -599,7 +599,7 @@ export function AgentOnboarding() {
               <button
                 onClick={() => handleGenerate(inputValue)}
                 disabled={!inputValue.trim() || isGenerating}
-                className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-2.5 bg-[var(--color-accent)] text-black rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isGenerating ? (
                   <>

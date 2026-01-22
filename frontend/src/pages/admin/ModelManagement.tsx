@@ -286,7 +286,7 @@ export const ModelManagement = () => {
         </div>
         <button
           onClick={loadModels}
-          className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors"
+          className="px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors"
         >
           Retry
         </button>
@@ -403,7 +403,7 @@ export const ModelManagement = () => {
           {/* Actions */}
           <button
             onClick={() => setShowFetchModal(true)}
-            className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors flex items-center gap-2 whitespace-nowrap"
+            className="px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors flex items-center gap-2 whitespace-nowrap"
           >
             <Download size={18} />
             <span>Fetch Models</span>
@@ -523,7 +523,7 @@ export const ModelManagement = () => {
                   await loadModels(); // Revert on error
                 }
               }}
-              className="px-4 py-2 bg-[var(--color-accent)] text-white rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors flex items-center gap-2 text-sm font-medium"
+              className="px-4 py-2 bg-[var(--color-accent)] text-black rounded-lg hover:bg-[var(--color-accent-dark)] transition-colors flex items-center gap-2 text-sm font-medium"
             >
               <CheckCircle size={16} />
               Enable for Agents
@@ -889,7 +889,7 @@ const ModelRow = ({
                     <div className="flex gap-2">
                       <button
                         onClick={handleSave}
-                        className="px-4 py-2 bg-[var(--color-accent)] text-white rounded hover:bg-[var(--color-accent-dark)] transition-colors"
+                        className="px-4 py-2 bg-[var(--color-accent)] text-black rounded hover:bg-[var(--color-accent-dark)] transition-colors"
                       >
                         Save Changes
                       </button>
@@ -970,7 +970,7 @@ const ModelRow = ({
                   </h3>
                   <button
                     onClick={handleAddAlias}
-                    className="flex items-center gap-1 px-3 py-1 bg-[var(--color-accent)] text-white rounded hover:bg-[var(--color-accent-dark)] transition-colors text-sm"
+                    className="flex items-center gap-1 px-3 py-1 bg-[var(--color-accent)] text-black rounded hover:bg-[var(--color-accent-dark)] transition-colors text-sm"
                   >
                     <Plus size={14} />
                     Add Alias
@@ -1186,7 +1186,7 @@ const FetchModelsModal = ({ onClose, onSuccess }: { onClose: () => void; onSucce
             <button
               onClick={handleFetch}
               disabled={!selectedProvider || isFetching}
-              className="flex-1 px-4 py-2 bg-[var(--color-accent)] text-white rounded hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-[var(--color-accent)] text-black rounded hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isFetching ? (
                 <>
@@ -1708,7 +1708,7 @@ const AliasEditorModal = ({ modelId, providerId, alias, onClose, onSuccess }: Al
             <button
               type="submit"
               disabled={isSaving}
-              className="flex-1 px-4 py-2 bg-[var(--color-accent)] text-white rounded hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-[var(--color-accent)] text-black rounded hover:bg-[var(--color-accent-dark)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSaving ? (
                 <>

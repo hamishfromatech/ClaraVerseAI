@@ -587,7 +587,7 @@ function FilterPill({ label, count, active, onClick, color = 'default' }: Filter
       className={cn(
         'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-medium transition-colors',
         active
-          ? 'bg-[var(--color-accent)] text-white'
+          ? 'bg-[var(--color-accent)] text-black'
           : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
       )}
     >

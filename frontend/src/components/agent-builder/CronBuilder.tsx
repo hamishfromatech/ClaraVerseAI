@@ -250,7 +250,7 @@ export function CronBuilder({ value, onChange }: CronBuilderProps) {
                   className={cn(
                     'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                     minuteInterval === m
-                      ? 'bg-[var(--color-accent)] text-white'
+                      ? 'bg-[var(--color-accent)] text-black'
                       : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
                   )}
                 >
@@ -276,7 +276,7 @@ export function CronBuilder({ value, onChange }: CronBuilderProps) {
                   className={cn(
                     'px-3 py-1.5 rounded-md text-xs font-medium transition-all',
                     minute === m
-                      ? 'bg-[var(--color-accent)] text-white'
+                      ? 'bg-[var(--color-accent)] text-black'
                       : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
                   )}
                 >
@@ -336,7 +336,7 @@ export function CronBuilder({ value, onChange }: CronBuilderProps) {
                   className={cn(
                     'w-9 h-9 rounded-lg text-xs font-medium transition-all',
                     daysOfWeek.includes(day.value)
-                      ? 'bg-[var(--color-accent)] text-white'
+                      ? 'bg-[var(--color-accent)] text-black'
                       : 'bg-[var(--color-surface)] text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
                   )}
                 >

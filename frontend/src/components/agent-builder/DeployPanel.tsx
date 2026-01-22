@@ -459,7 +459,7 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
                   <button
                     onClick={handleDeploy}
                     disabled={isDeploying}
-                    className="w-full flex items-center justify-center gap-2 p-4 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-2 p-4 rounded-lg bg-[var(--color-accent)] text-black font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isDeploying ? (
                       <>
@@ -632,7 +632,7 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
                                 <button
                                   onClick={() => setShowApiKeyModal(true)}
                                   disabled={loadingApiKey}
-                                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-[var(--color-accent)] text-black font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {loadingApiKey ? (
                                     <>
@@ -1009,7 +1009,7 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
                                   <button
                                     onClick={handleSaveSchedule}
                                     disabled={savingSchedule}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-accent)] text-black rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
                                   >
                                     {savingSchedule ? (
                                       <>
@@ -1208,7 +1208,7 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
                           await handleDeploy();
                         }}
                         disabled={loadingApiKey}
-                        className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent)]/80 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                        className="flex-1 px-3 py-2 rounded-lg text-xs font-medium bg-[var(--color-accent)] text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                       >
                         {loadingApiKey ? (
                           <>

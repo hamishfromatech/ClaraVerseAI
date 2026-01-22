@@ -1593,7 +1593,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                       className={cn(
                         'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all',
                         chatMode === 'builder'
-                          ? 'bg-[var(--color-accent)] text-white'
+                          ? 'bg-[var(--color-accent)] text-black'
                           : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
                       )}
                       title="Builder mode - modify workflow"
@@ -1606,7 +1606,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                       className={cn(
                         'flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium transition-all',
                         chatMode === 'ask'
-                          ? 'bg-[var(--color-accent)] text-white'
+                          ? 'bg-[var(--color-accent)] text-black'
                           : 'text-[var(--color-text-tertiary)] hover:text-[var(--color-text-secondary)]'
                       )}
                       title="Ask mode - get help about workflow"
@@ -1754,7 +1754,7 @@ export function AgentChat({ className, onOpenSidebar, onCloseSidebar }: AgentCha
                     className={cn(
                       'p-1.5 rounded transition-all flex items-center justify-center',
                       inputValue.trim() && !isInteractionDisabled
-                        ? 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
+                        ? 'bg-[var(--color-accent)] text-black hover:bg-[var(--color-accent-hover)]'
                         : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed opacity-50'
                     )}
                     title="Send message"
@@ -1910,7 +1910,7 @@ function MessageBubble({ message, onDeploy }: MessageBubbleProps) {
             <div className="flex gap-2 mt-2">
               <button
                 onClick={onDeploy}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--color-accent)] text-black transition-all"
               >
                 <Rocket size={12} />
                 Deploy Agent

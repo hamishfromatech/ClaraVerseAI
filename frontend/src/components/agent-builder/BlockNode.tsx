@@ -1550,9 +1550,9 @@ function BlockNodeComponent({ data, selected }: BlockNodeProps) {
               className={cn(
                 'w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors',
                 executionStatus === 'running'
-                  ? 'bg-[var(--color-accent)] text-white cursor-not-allowed opacity-80'
+                  ? 'bg-[var(--color-accent)] text-black cursor-not-allowed opacity-80'
                   : variableConfig?.workflowModelId && (!requiresInput || hasValidInput)
-                    ? 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
+                    ? 'bg-[var(--color-accent)] text-black hover:bg-[var(--color-accent-hover)]'
                     : 'bg-[var(--color-bg-tertiary)] text-[var(--color-text-tertiary)] cursor-not-allowed'
               )}
             >

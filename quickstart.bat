@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM ClaraVerse Quickstart for Windows
+REM A-Tech AI Quickstart for Windows
 REM ============================================
 REM Get up and running in 60 seconds!
 REM ============================================
@@ -8,7 +8,7 @@ REM ============================================
 setlocal enabledelayedexpansion
 
 echo ============================================
-echo ClaraVerse Quickstart
+echo A-Tech AI Quickstart
 echo ============================================
 echo.
 
@@ -65,7 +65,7 @@ if exist .env (
     REM Check if .env.default exists
     if not exist .env.default (
         echo [ERROR] .env.default not found
-        echo Please ensure you're in the ClaraVerse-Scarlet-OSS directory
+        echo Please ensure you're in the our-version directory
         pause
         exit /b 1
     )
@@ -105,7 +105,7 @@ echo.
 REM ============================================
 REM Step 5: Start All Services
 REM ============================================
-echo Step 5: Starting ClaraVerse...
+echo Step 5: Starting A-Tech AI...
 echo [INFO] Docker will automatically start services in the correct order
 echo [INFO] This may take 60-90 seconds...
 echo.
@@ -128,16 +128,16 @@ REM ============================================
 REM Success Message
 REM ============================================
 echo ======================================
-echo ClaraVerse is Running!
+echo A-Tech AI is Running!
 echo ======================================
 echo.
 echo Access your instance:
-echo   Frontend:     http://localhost:80
-echo   Backend API:  http://localhost:3001
-echo   Health Check: http://localhost:3001/health
+echo   Frontend:     http://localhost:82
+echo   Backend API:  http://localhost:3003
+echo   Health Check: http://localhost:3003/health
 echo.
 echo First Steps:
-echo   1. Open http://localhost:80 in your browser
+echo   1. Open http://localhost:82 in your browser
 echo   2. Register your account (first user becomes admin!)
 echo   3. Add your AI provider API keys in Settings
 echo.
@@ -154,6 +154,6 @@ echo   - .env - Your configuration (keep secure!)
 echo.
 echo Troubleshooting:
 echo   - Run diagnose.bat for diagnostic information
-echo   - Report issues: https://github.com/yourusername/ClaraVerse-Scarlet-OSS/issues
+echo   - Report issues: https://github.com/hamishfromatech/our-version/issues
 echo.
 pause

@@ -9,7 +9,7 @@ const apps = [
     id: 'chat',
     icon: MessageSquare,
     title: 'Chat',
-    description: 'Talk with Clara AI assistant',
+    description: 'Talk with A-Tech AI assistant',
     href: '/chat',
   },
   {
@@ -67,7 +67,7 @@ export default function Dashboard() {
           <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
             <img
               src={faviconIcon}
-              alt="Clara logo"
+              alt="A-Tech AI logo"
               style={{
                 width: 28,
                 height: 28,
@@ -169,7 +169,7 @@ export default function Dashboard() {
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img
             src={faviconIcon}
-            alt="Clara logo"
+            alt="A-Tech AI logo"
             style={{
               width: 32,
               height: 32,

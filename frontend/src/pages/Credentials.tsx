@@ -208,7 +208,7 @@ export const Credentials = () => {
               onClick={() => setSelectedCategory(null)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 selectedCategory === null
-                  ? 'bg-[var(--color-accent)] text-white'
+                  ? 'bg-[var(--color-accent)] text-black'
                   : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
               }`}
             >
@@ -222,7 +222,7 @@ export const Credentials = () => {
                 onClick={() => setSelectedCategory(category.id)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                   selectedCategory === category.id
-                    ? 'bg-[var(--color-accent)] text-white'
+                    ? 'bg-[var(--color-accent)] text-black'
                     : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)]'
                 }`}
               >

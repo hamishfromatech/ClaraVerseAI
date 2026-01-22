@@ -1072,7 +1072,7 @@ function Section({
 function StepLabel({ step, label }: { step: number; label: string }) {
   return (
     <p className="text-xs font-medium text-[var(--color-text-secondary)] mb-2 flex items-center gap-2">
-      <span className="w-5 h-5 rounded-full bg-[var(--color-accent)] text-white text-[10px] flex items-center justify-center font-bold">
+      <span className="w-5 h-5 rounded-full bg-[var(--color-accent)] text-black text-[10px] flex items-center justify-center font-bold">
         {step}
       </span>
       {label}

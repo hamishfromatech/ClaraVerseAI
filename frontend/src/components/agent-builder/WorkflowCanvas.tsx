@@ -956,7 +956,7 @@ export function WorkflowCanvas({ className }: WorkflowCanvasProps) {
               className={cn(
                 'px-5 py-2.5 rounded-xl shadow-xl backdrop-blur-md flex items-center gap-2.5 border font-medium text-sm',
                 executionStatus === 'running' &&
-                  'bg-[var(--color-accent)] bg-opacity-90 text-white border-[var(--color-accent)]',
+                  'bg-[var(--color-accent)] text-black border-[var(--color-accent)]',
                 executionStatus === 'completed' &&
                   'bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] border-[var(--color-border)]',
                 executionStatus === 'failed' &&
@@ -1056,7 +1056,7 @@ function ToolbarButton({
         'rounded-xl transition-all flex items-center gap-1.5',
         label ? 'px-3 py-2' : 'p-2.5',
         primary
-          ? 'bg-[var(--color-accent)] text-white hover:bg-[var(--color-accent-hover)]'
+          ? 'bg-[var(--color-accent)] text-black hover:bg-[var(--color-accent-hover)]'
           : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-tertiary)] hover:text-[var(--color-text-primary)] border border-[var(--color-border)]',
         disabled && 'opacity-50 cursor-not-allowed',
         className

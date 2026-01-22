@@ -190,7 +190,7 @@ export function ChatExecutionOutput({ onBackToChat, onDeploy }: ChatExecutionOut
               <div className="flex gap-2 mt-3">
                 <button
                   onClick={onDeploy}
-                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[var(--color-accent)] hover:bg-[var(--color-accent-hover)] text-white transition-all"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[var(--color-accent)] text-black transition-all"
                 >
                   <Rocket size={14} />
                   Deploy Agent

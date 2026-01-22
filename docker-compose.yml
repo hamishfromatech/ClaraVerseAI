@@ -4,7 +4,7 @@ services:
     image: mongo:7
     container_name: claraverse-mongodb
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongodb-data:/data/db
     environment:
@@ -26,7 +26,7 @@ services:
     container_name: claraverse-redis
     command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
     ports:
-      - "6379:6379"
+      - "6381:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -46,7 +46,7 @@ services:
     container_name: claraverse-mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - "3306:3306"
+      - "3308:3306"
     volumes:
       - mysql-data-new:/var/lib/mysql
       - ./backend/migrations:/docker-entrypoint-initdb.d:ro
@@ -123,7 +123,7 @@ services:
         SKIP_TESTS: ${SKIP_TESTS:-false}
     container_name: claraverse-backend
     ports:
-      - "3001:3001"
+      - "3003:3001"
     volumes:
       # Persistent data
       - backend-data:/app/data
@@ -140,7 +140,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
       # CORS
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:5173}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:82,http://localhost:5173}
       # SearXNG integration (supports multiple URLs for load balancing)
       - SEARXNG_URLS=${SEARXNG_URLS:-http://searxng:8080}
       - SEARXNG_URL=${SEARXNG_URLS:-http://searxng:8080}
@@ -149,15 +149,15 @@ services:
       # Frontend URL (for payment redirects)
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       # Backend public URL for generating absolute download URLs
-      - BACKEND_URL=${BACKEND_URL:-http://localhost:3001}
+      - BACKEND_URL=${BACKEND_URL:-http://localhost:3003}
       # MongoDB
       - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/claraverse}
       # Redis (for scheduler + pub/sub)
       - REDIS_URL=${REDIS_URL:-redis://redis:6379}
       # Encryption key for user data
-      - ENCRYPTION_MASTER_KEY=${ENCRYPTION_MASTER_KEY}
+      - ENCRYPTION_MASTER_KEY=${ENCRYPTION_MASTER_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
       # JWT Authentication (v2.0)
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-atech-dev-secret-key-2024-for-local-development}
       - JWT_ACCESS_TOKEN_EXPIRY=${JWT_ACCESS_TOKEN_EXPIRY:-15m}
       - JWT_REFRESH_TOKEN_EXPIRY=${JWT_REFRESH_TOKEN_EXPIRY:-168h}
       # Development API key for testing (only works when ENVIRONMENT != production)
@@ -205,12 +205,12 @@ services:
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001}
-        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3001}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3003}
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3003}
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
     container_name: claraverse-frontend
     ports:
-      - "80:80"
+      - "82:80"
     depends_on:
       backend:
         condition: service_healthy

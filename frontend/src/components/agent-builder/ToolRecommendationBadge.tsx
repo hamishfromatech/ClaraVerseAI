@@ -24,7 +24,7 @@ export function ToolRecommendationBadge({
         inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all
         ${
           isSelected
-            ? 'bg-[var(--color-accent)] text-white border border-[var(--color-accent)]'
+            ? 'bg-[var(--color-accent)] text-black border border-[var(--color-accent)]'
             : 'bg-[var(--color-bg-secondary)] text-[var(--color-text-primary)] border border-[var(--color-border)] hover:border-[var(--color-accent)] hover:bg-[var(--color-accent)]/10'
         }
       `}

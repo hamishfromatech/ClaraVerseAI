@@ -35,7 +35,7 @@ async function deriveEncryptionKey(userId: string): Promise<CryptoKey> {
   return crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt: encoder.encode('claraverse-salt'), // Fixed salt for consistency
+      salt: encoder.encode('atech-salt'), // Fixed salt for consistency
       iterations: 100000,
       hash: 'SHA-256',
     },
@@ -122,7 +122,7 @@ export async function createBackup(userId: string): Promise<void> {
     const chatData = localStorage.getItem(`chat-storage-${userId}`) || '{}';
     const appData = localStorage.getItem(`app-storage-${userId}`) || '{}';
     const modelData = localStorage.getItem(`model-storage-${userId}`) || '{}';
-    const userName = localStorage.getItem(`claraverse_user_name-${userId}`) || '';
+    const userName = localStorage.getItem(`atech_user_name-${userId}`) || '';
 
     // Encrypt each piece of data
     const [encryptedChats, encryptedApp, encryptedModel, encryptedName] = await Promise.all([
@@ -192,7 +192,7 @@ export async function restoreBackup(userId: string): Promise<boolean> {
     localStorage.setItem(`chat-storage-${userId}`, chatData);
     localStorage.setItem(`app-storage-${userId}`, appData);
     localStorage.setItem(`model-storage-${userId}`, modelData);
-    localStorage.setItem(`claraverse_user_name-${userId}`, userName);
+    localStorage.setItem(`atech_user_name-${userId}`, userName);
 
     // Delete the backup after successful restore to prevent infinite reload loops
     localStorage.removeItem(backupKey);
@@ -229,7 +229,7 @@ export function clearUserData(userId: string): void {
   localStorage.removeItem(`chat-storage-${userId}`);
   localStorage.removeItem(`app-storage-${userId}`);
   localStorage.removeItem(`model-storage-${userId}`);
-  localStorage.removeItem(`claraverse_user_name-${userId}`);
+  localStorage.removeItem(`atech_user_name-${userId}`);
   localStorage.removeItem(`chat-nav-${userId}`);
   localStorage.removeItem(`chat-deleted-ids-${userId}`);
   localStorage.removeItem(`settings-storage-${userId}`);
@@ -288,7 +288,7 @@ export function deleteBackup(userId: string): void {
 export function migrateLegacyData(userId: string): void {
   console.log('🔄 Migrating legacy data for user:', userId);
 
-  const legacyKeys = ['chat-storage', 'app-storage', 'model-storage', 'claraverse_user_name'];
+  const legacyKeys = ['chat-storage', 'app-storage', 'model-storage', 'atech_user_name'];
   let migratedAny = false;
 
   legacyKeys.forEach(legacyKey => {
@@ -296,7 +296,7 @@ export function migrateLegacyData(userId: string): void {
     if (legacyData) {
       // Migrate to user-specific key
       const newKey =
-        legacyKey === 'claraverse_user_name' ? `${legacyKey}-${userId}` : `${legacyKey}-${userId}`;
+        legacyKey === 'atech_user_name' ? `${legacyKey}-${userId}` : `${legacyKey}-${userId}`;
       localStorage.setItem(newKey, legacyData);
 
       // Remove legacy key

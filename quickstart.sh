@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================
-# ClaraVerse Quickstart
+# A-Tech AI Quickstart
 # ============================================
 # Get up and running in 60 seconds!
 # Works on Linux and macOS
@@ -8,7 +8,7 @@
 
 set -e
 
-echo "🚀 ClaraVerse Quickstart"
+echo "🚀 A-Tech AI Quickstart"
 echo "========================"
 echo ""
 
@@ -90,7 +90,7 @@ else
         cp .env.example .env
     else
         echo -e "${RED}❌ Neither .env.default nor .env.example found${NC}"
-        echo "Please ensure you're in the ClaraVerse-Scarlet-OSS directory"
+        echo "Please ensure you're in the our-version directory"
         exit 1
     fi
 
@@ -131,7 +131,7 @@ echo ""
 # ============================================
 # Step 5: Start All Services
 # ============================================
-echo -e "${BLUE}Step 5: Starting ClaraVerse...${NC}"
+echo -e "${BLUE}Step 5: Starting A-Tech AI...${NC}"
 echo -e "${YELLOW}   Docker will automatically start services in the correct order${NC}"
 echo -e "${YELLOW}   This may take 60-90 seconds...${NC}"
 echo ""
@@ -191,16 +191,16 @@ fi
 # ============================================
 echo ""
 echo "======================================"
-echo -e "${GREEN}🎉 ClaraVerse is Running!${NC}"
+echo -e "${GREEN}🎉 A-Tech AI is Running!${NC}"
 echo "======================================"
 echo ""
 echo "Access your instance:"
-echo -e "  ${BLUE}Frontend:${NC}     http://localhost:80"
-echo -e "  ${BLUE}Backend API:${NC}  http://localhost:3001"
-echo -e "  ${BLUE}Health Check:${NC} http://localhost:3001/health"
+echo -e "  ${BLUE}Frontend:${NC}     http://localhost:82"
+echo -e "  ${BLUE}Backend API:${NC}  http://localhost:3003"
+echo -e "  ${BLUE}Health Check:${NC} http://localhost:3003/health"
 echo ""
 echo "First Steps:"
-echo "  1. Open http://localhost:80 in your browser"
+echo "  1. Open http://localhost:82 in your browser"
 echo "  2. Register your account (first user becomes admin!)"
 echo "  3. Add your AI provider API keys in Settings"
 echo ""
@@ -217,5 +217,5 @@ echo "  • .env - Your configuration (keep secure!)"
 echo ""
 echo "Troubleshooting:"
 echo "  • Run ./diagnose.sh for diagnostic information"
-echo "  • Report issues: https://github.com/yourusername/ClaraVerse-Scarlet-OSS/issues"
+echo "  • Report issues: https://github.com/hamishfromatech/our-version/issues"
 echo ""
