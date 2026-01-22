@@ -1,0 +1,102 @@
+{
+  "providers": [
+    {
+      "name": "OpenAI",
+      "base_url": "https://api.openai.com/v1",
+      "api_key": "sk-your-openai-api-key-here",
+      "enabled": true,
+      "filters": [
+        {
+          "pattern": "gpt-4o",
+          "action": "include",
+          "priority": 20
+        },
+        {
+          "pattern": "gpt-4o-mini",
+          "action": "include",
+          "priority": 15
+        },
+        {
+          "pattern": "gpt-3.5-turbo",
+          "action": "include",
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "Anthropic",
+      "base_url": "https://api.anthropic.com/v1",
+      "api_key": "your-anthropic-api-key-here",
+      "enabled": true,
+      "filters": [
+        {
+          "pattern": "claude-3-*",
+          "action": "include",
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "Z.AI",
+      "base_url": "https://api.z.ai/api/coding/paas/v4",
+      "api_key": "your-z-ai-api-key-here",
+      "enabled": true,
+      "filters": [
+        {
+          "pattern": "glm-4*",
+          "action": "include",
+          "priority": 10
+        }
+      ]
+    },
+    {
+      "name": "Custom Provider",
+      "base_url": "https://your-custom-openai-compatible-api.com/v1",
+      "api_key": "your-api-key-here",
+      "enabled": false,
+      "filters": [
+        {
+          "pattern": "*",
+          "action": "include",
+          "priority": 0
+        }
+      ]
+    },
+    {
+      "name": "Groq",
+      "base_url": "https://api.groq.com/openai/v1",
+      "api_key": "gsk_your-groq-api-key-here",
+      "enabled": true,
+      "audio_only": true,
+      "filters": []
+    },
+    {
+      "name": "OpenAI DALL-E",
+      "base_url": "https://api.openai.com",
+      "api_key": "sk-your-openai-api-key-here",
+      "enabled": false,
+      "image_only": true,
+      "default_model": "dall-e-3",
+      "filters": []
+    },
+    {
+      "name": "Together AI Images",
+      "base_url": "https://api.together.xyz",
+      "api_key": "your-together-api-key-here",
+      "enabled": false,
+      "image_only": true,
+      "default_model": "black-forest-labs/FLUX.1-schnell-Free",
+      "filters": []
+    },
+    {
+      "name": "Replicate Images",
+      "base_url": "https://api.replicate.com",
+      "api_key": "r8_your-replicate-api-key-here",
+      "enabled": false,
+      "image_only": true,
+      "default_model": "stability-ai/sdxl",
+      "filters": []
+    }
+  ]
+}
+
