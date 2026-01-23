@@ -238,8 +238,8 @@ export const ModelManagement = () => {
 
       // Visibility filter
       if (filters.visibility) {
-        if (filters.visibility === 'visible' && !model.is_visible) return false;
-        if (filters.visibility === 'hidden' && model.is_visible) return false;
+        if (filters.visibility === 'visible' && !model.isVisible) return false;
+        if (filters.visibility === 'hidden' && model.isVisible) return false;
       }
 
       // Search filter
@@ -319,7 +319,7 @@ export const ModelManagement = () => {
         >
           <p className="text-sm text-[var(--color-text-tertiary)]">Visible Models</p>
           <p className="text-2xl font-bold text-[var(--color-text-primary)] mt-1">
-            {models.filter(m => m.is_visible).length}
+            {models.filter(m => m.isVisible).length}
           </p>
         </div>
         <div
@@ -453,7 +453,7 @@ export const ModelManagement = () => {
                   // Optimistic update
                   setModels(prevModels =>
                     prevModels?.map(m =>
-                      selectedIds.includes(m.id) ? { ...m, is_visible: true } : m
+                      selectedIds.includes(m.id) ? { ...m, isVisible: true } : m
                     ) || null
                   );
                   setSelectedModels(new Set());
@@ -480,7 +480,7 @@ export const ModelManagement = () => {
                   // Optimistic update
                   setModels(prevModels =>
                     prevModels?.map(m =>
-                      selectedIds.includes(m.id) ? { ...m, is_visible: false } : m
+                      selectedIds.includes(m.id) ? { ...m, isVisible: false } : m
                     ) || null
                   );
                   setSelectedModels(new Set());
@@ -799,16 +799,16 @@ const ModelRow = ({
         </td>
         <td className="p-4">
           <button
-            onClick={() => onUpdate({ is_visible: !model.is_visible })}
+            onClick={() => onUpdate({ isVisible: !model.isVisible })}
             data-tour="toggle-visibility"
             className={`flex items-center gap-1 text-sm px-3 py-1 rounded-lg transition-colors ${
-              model.is_visible
+              model.isVisible
                 ? 'text-[var(--color-success)] bg-[var(--color-success-light)] hover:bg-[var(--color-success-alpha-20)]'
                 : 'text-[var(--color-text-tertiary)] bg-[var(--color-surface-hover)] hover:bg-[var(--color-surface-active)]'
             }`}
-            title={model.is_visible ? 'Click to hide' : 'Click to show'}
+            title={model.isVisible ? 'Click to hide' : 'Click to show'}
           >
-            {model.is_visible ? (
+            {model.isVisible ? (
               <>
                 <Eye size={14} />
                 Visible

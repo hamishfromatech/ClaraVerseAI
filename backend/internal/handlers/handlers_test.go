@@ -55,7 +55,7 @@ func createTestProvider(t *testing.T, db *database.DB) *models.Provider {
 func insertTestModel(t *testing.T, db *database.DB, model *models.Model) {
 	_, err := db.Exec(`
 		INSERT OR REPLACE INTO models
-		(id, provider_id, name, display_name, is_visible, fetched_at)
+		(id, provider_id, name, display_name, isVisible, fetched_at)
 		VALUES (?, ?, ?, ?, ?, ?)
 	`, model.ID, model.ProviderID, model.Name, model.DisplayName, model.IsVisible, time.Now())
 

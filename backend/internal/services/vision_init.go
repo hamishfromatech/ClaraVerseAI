@@ -74,7 +74,7 @@ func InitVisionService() {
 				SELECT m.provider_id, m.name
 				FROM models m
 				JOIN providers p ON m.provider_id = p.id
-				WHERE m.supports_vision = 1 AND m.is_visible = 1 AND p.enabled = 1
+				WHERE m.supports_vision = 1 AND m.isVisible = 1 AND p.enabled = 1
 				ORDER BY m.provider_id ASC
 				LIMIT 1
 			`).Scan(&providerID, &modelName)

@@ -34,13 +34,13 @@ func (s *ModelService) GetAll(visibleOnly bool) ([]models.Model, error) {
 	query := `
 		SELECT m.id, m.provider_id, p.name as provider_name, p.favicon as provider_favicon,
 		       m.name, m.display_name, m.description, m.context_length, m.supports_tools,
-		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.is_visible, m.system_prompt, m.fetched_at
+		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.isVisible, m.system_prompt, m.fetched_at
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
 		WHERE (p.audio_only = 0 OR p.audio_only IS NULL)
 	`
 	if visibleOnly {
-		query += " AND m.is_visible = 1"
+		query += " AND m.isVisible = 1"
 	}
 	query += " ORDER BY p.name, m.name"
 
@@ -95,13 +95,13 @@ func (s *ModelService) GetByProvider(providerID int, visibleOnly bool) ([]models
 	query := `
 		SELECT m.id, m.provider_id, p.name as provider_name, p.favicon as provider_favicon,
 		       m.name, m.display_name, m.description, m.context_length, m.supports_tools,
-		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.is_visible, m.system_prompt, m.fetched_at
+		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.isVisible, m.system_prompt, m.fetched_at
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
 		WHERE m.provider_id = ?
 	`
 	if visibleOnly {
-		query += " AND m.is_visible = 1"
+		query += " AND m.isVisible = 1"
 	}
 	query += " ORDER BY m.name"
 
@@ -157,11 +157,11 @@ func (s *ModelService) GetToolPredictorModels() ([]models.Model, error) {
 	query := `
 		SELECT m.id, m.provider_id, p.name as provider_name, p.favicon as provider_favicon,
 		       m.name, m.display_name, m.description, m.context_length, m.supports_tools,
-		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.is_visible, m.system_prompt, m.fetched_at
+		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.isVisible, m.system_prompt, m.fetched_at
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
 		WHERE m.smart_tool_router = 1
-		  AND m.is_visible = 1
+		  AND m.isVisible = 1
 		  AND (p.audio_only = 0 OR p.audio_only IS NULL)
 		ORDER BY p.name, m.name
 	`

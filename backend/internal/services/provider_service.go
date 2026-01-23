@@ -246,14 +246,14 @@ func (s *ProviderService) ApplyFilters(providerID int) error {
 		// No filters, show all models
 		_, err := s.db.Exec(`
 			UPDATE models
-			SET is_visible = 1
+			SET isVisible = 1
 			WHERE provider_id = ?
 		`, providerID)
 		return err
 	}
 
 	// Reset visibility
-	if _, err := s.db.Exec("UPDATE models SET is_visible = 0 WHERE provider_id = ?", providerID); err != nil {
+	if _, err := s.db.Exec("UPDATE models SET isVisible = 0 WHERE provider_id = ?", providerID); err != nil {
 		return fmt.Errorf("failed to reset visibility: %w", err)
 	}
 
@@ -264,7 +264,7 @@ func (s *ProviderService) ApplyFilters(providerID int) error {
 			pattern := strings.ReplaceAll(filter.Pattern, "*", "%")
 			_, err := s.db.Exec(`
 				UPDATE models
-				SET is_visible = 1
+				SET isVisible = 1
 				WHERE provider_id = ? AND (name LIKE ? OR id LIKE ?)
 			`, providerID, pattern, pattern)
 			if err != nil {
@@ -274,7 +274,7 @@ func (s *ProviderService) ApplyFilters(providerID int) error {
 			pattern := strings.ReplaceAll(filter.Pattern, "*", "%")
 			_, err := s.db.Exec(`
 				UPDATE models
-				SET is_visible = 0
+				SET isVisible = 0
 				WHERE provider_id = ? AND (name LIKE ? OR id LIKE ?)
 			`, providerID, pattern, pattern)
 			if err != nil {

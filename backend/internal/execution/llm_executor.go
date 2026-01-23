@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"claraverse/internal/models"
 	"claraverse/internal/services"
+	"claraverse/internal/utils"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -265,7 +266,8 @@ func (e *LLMExecutor) Execute(ctx context.Context, block models.Block, inputs ma
 	// Parse JSON output if structured output was requested
 	if outputFormat == "json" {
 		var parsedJSON map[string]interface{}
-		if err := json.Unmarshal([]byte(content), &parsedJSON); err != nil {
+		jsonContent := utils.ExtractJSON(content)
+		if err := json.Unmarshal([]byte(jsonContent), &parsedJSON); err != nil {
 			log.Printf("⚠️ [LLM-EXEC] Block '%s': Failed to parse JSON output: %v", block.Name, err)
 			// Return raw content if JSON parsing fails
 			return map[string]any{

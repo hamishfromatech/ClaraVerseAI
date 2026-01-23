@@ -52,7 +52,7 @@ func insertTestModel(t *testing.T, db *database.DB, model *models.Model) {
 	_, err := db.Exec(`
 		INSERT OR REPLACE INTO models
 		(id, provider_id, name, display_name, description, context_length,
-		 supports_tools, supports_streaming, supports_vision, is_visible, fetched_at)
+		 supports_tools, supports_streaming, supports_vision, isVisible, fetched_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, model.ID, model.ProviderID, model.Name, model.DisplayName, model.Description,
 		model.ContextLength, model.SupportsTools, model.SupportsStreaming,

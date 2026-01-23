@@ -137,7 +137,7 @@ func (h *ModelHandler) List(c *fiber.Ctx) error {
 				"supports_vision":    supportsVision,
 				"agents_enabled":     agentsEnabled,
 				"provider_secure":    isProviderSecure,
-				"is_visible":         foundModel.IsVisible,
+				"isVisible":         foundModel.IsVisible,
 				"fetched_at":         foundModel.FetchedAt,
 			}
 
@@ -203,7 +203,7 @@ func (h *ModelHandler) List(c *fiber.Ctx) error {
 				"supports_vision":    model.SupportsVision,
 				"agents_enabled":     model.AgentsEnabled, // Use model's AgentsEnabled field (defaults to false for non-aliased)
 				"provider_secure":    isProviderSecure,
-				"is_visible":         model.IsVisible,
+				"isVisible":         model.IsVisible,
 				"fetched_at":         model.FetchedAt,
 			}
 			// Check if this model is in the recommendation tier

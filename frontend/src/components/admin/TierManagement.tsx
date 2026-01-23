@@ -116,7 +116,7 @@ export const TierManagement: React.FC = () => {
   };
 
   const filteredModels = (models || []).filter(model => {
-    if (!model.is_visible) return false;
+    if (!model.isVisible) return false;
     const query = searchQuery.toLowerCase();
     return (
       model.display_name.toLowerCase().includes(query) ||

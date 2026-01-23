@@ -144,7 +144,7 @@ export interface CreateModelRequest {
   supports_tools?: boolean;
   supports_streaming?: boolean;
   supports_vision?: boolean;
-  is_visible?: boolean;
+  isVisible?: boolean;
   system_prompt?: string;
 }
 
@@ -155,7 +155,7 @@ export interface UpdateModelRequest {
   supports_tools?: boolean;
   supports_streaming?: boolean;
   supports_vision?: boolean;
-  is_visible?: boolean;
+  isVisible?: boolean;
   system_prompt?: string;
   smart_tool_router?: boolean;
   free_tier?: boolean;

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"claraverse/internal/models"
 	"claraverse/internal/services"
+	"claraverse/internal/utils"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -165,7 +166,8 @@ func (c *BlockChecker) CheckBlockCompletion(
 
 	// Parse the structured output
 	var result BlockCheckResult
-	if err := json.Unmarshal([]byte(apiResp.Choices[0].Message.Content), &result); err != nil {
+	content := utils.ExtractJSON(apiResp.Choices[0].Message.Content)
+	if err := json.Unmarshal([]byte(content), &result); err != nil {
 		log.Printf("⚠️ [BLOCK-CHECKER] JSON parse error, defaulting to passed: %v", err)
 		return &BlockCheckResult{Passed: true, Reason: "JSON parse error - defaulting to passed"}, nil
 	}

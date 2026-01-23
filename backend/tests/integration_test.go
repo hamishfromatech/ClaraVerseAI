@@ -80,7 +80,7 @@ func TestFullProviderAndModelFlow(t *testing.T) {
 
 	for _, model := range testModels {
 		_, err := db.Exec(`
-			INSERT INTO models (id, provider_id, name, is_visible)
+			INSERT INTO models (id, provider_id, name, isVisible)
 			VALUES (?, ?, ?, ?)
 		`, model.ID, model.ProviderID, model.Name, model.IsVisible)
 		if err != nil {
@@ -159,7 +159,7 @@ func TestMultiProviderScenario(t *testing.T) {
 	openAIModels := []string{"gpt-4-turbo", "gpt-3.5-turbo"}
 	for _, modelID := range openAIModels {
 		_, err := db.Exec(`
-			INSERT INTO models (id, provider_id, name, is_visible)
+			INSERT INTO models (id, provider_id, name, isVisible)
 			VALUES (?, ?, ?, ?)
 		`, modelID, createdProviders[0].ID, modelID, false)
 		if err != nil {
@@ -171,7 +171,7 @@ func TestMultiProviderScenario(t *testing.T) {
 	anthropicModels := []string{"claude-3-opus", "claude-2"}
 	for _, modelID := range anthropicModels {
 		_, err := db.Exec(`
-			INSERT INTO models (id, provider_id, name, is_visible)
+			INSERT INTO models (id, provider_id, name, isVisible)
 			VALUES (?, ?, ?, ?)
 		`, modelID, createdProviders[1].ID, modelID, false)
 		if err != nil {
@@ -370,7 +370,7 @@ func TestFilterPriorityOrdering(t *testing.T) {
 
 	// Add test models
 	_, err = db.Exec(`
-		INSERT INTO models (id, provider_id, name, is_visible)
+		INSERT INTO models (id, provider_id, name, isVisible)
 		VALUES
 		('gpt-4', ?, 'gpt-4', 0),
 		('gpt-4-turbo', ?, 'gpt-4-turbo', 0)

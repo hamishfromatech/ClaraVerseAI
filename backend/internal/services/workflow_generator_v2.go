@@ -14,6 +14,7 @@ import (
 
 	"claraverse/internal/database"
 	"claraverse/internal/models"
+	"claraverse/internal/utils"
 )
 
 // WorkflowGeneratorV2Service handles multi-step workflow generation
@@ -272,7 +273,7 @@ func (s *WorkflowGeneratorV2Service) Step1SelectTools(req *MultiStepGenerateRequ
 
 	// Parse the tool selection result
 	var result ToolSelectionResult
-	content := apiResponse.Choices[0].Message.Content
+	content := utils.ExtractJSON(apiResponse.Choices[0].Message.Content)
 
 	if err := json.Unmarshal([]byte(content), &result); err != nil {
 		log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse tool selection: %v, content: %s", err, content)
@@ -523,7 +524,7 @@ Output the complete modified workflow JSON with all blocks (not just changes).`,
 // parseWorkflowResponse parses the LLM response into a workflow
 func (s *WorkflowGeneratorV2Service) parseWorkflowResponse(content string, isModification bool, agentID string) (*models.WorkflowGenerateResponse, error) {
 	// Try to extract JSON from the response
-	jsonContent := extractJSON(content)
+	jsonContent := utils.ExtractJSON(content)
 
 	// Parse the workflow
 	var workflowData struct {
@@ -594,7 +595,7 @@ func (s *WorkflowGeneratorV2Service) getProviderAndModel(modelID string) (*model
 	err := s.db.QueryRow(`
 		SELECT m.name, m.provider_id
 		FROM models m
-		WHERE m.id = ? AND m.is_visible = 1
+		WHERE m.id = ? AND m.isVisible = 1
 	`, modelID).Scan(&modelName, &providerID)
 
 	if err != nil {
@@ -619,51 +620,4 @@ func getToolIDs(tools []SelectedTool) []string {
 		ids[i] = t.ToolID
 	}
 	return ids
-}
-
-// extractJSON extracts JSON from a response (handles markdown code blocks)
-func extractJSON(content string) string {
-	content = strings.TrimSpace(content)
-
-	if strings.HasPrefix(content, "{") {
-		return content
-	}
-
-	// Try to extract from markdown code block
-	if idx := strings.Index(content, "```json"); idx != -1 {
-		start := idx + 7
-		end := strings.Index(content[start:], "```")
-		if end != -1 {
-			return strings.TrimSpace(content[start : start+end])
-		}
-	}
-
-	if idx := strings.Index(content, "```"); idx != -1 {
-		start := idx + 3
-		// Skip language identifier if present
-		if newline := strings.Index(content[start:], "\n"); newline != -1 {
-			start = start + newline + 1
-		}
-		end := strings.Index(content[start:], "```")
-		if end != -1 {
-			return strings.TrimSpace(content[start : start+end])
-		}
-	}
-
-	// Find JSON object
-	if start := strings.Index(content, "{"); start != -1 {
-		depth := 0
-		for i := start; i < len(content); i++ {
-			if content[i] == '{' {
-				depth++
-			} else if content[i] == '}' {
-				depth--
-				if depth == 0 {
-					return content[start : i+1]
-				}
-			}
-		}
-	}
-
-	return content
 }

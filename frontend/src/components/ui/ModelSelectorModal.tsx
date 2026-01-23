@@ -66,7 +66,7 @@ export function ModelSelectorModal({
               provider_name: provider.name || 'Custom Provider',
               provider_favicon: '',
               description: `From ${provider.name}`,
-              is_visible: true,
+              isVisible: true,
               supports_vision: false,
               supports_tools: true,
               supports_streaming: true,

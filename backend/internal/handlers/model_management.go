@@ -119,10 +119,10 @@ func (h *ModelManagementHandler) UpdateModel(c *fiber.Ctx) error {
 	if err := c.BodyParser(&rawBody); err == nil {
 		log.Printf("[DEBUG] Raw request body: %+v", rawBody)
 
-		if val, exists := rawBody["is_visible"]; exists {
+		if val, exists := rawBody["isVisible"]; exists {
 			if boolVal, ok := val.(bool); ok {
 				req.IsVisible = &boolVal
-				log.Printf("[DEBUG] Manually parsed is_visible: %v", boolVal)
+				log.Printf("[DEBUG] Manually parsed isVisible: %v", boolVal)
 			}
 		}
 
@@ -684,7 +684,7 @@ func (h *ModelManagementHandler) BulkUpdateVisibility(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message": fmt.Sprintf("Updated is_visible=%v for %d models", req.Visible, len(req.ModelIDs)),
+		"message": fmt.Sprintf("Updated isVisible=%v for %d models", req.Visible, len(req.ModelIDs)),
 	})
 }
 

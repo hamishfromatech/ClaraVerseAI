@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 
 	"claraverse/internal/database"
 	"claraverse/internal/models"
+	"claraverse/internal/utils"
 )
 
 // WorkflowGeneratorService handles workflow generation with structured output
@@ -918,7 +918,7 @@ Output the complete modified workflow JSON with all blocks (not just changes).`,
 // parseWorkflowResponse parses the LLM response into a workflow
 func (s *WorkflowGeneratorService) parseWorkflowResponse(content string, isModification bool, agentID string) (*models.WorkflowGenerateResponse, error) {
 	// Try to extract JSON from the response (handle markdown code blocks)
-	jsonContent := s.extractJSON(content)
+	jsonContent := utils.ExtractJSON(content)
 
 	// Parse the workflow
 	var workflowData struct {
@@ -982,32 +982,6 @@ func (s *WorkflowGeneratorService) parseWorkflowResponse(content string, isModif
 		Version:     1,
 		Errors:      errors,
 	}, nil
-}
-
-// extractJSON extracts JSON from a response that might be wrapped in markdown
-func (s *WorkflowGeneratorService) extractJSON(content string) string {
-	content = strings.TrimSpace(content)
-
-	// If it starts with {, assume it's pure JSON
-	if strings.HasPrefix(content, "{") {
-		return content
-	}
-
-	// Try to extract from markdown code block
-	re := regexp.MustCompile("(?s)```(?:json)?\\s*\\n?(\\{.*\\})\\s*\\n?```")
-	matches := re.FindStringSubmatch(content)
-	if len(matches) > 1 {
-		return matches[1]
-	}
-
-	// Try to find JSON object anywhere in the content
-	re = regexp.MustCompile(`(?s)\{.*"blocks".*\}`)
-	match := re.FindString(content)
-	if match != "" {
-		return match
-	}
-
-	return content
 }
 
 // validateWorkflow validates the workflow structure
@@ -1082,7 +1056,7 @@ func (s *WorkflowGeneratorService) getProviderAndModel(modelID string) (*models.
 	err := s.db.QueryRow(`
 		SELECT m.name, m.provider_id
 		FROM models m
-		WHERE m.id = ? AND m.is_visible = 1
+		WHERE m.id = ? AND m.isVisible = 1
 	`, modelID).Scan(&modelName, &providerID)
 
 	if err != nil {
@@ -1578,7 +1552,7 @@ EXAMPLES:
 	var sampleInput map[string]interface{}
 	if err := json.Unmarshal([]byte(content), &sampleInput); err != nil {
 		// Try to extract JSON from the response
-		jsonContent := s.extractJSON(content)
+		jsonContent := utils.ExtractJSON(content)
 		if err := json.Unmarshal([]byte(jsonContent), &sampleInput); err != nil {
 			return nil, fmt.Errorf("failed to parse sample input JSON: %w", err)
 		}

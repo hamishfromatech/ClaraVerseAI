@@ -163,7 +163,7 @@ func migrateModels(sqlite *sql.DB, mysql *sql.Tx, stats *MigrationStats) error {
 		SELECT id, provider_id, name, COALESCE(display_name, ''),
 		       COALESCE(description, ''), COALESCE(context_length, 0),
 		       COALESCE(supports_tools, 0), COALESCE(supports_streaming, 0),
-		       COALESCE(supports_vision, 0), COALESCE(is_visible, 1),
+		       COALESCE(supports_vision, 0), COALESCE(isVisible, 1),
 		       COALESCE(system_prompt, ''), fetched_at
 		FROM models
 		ORDER BY id
@@ -180,7 +180,7 @@ func migrateModels(sqlite *sql.DB, mysql *sql.Tx, stats *MigrationStats) error {
 	stmt, err := mysql.Prepare(`
 		INSERT INTO models (id, provider_id, name, display_name, description, context_length,
 		                    supports_tools, supports_streaming, supports_vision,
-		                    is_visible, system_prompt, fetched_at)
+		                    isVisible, system_prompt, fetched_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`)
 	if err != nil {

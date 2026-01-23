@@ -15,7 +15,7 @@ export interface Model {
   supports_vision: boolean;
   agents_enabled: boolean; // If true, model is available in agent builder
   provider_secure?: boolean; // Indicates if provider doesn't store user data
-  is_visible: boolean;
+  isVisible: boolean;
   smart_tool_router?: boolean; // If true, model can be used as tool predictor
   fetched_at?: string;
   recommendation_tier?: {

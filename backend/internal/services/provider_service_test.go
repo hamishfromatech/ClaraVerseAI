@@ -368,7 +368,7 @@ func TestProviderService_ApplyFilters(t *testing.T) {
 
 	for _, model := range testModels {
 		_, err := db.Exec(`
-			INSERT INTO models (id, provider_id, name, is_visible)
+			INSERT INTO models (id, provider_id, name, isVisible)
 			VALUES (?, ?, ?, ?)
 		`, model.ID, model.ProviderID, model.Name, model.IsVisible)
 		if err != nil {
@@ -400,7 +400,7 @@ func TestProviderService_ApplyFilters(t *testing.T) {
 	var visibleCount int
 	err = db.QueryRow(`
 		SELECT COUNT(*) FROM models
-		WHERE provider_id = ? AND is_visible = 1
+		WHERE provider_id = ? AND isVisible = 1
 	`, provider.ID).Scan(&visibleCount)
 	if err != nil {
 		t.Fatalf("Failed to count visible models: %v", err)
@@ -413,7 +413,7 @@ func TestProviderService_ApplyFilters(t *testing.T) {
 	// Check specific model
 	var isVisible bool
 	err = db.QueryRow(`
-		SELECT is_visible FROM models WHERE id = ?
+		SELECT isVisible FROM models WHERE id = ?
 	`, "gpt-4-turbo").Scan(&isVisible)
 	if err != nil {
 		t.Fatalf("Failed to get model visibility: %v", err)
@@ -445,7 +445,7 @@ func TestProviderService_ApplyFilters_NoFilters(t *testing.T) {
 
 	// Create test model
 	_, err = db.Exec(`
-		INSERT INTO models (id, provider_id, name, is_visible)
+		INSERT INTO models (id, provider_id, name, isVisible)
 		VALUES (?, ?, ?, ?)
 	`, "test-model", provider.ID, "test-model", false)
 	if err != nil {
@@ -459,7 +459,7 @@ func TestProviderService_ApplyFilters_NoFilters(t *testing.T) {
 
 	// All models should be visible when no filters exist
 	var isVisible bool
-	err = db.QueryRow("SELECT is_visible FROM models WHERE id = ?", "test-model").Scan(&isVisible)
+	err = db.QueryRow("SELECT isVisible FROM models WHERE id = ?", "test-model").Scan(&isVisible)
 	if err != nil {
 		t.Fatalf("Failed to get model visibility: %v", err)
 	}

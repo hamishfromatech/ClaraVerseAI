@@ -49,7 +49,7 @@ func (s *ModelManagementService) CreateModel(ctx context.Context, req *CreateMod
 	// Step 2: Insert into database
 	_, err = tx.Exec(`
 		INSERT INTO models (id, provider_id, name, display_name, description, context_length,
-			supports_tools, supports_streaming, supports_vision, is_visible, system_prompt, fetched_at)
+			supports_tools, supports_streaming, supports_vision, isVisible, system_prompt, fetched_at)
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, req.ModelID, req.ProviderID, req.Name, req.DisplayName, req.Description, req.ContextLength,
 		req.SupportsTools, req.SupportsStreaming, req.SupportsVision, req.IsVisible, req.SystemPrompt, time.Now())
@@ -102,11 +102,11 @@ func (s *ModelManagementService) UpdateModel(ctx context.Context, modelID string
 		args = append(args, *req.SupportsVision)
 	}
 	if req.IsVisible != nil {
-		updateParts = append(updateParts, "is_visible = ?")
+		updateParts = append(updateParts, "isVisible = ?")
 		args = append(args, *req.IsVisible)
-		log.Printf("[DEBUG] Adding is_visible to update: value=%v type=%T", *req.IsVisible, *req.IsVisible)
+		log.Printf("[DEBUG] Adding isVisible to update: value=%v type=%T", *req.IsVisible, *req.IsVisible)
 	} else {
-		log.Printf("[DEBUG] is_visible field is nil, not updating")
+		log.Printf("[DEBUG] isVisible field is nil, not updating")
 	}
 	if req.SystemPrompt != nil {
 		updateParts = append(updateParts, "system_prompt = ?")
@@ -373,7 +373,7 @@ func (s *ModelManagementService) FetchModelsFromProvider(ctx context.Context, pr
 	count := 0
 	for _, modelData := range modelsResp.Data {
 		_, err := s.db.Exec(`
-			INSERT INTO models (id, provider_id, name, display_name, is_visible, fetched_at)
+			INSERT INTO models (id, provider_id, name, display_name, isVisible, fetched_at)
 			VALUES (?, ?, ?, ?, 0, ?)
 			ON DUPLICATE KEY UPDATE
 				name = VALUES(name),
@@ -996,7 +996,7 @@ func (s *ModelManagementService) GetModelByID(modelID string) (*models.Model, er
 	err := s.db.QueryRow(`
 		SELECT m.id, m.provider_id, p.name as provider_name, p.favicon as provider_favicon,
 		       m.name, m.display_name, m.description, m.context_length, m.supports_tools,
-		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.is_visible, m.system_prompt, m.fetched_at
+		       m.supports_streaming, m.supports_vision, m.smart_tool_router, m.isVisible, m.system_prompt, m.fetched_at
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
 		WHERE m.id = ?
@@ -1325,7 +1325,7 @@ func (s *ModelManagementService) BulkUpdateVisibility(modelIDs []string, visible
 
 	query := fmt.Sprintf(`
 		UPDATE models
-		SET is_visible = ?
+		SET isVisible = ?
 		WHERE id IN (%s)
 	`, strings.Join(placeholders, ","))
 

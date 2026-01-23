@@ -92,7 +92,7 @@ func NewToolPredictorService(
 	err := db.QueryRow(`
 		SELECT m.id
 		FROM models m
-		WHERE m.smart_tool_router = 1 AND m.is_visible = 1
+		WHERE m.smart_tool_router = 1 AND m.isVisible = 1
 		ORDER BY m.id ASC
 		LIMIT 1
 	`).Scan(&modelID)
@@ -103,7 +103,7 @@ func NewToolPredictorService(
 		err = db.QueryRow(`
 			SELECT m.id
 			FROM models m
-			WHERE m.is_visible = 1
+			WHERE m.isVisible = 1
 			ORDER BY m.id ASC
 			LIMIT 1
 		`).Scan(&modelID)
@@ -368,7 +368,7 @@ func (s *ToolPredictorService) getProviderAndModel(modelID string) (*models.Prov
 	err := s.db.QueryRow(`
 		SELECT m.name, m.provider_id, COALESCE(m.smart_tool_router, 0)
 		FROM models m
-		WHERE m.id = ? AND m.is_visible = 1
+		WHERE m.id = ? AND m.isVisible = 1
 	`, modelID).Scan(&modelName, &providerID, &smartToolRouter)
 
 	if err != nil {
@@ -398,7 +398,7 @@ func (s *ToolPredictorService) getProviderAndModel(modelID string) (*models.Prov
 		err := s.db.QueryRow(`
 			SELECT m.id, m.name, m.provider_id
 			FROM models m
-			WHERE m.smart_tool_router = 1 AND m.is_visible = 1
+			WHERE m.smart_tool_router = 1 AND m.isVisible = 1
 			ORDER BY m.id ASC
 			LIMIT 1
 		`).Scan(&fallbackModelID, &fallbackModelName, &fallbackProviderID)
@@ -436,7 +436,7 @@ func (s *ToolPredictorService) getDefaultPredictorModel() (*models.Provider, str
 	err := s.db.QueryRow(`
 		SELECT m.name, m.provider_id, COALESCE(m.smart_tool_router, 0)
 		FROM models m
-		WHERE m.id = ? AND m.is_visible = 1
+		WHERE m.id = ? AND m.isVisible = 1
 	`, s.defaultPredictorModel).Scan(&modelName, &providerID, &smartToolRouter)
 
 	if err != nil {
@@ -457,7 +457,7 @@ func (s *ToolPredictorService) getDefaultPredictorModel() (*models.Provider, str
 		err := s.db.QueryRow(`
 			SELECT m.id, m.name, m.provider_id
 			FROM models m
-			WHERE m.smart_tool_router = 1 AND m.is_visible = 1
+			WHERE m.smart_tool_router = 1 AND m.isVisible = 1
 			ORDER BY m.id ASC
 			LIMIT 1
 		`).Scan(&fallbackModelID, &modelName, &providerID)

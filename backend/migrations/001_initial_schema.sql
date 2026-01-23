@@ -55,7 +55,7 @@ CREATE TABLE models (
     supports_vision BOOLEAN DEFAULT FALSE COMMENT 'Image/vision support',
     smart_tool_router BOOLEAN DEFAULT FALSE COMMENT 'Can predict tool usage for context optimization',
     agents_enabled BOOLEAN DEFAULT FALSE COMMENT 'Available in agent builder',
-    is_visible BOOLEAN DEFAULT TRUE COMMENT 'Show in UI',
+    isVisible BOOLEAN DEFAULT TRUE COMMENT 'Show in UI',
     system_prompt TEXT COMMENT 'Model-specific system prompt',
     fetched_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT 'When fetched from provider API',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,7 +63,7 @@ CREATE TABLE models (
 
     FOREIGN KEY (provider_id) REFERENCES providers(id) ON DELETE CASCADE,
     INDEX idx_provider (provider_id),
-    INDEX idx_visible (is_visible),
+    INDEX idx_visible (isVisible),
     INDEX idx_agents (agents_enabled),
     INDEX idx_tool_router (smart_tool_router),
     INDEX idx_capabilities (supports_tools, supports_vision, supports_streaming)

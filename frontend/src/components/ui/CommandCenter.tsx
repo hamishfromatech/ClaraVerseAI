@@ -194,7 +194,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                 provider_name: provider.name || 'Custom Provider',
                 provider_favicon: '',
                 description: `From ${provider.name}`,
-                is_visible: true,
+                isVisible: true,
                 supports_vision: false,
                 supports_tools: true,
                 supports_streaming: true,
@@ -920,7 +920,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                                     // Filter to visible backend models
                                     const eligibleModels = allModels.filter(
                                       model =>
-                                        model.is_visible !== false &&
+                                        model.isVisible !== false &&
                                         !model.id.startsWith('custom:') // Exclude custom provider models from quick list
                                     );
 

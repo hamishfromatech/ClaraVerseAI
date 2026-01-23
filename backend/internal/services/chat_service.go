@@ -263,7 +263,7 @@ func (s *ChatService) GetDefaultProviderWithModel() (*models.Provider, string, e
 	var modelID string
 	err = s.db.QueryRow(`
 		SELECT id FROM models
-		WHERE provider_id = ? AND is_visible = 1
+		WHERE provider_id = ? AND isVisible = 1
 		ORDER BY name
 		LIMIT 1
 	`, provider.ID).Scan(&modelID)
@@ -311,7 +311,7 @@ func (s *ChatService) GetTextProviderWithModel() (*models.Provider, string, erro
 		SELECT m.id, m.provider_id
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
-		WHERE m.is_visible = 1
+		WHERE m.isVisible = 1
 		AND p.enabled = 1
 		AND (p.audio_only = 0 OR p.audio_only IS NULL)
 		ORDER BY m.context_length ASC, m.id ASC
@@ -399,7 +399,7 @@ func (s *ChatService) GetTextProviderWithModel() (*models.Provider, string, erro
 	modelID = "" // Reset modelID for this provider
 	err = s.db.QueryRow(`
 		SELECT id FROM models
-		WHERE provider_id = ? AND is_visible = 1
+		WHERE provider_id = ? AND isVisible = 1
 		ORDER BY name
 		LIMIT 1
 	`, providerID).Scan(&modelID)
@@ -1249,7 +1249,7 @@ func (s *ChatService) findVisionCapableModel() (int, string, bool) {
 		SELECT m.provider_id, m.name
 		FROM models m
 		JOIN providers p ON m.provider_id = p.id
-		WHERE m.supports_vision = 1 AND m.is_visible = 1 AND p.enabled = 1
+		WHERE m.supports_vision = 1 AND m.isVisible = 1 AND p.enabled = 1
 		ORDER BY m.provider_id ASC
 		LIMIT 1
 	`).Scan(&providerID, &modelName)
@@ -1312,7 +1312,7 @@ func (s *ChatService) getFreeTierConfig(connID string) (*models.Config, error) {
 	err := s.db.QueryRow(`
 		SELECT id, name, provider_id
 		FROM models
-		WHERE free_tier = 1 AND is_visible = 1
+		WHERE free_tier = 1 AND isVisible = 1
 		LIMIT 1
 	`).Scan(&freeTierModelID, &freeTierModelName, &freeTierProviderID)
 
@@ -1395,7 +1395,7 @@ func (s *ChatService) GetEffectiveConfig(userConn *models.UserConnection, modelI
 
 		// Not an alias, try to find in database by model ID
 		err := s.db.QueryRow(
-			"SELECT provider_id, name FROM models WHERE id = ? AND is_visible = 1",
+			"SELECT provider_id, name FROM models WHERE id = ? AND isVisible = 1",
 			modelID,
 		).Scan(&providerID, &modelName)
 
@@ -1408,7 +1408,7 @@ func (s *ChatService) GetEffectiveConfig(userConn *models.UserConnection, modelI
 			if userConn.UserID == "anonymous" {
 				var isFreeTier int
 				err := s.db.QueryRow(
-					"SELECT COALESCE(free_tier, 0) FROM models WHERE id = ? AND is_visible = 1",
+					"SELECT COALESCE(free_tier, 0) FROM models WHERE id = ? AND isVisible = 1",
 					modelID,
 				).Scan(&isFreeTier)
 
@@ -1465,7 +1465,7 @@ func (s *ChatService) GetEffectiveConfig(userConn *models.UserConnection, modelI
 	err = s.db.QueryRow(`
 		SELECT name
 		FROM models
-		WHERE provider_id = ? AND is_visible = 1
+		WHERE provider_id = ? AND isVisible = 1
 		ORDER BY id ASC
 		LIMIT 1
 	`, providerID).Scan(&modelName)
