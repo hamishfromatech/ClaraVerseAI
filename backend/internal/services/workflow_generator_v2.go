@@ -271,25 +271,72 @@ func (s *WorkflowGeneratorV2Service) Step1SelectTools(req *MultiStepGenerateRequ
 	}
 
 	// Parse the tool selection result
-	var result ToolSelectionResult
 	content := apiResponse.Choices[0].Message.Content
 
-	if err := json.Unmarshal([]byte(content), &result); err != nil {
-		log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse tool selection: %v, content: %s", err, content)
+	// Extract JSON from markdown code blocks if present
+	jsonContent := extractJSON(content)
+
+	// First, try to parse as a generic map to handle different formats
+	var rawResult map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonContent), &rawResult); err != nil {
+		log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse tool selection JSON: %v, content: %s", err, content)
 		return nil, fmt.Errorf("failed to parse tool selection: %w", err)
 	}
 
-	// Validate selected tools exist
-	validTools := make([]SelectedTool, 0)
-	for _, selected := range result.SelectedTools {
-		if tool := GetToolByID(selected.ToolID); tool != nil {
-			selected.Category = tool.Category // Ensure category is correct
-			validTools = append(validTools, selected)
-		} else {
-			log.Printf("⚠️ [WORKFLOW-GEN-V2] Unknown tool selected: %s, skipping", selected.ToolID)
-		}
+	var result ToolSelectionResult
+	result.Reasoning = getStringField(rawResult, "reasoning")
+
+	// Handle selected_tools - can be array of strings or array of objects
+	selectedToolsRaw, ok := rawResult["selected_tools"]
+	if !ok {
+		log.Printf("⚠️ [WORKFLOW-GEN-V2] No selected_tools in response: %s", jsonContent)
+		return nil, fmt.Errorf("no selected_tools in response")
 	}
+
+	// Convert to proper SelectedTool objects
+	validTools := make([]SelectedTool, 0)
+	switch v := selectedToolsRaw.(type) {
+	case []interface{}:
+		for _, item := range v {
+			var toolID string
+			var category string
+			var reason string
+
+			// Handle string format: ["ask_user", "get_current_time"]
+			if strItem, ok := item.(string); ok {
+				toolID = strItem
+			} else if objItem, ok := item.(map[string]interface{}); ok {
+				// Handle object format: [{"tool_id": "...", "category": "...", "reason": "..."}]
+				toolID = getStringField(objItem, "tool_id")
+				category = getStringField(objItem, "category")
+				reason = getStringField(objItem, "reason")
+			}
+
+			if toolID != "" {
+				if tool := GetToolByID(toolID); tool != nil {
+					if category == "" {
+						category = tool.Category
+					}
+					validTools = append(validTools, SelectedTool{
+						ToolID:   toolID,
+						Category: category,
+						Reason:   reason,
+					})
+				} else {
+					log.Printf("⚠️ [WORKFLOW-GEN-V2] Unknown tool selected: %s, skipping", toolID)
+				}
+			}
+		}
+	default:
+		log.Printf("⚠️ [WORKFLOW-GEN-V2] Invalid selected_tools format: %T", selectedToolsRaw)
+		return nil, fmt.Errorf("invalid selected_tools format")
+	}
+
 	result.SelectedTools = validTools
+
+	if len(result.SelectedTools) == 0 {
+		return nil, fmt.Errorf("no valid tools selected")
+	}
 
 	log.Printf("✅ [WORKFLOW-GEN-V2] Selected %d tools: %v", len(result.SelectedTools), getToolIDs(result.SelectedTools))
 
@@ -666,4 +713,14 @@ func extractJSON(content string) string {
 	}
 
 	return content
+}
+
+// getStringField extracts a string field from a map, handling nil values
+func getStringField(m map[string]interface{}, key string) string {
+	if val, ok := m[key]; ok {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
 }

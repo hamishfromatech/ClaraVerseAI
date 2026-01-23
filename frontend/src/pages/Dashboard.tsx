@@ -9,7 +9,7 @@ const apps = [
     id: 'chat',
     icon: MessageSquare,
     title: 'Chat',
-    description: 'Talk with Clara AI assistant',
+    description: 'Talk to Kaylah AI assistant',
     href: '/chat',
   },
   {
@@ -102,7 +102,7 @@ export default function Dashboard() {
                 backgroundClip: 'text',
               }}
             >
-              Your AI Workspace
+              Welcome To Your AI Workspace
             </h1>
             <p
               style={{
