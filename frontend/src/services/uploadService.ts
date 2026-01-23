@@ -3,6 +3,7 @@ import type {
   ImageAttachment,
   DocumentAttachment,
   DataAttachment,
+  AudioAttachment,
   DataPreview,
 } from '@/types/websocket';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -242,6 +243,33 @@ function isDataFileMimeType(mimeType: string, filename?: string): boolean {
 }
 
 /**
+ * Check if a MIME type or filename indicates an audio file
+ */
+function isAudioMimeType(mimeType: string, filename?: string): boolean {
+  // Check MIME type
+  if (mimeType.startsWith('audio/')) {
+    return true;
+  }
+
+  // Check file extension as fallback
+  if (filename) {
+    const ext = filename.toLowerCase();
+    if (
+      ext.endsWith('.mp3') ||
+      ext.endsWith('.wav') ||
+      ext.endsWith('.m4a') ||
+      ext.endsWith('.ogg') ||
+      ext.endsWith('.flac') ||
+      ext.endsWith('.webm')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Convert UploadedFile to Attachment type for WebSocket messages
  * @param uploadedFile - The uploaded file metadata
  * @returns Attachment object
@@ -249,6 +277,7 @@ function isDataFileMimeType(mimeType: string, filename?: string): boolean {
 export function toAttachment(uploadedFile: UploadedFile): Attachment {
   const isDocument = isDocumentMimeType(uploadedFile.mime_type, uploadedFile.filename);
   const isDataFile = isDataFileMimeType(uploadedFile.mime_type, uploadedFile.filename);
+  const isAudio = isAudioMimeType(uploadedFile.mime_type, uploadedFile.filename);
 
   if (isDocument) {
     // PDF, DOCX, PPTX documents
@@ -274,6 +303,18 @@ export function toAttachment(uploadedFile: UploadedFile): Attachment {
       size: uploadedFile.size,
       filename: uploadedFile.filename,
       data_preview: uploadedFile.data_preview,
+    };
+    return attachment;
+  } else if (isAudio) {
+    // Audio files
+    const attachment: AudioAttachment = {
+      type: 'audio',
+      file_id: uploadedFile.file_id,
+      url: uploadedFile.url || '',
+      mime_type: uploadedFile.mime_type,
+      size: uploadedFile.size,
+      filename: uploadedFile.filename,
+      preview: uploadedFile.preview,
     };
     return attachment;
   } else {

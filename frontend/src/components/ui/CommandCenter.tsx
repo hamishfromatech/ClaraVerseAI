@@ -309,12 +309,20 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           file.name.endsWith('.xls');
         const isJSON = file.type === 'application/json' || file.name.endsWith('.json');
         const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
+        const isAudio =
+          file.type.startsWith('audio/') ||
+          file.name.endsWith('.mp3') ||
+          file.name.endsWith('.wav') ||
+          file.name.endsWith('.m4a') ||
+          file.name.endsWith('.ogg') ||
+          file.name.endsWith('.flac') ||
+          file.name.endsWith('.webm');
         const isDataFile = isCSV || isExcel || isJSON || isText;
         const isDocument = isPDF || isDOCX || isPPTX;
 
-        if (!isDocument && !isImage && !isDataFile) {
+        if (!isDocument && !isImage && !isDataFile && !isAudio) {
           alert(
-            `File "${file.name}" is not supported. Allowed types: Images, PDFs, DOCX, PPTX, CSV, Excel, JSON, Text files.`
+            `File "${file.name}" is not supported. Allowed types: Images, PDFs, DOCX, PPTX, CSV, Excel, JSON, Text, Audio files.`
           );
           continue;
         }
@@ -326,6 +334,9 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
         if (isDocument) {
           maxSize = 10 * 1024 * 1024; // 10MB for documents
           fileTypeLabel = 'documents (PDF/DOCX/PPTX)';
+        } else if (isAudio) {
+          maxSize = 25 * 1024 * 1024; // 25MB for audio (OpenAI Whisper limit)
+          fileTypeLabel = 'audio files';
         } else if (isDataFile) {
           maxSize = 100 * 1024 * 1024; // 100MB for data files
           fileTypeLabel = 'data files (CSV/Excel/JSON)';
@@ -498,9 +509,13 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
       async (audioBlob: Blob) => {
         setIsTranscribing(true);
         try {
+          const { transcriptionProvider, transcriptionModel } = useSettingsStore.getState();
+
           // Create form data with audio file
           const formData = new FormData();
           formData.append('file', audioBlob, 'recording.webm');
+          formData.append('provider', transcriptionProvider);
+          formData.append('model', transcriptionModel);
 
           // Upload to backend transcription endpoint
           const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
@@ -515,21 +530,22 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           }
 
           const result = await response.json();
+          console.log('📝 Transcription result:', result);
           if (result.text) {
-            // Auto-send the transcribed message immediately
-            const success = await onSendMessage(
-              result.text,
-              isDeepThinking,
-              selectedFiles.length > 0 ? selectedFiles : undefined
-            );
-            // Clear only on successful send
-            if (success) {
-              setMessage('');
-              setSelectedFiles([]);
-              // Cleanup preview URLs
-              Object.values(filePreviewUrls).forEach(url => URL.revokeObjectURL(url));
-              setFilePreviewUrls({});
-            }
+            // Update the text input with transcribed text instead of auto-sending
+            setMessage(prev => {
+              const current = prev.trim();
+              const newText = current ? `${current} ${result.text}` : result.text;
+              console.log('🆕 Setting message to:', newText);
+              return newText;
+            });
+            // Focus the textarea so user can see the text and edit it
+            setTimeout(() => {
+              console.log('🎯 Focusing textarea');
+              textareaRef.current?.focus();
+            }, 100);
+          } else {
+            console.warn('⚠️ Empty transcription text returned');
           }
         } catch (error) {
           console.error('Transcription error:', error);
@@ -703,6 +719,14 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                       const isJSON =
                         file.type === 'application/json' || file.name.endsWith('.json');
                       const isText = file.type === 'text/plain' || file.name.endsWith('.txt');
+                      const isAudio =
+                        file.type.startsWith('audio/') ||
+                        file.name.endsWith('.mp3') ||
+                        file.name.endsWith('.wav') ||
+                        file.name.endsWith('.m4a') ||
+                        file.name.endsWith('.ogg') ||
+                        file.name.endsWith('.flac') ||
+                        file.name.endsWith('.webm');
                       const isDataFile = isCSV || isExcel || isJSON || isText;
                       const isDocument = isPDF || isDOCX || isPPTX;
 
@@ -735,6 +759,16 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                         if (isDOCX) return 'DOCX';
                         if (isPPTX) return 'PPTX';
                         return 'Doc';
+                      };
+
+                      // Get appropriate icon and label for audio files
+                      const getAudioIcon = () => {
+                        return <Mic size={24} color="var(--color-text-secondary)" />;
+                      };
+
+                      const getAudioLabel = () => {
+                        const ext = file.name.split('.').pop()?.toUpperCase();
+                        return ext || 'Audio';
                       };
 
                       return (
@@ -795,6 +829,26 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                               </div>
                             </div>
                           )}
+
+                          {/* Audio File Preview */}
+                          {isAudio && (
+                            <div className={styles.filePreviewPdf}>
+                              {getAudioIcon()}
+                              <div
+                                style={{
+                                  fontSize: '8px',
+                                  color: 'var(--color-text-secondary)',
+                                  marginTop: '2px',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  width: '100%',
+                                }}
+                              >
+                                {getAudioLabel()}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -805,7 +859,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*,.pdf,.docx,.pptx,.csv,.xlsx,.xls,.json,.txt"
+                  accept="image/*,.pdf,.docx,.pptx,.csv,.xlsx,.xls,.json,.txt,audio/*,.mp3,.wav,.m4a,.ogg,.flac,.webm"
                   multiple
                   onChange={handleFileSelect}
                   style={{ display: 'none' }}

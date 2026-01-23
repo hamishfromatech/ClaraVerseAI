@@ -116,6 +116,10 @@ export interface SettingsState {
   memoryExtractorModelId: string | null;
   memorySelectorModelId: string | null;
 
+  // Transcription
+  transcriptionProvider: 'local' | 'remote';
+  transcriptionModel: string;
+
   // Actions
   setDefaultSystemInstructions: (instructions: string) => void;
   setDefaultModelId: (modelId: string | null) => void;
@@ -143,6 +147,10 @@ export interface SettingsState {
   setMemoryMaxInjection: (max: number) => void;
   setMemoryExtractorModelId: (modelId: string | null) => void;
   setMemorySelectorModelId: (modelId: string | null) => void;
+
+  // Transcription actions
+  setTranscriptionProvider: (provider: 'local' | 'remote') => void;
+  setTranscriptionModel: (model: string) => void;
 
   // Backend sync
   initializeFromBackend: () => Promise<void>;
@@ -183,6 +191,10 @@ export const useSettingsStore = create<SettingsState>()(
         memoryMaxInjection: 5,
         memoryExtractorModelId: null,
         memorySelectorModelId: null,
+
+        // Transcription
+        transcriptionProvider: 'local',
+        transcriptionModel: 'base.en',
 
         // Actions
         setDefaultSystemInstructions: (instructions: string) => {
@@ -350,6 +362,30 @@ export const useSettingsStore = create<SettingsState>()(
           }
         },
 
+        setTranscriptionProvider: (provider: 'local' | 'remote') => {
+          set({ transcriptionProvider: provider });
+
+          if (userPreferencesService.isAuthenticated()) {
+            userPreferencesService
+              .updatePreferences({ transcription_provider: provider })
+              .catch(error => {
+                console.error('Failed to sync transcription provider to backend:', error);
+              });
+          }
+        },
+
+        setTranscriptionModel: (model: string) => {
+          set({ transcriptionModel: model });
+
+          if (userPreferencesService.isAuthenticated()) {
+            userPreferencesService
+              .updatePreferences({ transcription_model: model })
+              .catch(error => {
+                console.error('Failed to sync transcription model to backend:', error);
+              });
+          }
+        },
+
         resetSettings: () => {
           set({
             defaultSystemInstructions: '',
@@ -366,6 +402,8 @@ export const useSettingsStore = create<SettingsState>()(
             memoryMaxInjection: 5,
             memoryExtractorModelId: null,
             memorySelectorModelId: null,
+            transcriptionProvider: 'local',
+            transcriptionModel: 'base.en',
           });
         },
 
@@ -391,6 +429,8 @@ export const useSettingsStore = create<SettingsState>()(
               memoryMaxInjection: number;
               memoryExtractorModelId: string | null;
               memorySelectorModelId: string | null;
+              transcriptionProvider: 'local' | 'remote';
+              transcriptionModel: string;
             }> = {};
 
             if (prefs.chat_privacy_mode) {
@@ -419,6 +459,12 @@ export const useSettingsStore = create<SettingsState>()(
             }
             if (prefs.memory_selector_model_id) {
               updates.memorySelectorModelId = prefs.memory_selector_model_id;
+            }
+            if (prefs.transcription_provider) {
+              updates.transcriptionProvider = prefs.transcription_provider as 'local' | 'remote';
+            }
+            if (prefs.transcription_model) {
+              updates.transcriptionModel = prefs.transcription_model;
             }
 
             if (Object.keys(updates).length > 0) {

@@ -4,6 +4,7 @@ import (
 	"claraverse/internal/audio"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -78,7 +79,15 @@ func InitAudioService() {
 			}, nil
 		}
 
-		audio.InitService(groqProviderGetter, openaiProviderGetter)
-		log.Printf("✅ [AUDIO-INIT] Audio service initialized (Groq primary, OpenAI fallback)")
+		// Local Whisper service URL from environment
+		localWhisperURL := os.Getenv("WHISPER_SERVICE_URL")
+
+		audio.InitService(groqProviderGetter, openaiProviderGetter, localWhisperURL)
+
+		status := "Groq primary, OpenAI fallback"
+		if localWhisperURL != "" {
+			status = fmt.Sprintf("Local Whisper primary (%s), Groq fallback", localWhisperURL)
+		}
+		log.Printf("✅ [AUDIO-INIT] Audio service initialized (%s)", status)
 	})
 }

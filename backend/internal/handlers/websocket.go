@@ -316,15 +316,16 @@ func (h *WebSocketHandler) handleChatMessage(userConn *models.UserConnection, cl
 		// Get file cache service
 		fileCache := filecache.GetService()
 
-		// Process document attachments first (PDF, DOCX, PPTX)
+		// Process document attachments first (PDF, DOCX, PPTX, Audio)
 		for _, att := range clientMsg.Attachments {
-			// Check for document files (PDF, DOCX, PPTX)
+			// Check for document files (PDF, DOCX, PPTX) or Audio files (Whisper transcription)
 			isDocument := att.MimeType == "application/pdf" ||
 				att.MimeType == "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
 				att.MimeType == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+			isAudio := strings.HasPrefix(att.MimeType, "audio/")
 
-			if isDocument && att.FileID != "" {
-				// Fetch document text from cache
+			if (isDocument || isAudio) && att.FileID != "" {
+				// Fetch file from cache
 				cachedFile, err := fileCache.GetByUserAndConversation(
 					att.FileID,
 					userConn.UserID,
@@ -332,19 +333,33 @@ func (h *WebSocketHandler) handleChatMessage(userConn *models.UserConnection, cl
 				)
 
 				if err != nil {
-					log.Printf("⚠️  Failed to fetch document file %s: %v", att.FileID, err)
+					log.Printf("⚠️  Failed to fetch file %s: %v", att.FileID, err)
 					// Track expired file instead of returning error
 					expiredFiles = append(expiredFiles, att.Filename)
 					continue
 				}
 
-				// Build document context
-				documentContext.WriteString(fmt.Sprintf("\n\n[Document: %s]\n", att.Filename))
-				documentContext.WriteString(fmt.Sprintf("Pages: %d | Words: %d\n\n", cachedFile.PageCount, cachedFile.WordCount))
+				// Skip if no text extracted
+				if cachedFile.ExtractedText == nil || cachedFile.ExtractedText.String() == "" {
+					continue
+				}
+
+				// Build document/audio context
+				header := "Document"
+				if isAudio {
+					header = "Audio Transcription"
+				}
+
+				documentContext.WriteString(fmt.Sprintf("\n\n[%s: %s]\n", header, att.Filename))
+				if isDocument {
+					documentContext.WriteString(fmt.Sprintf("Pages: %d | Words: %d\n\n", cachedFile.PageCount, cachedFile.WordCount))
+				} else {
+					documentContext.WriteString(fmt.Sprintf("Size: %d bytes | Words: %d\n\n", cachedFile.Size, cachedFile.WordCount))
+				}
 				documentContext.WriteString(cachedFile.ExtractedText.String())
 				documentContext.WriteString("\n---\n")
 
-				log.Printf("📄 Injected document context: %s (%d words) for %s", att.Filename, cachedFile.WordCount, userConn.ConnID)
+				log.Printf("📄 Injected %s context: %s (%d words) for %s", strings.ToLower(header), att.Filename, cachedFile.WordCount, userConn.ConnID)
 			}
 		}
 

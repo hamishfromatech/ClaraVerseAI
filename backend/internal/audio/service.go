@@ -26,11 +26,12 @@ type Provider struct {
 // ProviderGetter is a function type to get a provider
 type ProviderGetter func() (*Provider, error)
 
-// Service handles audio transcription using Whisper API (Groq or OpenAI)
+// Service handles audio transcription using Whisper API (Groq, OpenAI, or Local)
 type Service struct {
 	httpClient           *http.Client
 	groqProviderGetter   ProviderGetter
 	openaiProviderGetter ProviderGetter
+	localProviderURL     string
 	mu                   sync.RWMutex
 }
 
@@ -45,8 +46,8 @@ func GetService() *Service {
 }
 
 // InitService initializes the audio service with dependencies
-// Priority: Groq (cheaper) -> OpenAI (fallback)
-func InitService(groqProviderGetter, openaiProviderGetter ProviderGetter) *Service {
+// Priority: Local (if configured) -> Groq (cheaper) -> OpenAI (fallback)
+func InitService(groqProviderGetter, openaiProviderGetter ProviderGetter, localProviderURL string) *Service {
 	once.Do(func() {
 		instance = &Service{
 			httpClient: &http.Client{
@@ -54,6 +55,7 @@ func InitService(groqProviderGetter, openaiProviderGetter ProviderGetter) *Servi
 			},
 			groqProviderGetter:   groqProviderGetter,
 			openaiProviderGetter: openaiProviderGetter,
+			localProviderURL:     localProviderURL,
 		}
 	})
 	return instance
@@ -65,6 +67,9 @@ type TranscribeRequest struct {
 	Language           string // Optional language code (e.g., "en", "es", "fr")
 	Prompt             string // Optional prompt to guide transcription
 	TranslateToEnglish bool   // If true, translates non-English audio to English
+	Model              string // Optional model size (e.g., "tiny", "base", "small", "medium", "large")
+	PreferLocal        bool   // If true, forces local transcription (default true if URL set)
+	ForceRemote        bool   // If true, skips local transcription
 }
 
 // TranscribeResponse contains the result of transcription
@@ -76,7 +81,7 @@ type TranscribeResponse struct {
 }
 
 // Transcribe transcribes audio to text using Whisper API
-// Tries Groq first (cheaper), falls back to OpenAI
+// Tries Local first if configured, then Groq (cheaper), falls back to OpenAI
 // If TranslateToEnglish is true, uses the translation endpoint to output English
 func (s *Service) Transcribe(req *TranscribeRequest) (*TranscribeResponse, error) {
 	s.mu.RLock()
@@ -88,7 +93,17 @@ func (s *Service) Transcribe(req *TranscribeRequest) (*TranscribeResponse, error
 	}
 	log.Printf("🎵 [AUDIO] %s audio: %s", action, req.AudioPath)
 
-	// Try Groq first (much cheaper: $0.04/hour vs OpenAI $0.36/hour)
+	// Try Local Whisper first if configured and not forced to remote
+	if s.localProviderURL != "" && !req.TranslateToEnglish && !req.ForceRemote {
+		log.Printf("🚀 [AUDIO] Using Local Whisper (whisper-node)")
+		resp, err := s.transcribeWithLocalWhisper(req)
+		if err == nil {
+			return resp, nil
+		}
+		log.Printf("⚠️ [AUDIO] Local transcription failed, trying remote providers: %v", err)
+	}
+
+	// Try Groq second (much cheaper: $0.04/hour vs OpenAI $0.36/hour)
 	// Note: Groq supports transcription but translation support may be limited
 	if s.groqProviderGetter != nil && !req.TranslateToEnglish {
 		provider, err := s.groqProviderGetter()
@@ -116,6 +131,89 @@ func (s *Service) Transcribe(req *TranscribeRequest) (*TranscribeResponse, error
 	}
 
 	return nil, fmt.Errorf("no audio provider configured. Please add Groq or OpenAI API key")
+}
+
+// transcribeWithLocalWhisper uses the local whisper-service (whisper-node)
+func (s *Service) transcribeWithLocalWhisper(req *TranscribeRequest) (*TranscribeResponse, error) {
+	// Open audio file
+	audioFile, err := os.Open(req.AudioPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open audio file: %w", err)
+	}
+	defer audioFile.Close()
+
+	// Create multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	filename := filepath.Base(req.AudioPath)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create form file: %w", err)
+	}
+
+	if _, err := io.Copy(part, audioFile); err != nil {
+		return nil, fmt.Errorf("failed to copy audio data: %w", err)
+	}
+
+	if req.Language != "" {
+		if err := writer.WriteField("language", req.Language); err != nil {
+			return nil, fmt.Errorf("failed to write language field: %w", err)
+		}
+	}
+
+	if req.Model != "" {
+		if err := writer.WriteField("model", req.Model); err != nil {
+			return nil, fmt.Errorf("failed to write model field: %w", err)
+		}
+	}
+
+	if err := writer.Close(); err != nil {
+		return nil, fmt.Errorf("failed to close multipart writer: %w", err)
+	}
+
+	// Create request
+	apiURL := fmt.Sprintf("%s/transcribe", s.localProviderURL)
+	httpReq, err := http.NewRequest("POST", apiURL, body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	httpReq.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Make request
+	resp, err := s.httpClient.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("local Whisper request failed: %w", err)
+	}
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("local Whisper API error: %d - %s", resp.StatusCode, string(respBody))
+	}
+
+	// Parse response
+	var apiResp struct {
+		Text     string `json:"text"`
+		Language string `json:"language"`
+	}
+
+	if err := json.Unmarshal(respBody, &apiResp); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	log.Printf("✅ [AUDIO] Local transcription successful (%d chars)", len(apiResp.Text))
+
+	return &TranscribeResponse{
+		Text:     apiResp.Text,
+		Language: apiResp.Language,
+		Provider: "Local-Whisper",
+	}, nil
 }
 
 // transcribeWithGroq uses Groq's Whisper API (whisper-large-v3)

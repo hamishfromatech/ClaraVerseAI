@@ -15,6 +15,7 @@ import { useSettingsStore, encryptApiKey } from '@/store/useSettingsStore';
 import type { CustomProvider } from '@/store/useSettingsStore';
 import { useModelStore } from '@/store/useModelStore';
 import { MemorySection } from '@/components/settings/MemorySection';
+import { TranscriptionSection } from '@/components/settings/TranscriptionSection';
 import { fetchToolPredictorModels } from '@/services/modelService';
 import type { Model } from '@/types/websocket';
 
@@ -767,6 +768,12 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
 
                 {/* Memory System */}
                 <MemorySection onSave={onSave} />
+
+                {/* Divider */}
+                <div className="ai-config-divider"></div>
+
+                {/* Transcription Settings */}
+                <TranscriptionSection onSave={onSave} />
               </div>
             </section>
           </div>

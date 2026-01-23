@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"claraverse/internal/audio"
 	"claraverse/internal/filecache"
 	"claraverse/internal/security"
 	"claraverse/internal/services"
@@ -577,16 +578,35 @@ func (h *UploadHandler) handleAudioUpload(c *fiber.Ctx, fileID, userID string, f
 		})
 	}
 
+	// Trigger transcription
+	var transcribedText string
+	audioService := audio.GetService()
+	if audioService != nil {
+		resp, err := audioService.Transcribe(&audio.TranscribeRequest{
+			AudioPath: filePath,
+			Model:     "small.en", // Use a more accurate model by default
+		})
+		if err != nil {
+			log.Printf("⚠️  [UPLOAD] Transcription failed for %s: %v", fileHeader.Filename, err)
+			// Continue without transcription if it fails
+		} else if resp != nil {
+			transcribedText = resp.Text
+			log.Printf("✅ [UPLOAD] Audio transcribed successfully (%d characters)", len(transcribedText))
+		}
+	}
+
 	// Register file in cache for auto-deletion
 	cachedFile := &filecache.CachedFile{
 		FileID:         fileID,
 		UserID:         userID,
 		ConversationID: conversationID,
+		ExtractedText:  security.NewSecureString(transcribedText),
 		FileHash:       *fileHash,
 		Filename:       fileHeader.Filename,
 		MimeType:       mimeType,
 		Size:           fileHeader.Size,
 		FilePath:       filePath,
+		WordCount:      len(strings.Fields(transcribedText)),
 		UploadedAt:     time.Now(),
 	}
 	h.fileCache.Store(cachedFile)
@@ -596,13 +616,22 @@ func (h *UploadHandler) handleAudioUpload(c *fiber.Ctx, fileID, userID string, f
 	// Build file URL
 	fileURL := fmt.Sprintf("/uploads/%s", savedFilename)
 
+	// Build preview (first 200 chars)
+	preview := transcribedText
+	if len(preview) > 200 {
+		preview = preview[:200] + "..."
+	}
+
 	return c.Status(fiber.StatusCreated).JSON(UploadResponse{
-		FileID:   fileID,
-		URL:      fileURL,
-		MimeType: mimeType,
-		Size:     fileHeader.Size,
-		Filename: fileHeader.Filename,
-		Hash:     fileHash.String(),
+		FileID:         fileID,
+		URL:            fileURL,
+		MimeType:       mimeType,
+		Size:           fileHeader.Size,
+		Filename:       fileHeader.Filename,
+		Hash:           fileHash.String(),
+		Preview:        preview,
+		ConversationID: conversationID,
+		WordCount:      cachedFile.WordCount,
 	})
 }
 

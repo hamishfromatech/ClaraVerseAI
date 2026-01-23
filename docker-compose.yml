@@ -115,6 +115,23 @@ services:
     networks:
       - claraverse-network
 
+  whisper-service:
+    build:
+      context: ./backend/whisper-service
+      dockerfile: Dockerfile
+    container_name: claraverse-whisper
+    volumes:
+      - whisper-models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3005/health').then(r => r.ok ? process.exit(0) : process.exit(1))"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    networks:
+      - claraverse-network
+
   backend:
     build:
       context: ./backend
@@ -146,6 +163,8 @@ services:
       - SEARXNG_URL=${SEARXNG_URLS:-http://searxng:8080}
       # E2B service integration
       - E2B_SERVICE_URL=http://e2b-service:8001
+      # Whisper Local STT integration
+      - WHISPER_SERVICE_URL=http://whisper-service:3005
       # Frontend URL (for payment redirects)
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       # Backend public URL for generating absolute download URLs
@@ -183,6 +202,8 @@ services:
       searxng:
         condition: service_healthy
       e2b-service:
+        condition: service_healthy
+      whisper-service:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -230,6 +251,8 @@ volumes:
   backend-uploads:
     driver: local
   backend-logs:
+    driver: local
+  whisper-models:
     driver: local
   mongodb-data:
     driver: local
