@@ -40,6 +40,8 @@ func (h *AudioHandler) Transcribe(c *fiber.Ctx) error {
 	// Get optional parameters
 	language := c.FormValue("language", "")
 	prompt := c.FormValue("prompt", "")
+	model := c.FormValue("model", "")
+	provider := c.FormValue("provider", "") // "local" or "remote"
 
 	// Create temp file to store the upload
 	tempDir := os.TempDir()
@@ -72,10 +74,19 @@ func (h *AudioHandler) Transcribe(c *fiber.Ctx) error {
 		AudioPath: tempFile,
 		Language:  language,
 		Prompt:    prompt,
+		Model:     model,
+	}
+
+	if provider == "remote" {
+		req.ForceRemote = true
+	} else if provider == "local" {
+		req.PreferLocal = true
 	}
 
 	// Call transcription service
-	log.Printf("🎵 [AUDIO-API] Transcribing audio file: %s (%d bytes)", file.Filename, file.Size)
+	log.Printf("🎵 [AUDIO-API] Transcribing audio file: %s (%d bytes, provider: %s, model: %s)",
+		file.Filename, file.Size, provider, model)
+
 	resp, err := audioService.Transcribe(req)
 	if err != nil {
 		log.Printf("❌ [AUDIO-API] Transcription failed: %v", err)

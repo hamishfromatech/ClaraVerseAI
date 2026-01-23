@@ -73,6 +73,10 @@ type UserPreferences struct {
 	MemoryMaxInjection        int    `bson:"memoryMaxInjection,omitempty" json:"memory_max_injection,omitempty"`       // Default: 5 memories
 	MemoryExtractorModelID    string `bson:"memoryExtractorModelId,omitempty" json:"memory_extractor_model_id,omitempty"`
 	MemorySelectorModelID     string `bson:"memorySelectorModelId,omitempty" json:"memory_selector_model_id,omitempty"`
+
+	// Transcription preferences
+	TranscriptionProvider string `bson:"transcriptionProvider,omitempty" json:"transcription_provider,omitempty"`
+	TranscriptionModel    string `bson:"transcriptionModel,omitempty" json:"transcription_model,omitempty"`
 }
 
 // UpdateUserPreferencesRequest is the request body for updating preferences
@@ -90,6 +94,10 @@ type UpdateUserPreferencesRequest struct {
 	MemoryMaxInjection        *int    `json:"memory_max_injection,omitempty"`
 	MemoryExtractorModelID    *string `json:"memory_extractor_model_id,omitempty"`
 	MemorySelectorModelID     *string `json:"memory_selector_model_id,omitempty"`
+
+	// Transcription preferences
+	TranscriptionProvider *string `json:"transcription_provider,omitempty"`
+	TranscriptionModel    *string `json:"transcription_model,omitempty"`
 }
 
 // UserResponse is the API response for user data

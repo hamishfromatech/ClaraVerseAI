@@ -79,7 +79,18 @@ export interface DataAttachment {
   data_preview?: DataPreview; // CSV table preview
 }
 
-export type Attachment = ImageAttachment | DocumentAttachment | DataAttachment;
+export interface AudioAttachment {
+  type: 'audio';
+  file_id: string;
+  url: string;
+  mime_type: string;
+  size: number;
+  filename?: string;
+  expired?: boolean; // True if file has expired and is no longer available
+  preview?: string; // Transcribed text preview
+}
+
+export type Attachment = ImageAttachment | DocumentAttachment | DataAttachment | AudioAttachment;
 
 // Client to Server messages
 export interface NewConversationPayload {

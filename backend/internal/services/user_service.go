@@ -221,6 +221,12 @@ func (s *UserService) UpdatePreferences(ctx context.Context, supabaseUserID stri
 	if req.MemorySelectorModelID != nil {
 		updateFields["preferences.memorySelectorModelId"] = *req.MemorySelectorModelID
 	}
+	if req.TranscriptionProvider != nil {
+		updateFields["preferences.transcriptionProvider"] = *req.TranscriptionProvider
+	}
+	if req.TranscriptionModel != nil {
+		updateFields["preferences.transcriptionModel"] = *req.TranscriptionModel
+	}
 
 	if len(updateFields) == 0 {
 		// No changes, just return current preferences
