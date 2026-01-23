@@ -7,14 +7,14 @@
  */
 
 import type { StateStorage } from 'zustand/middleware';
-import type { Chat } from '@/types/chat';
+import type { Chat, Folder } from '@/types/chat';
 import * as chatDB from './chatDatabase';
 
 // Throttle configuration
 const THROTTLE_MS = 1000; // Max 1 write per second during streaming
 
 // Throttle state
-let pendingWrite: { chats: Chat[]; activeNav: string } | null = null;
+let pendingWrite: { chats: Chat[]; folders: Folder[]; activeNav: string } | null = null;
 let writeTimer: ReturnType<typeof setTimeout> | null = null;
 let isStreaming = false;
 
@@ -42,7 +42,10 @@ function getUserStorageName(baseName: string): string {
 async function flushWrite(): Promise<void> {
   if (pendingWrite) {
     try {
-      await chatDB.saveChats(pendingWrite.chats);
+      await Promise.all([
+        chatDB.saveChats(pendingWrite.chats),
+        chatDB.saveFolders(pendingWrite.folders),
+      ]);
       // Also persist activeNav to localStorage (small, ok for localStorage)
       const userKey = getUserStorageName('chat-nav');
       localStorage.setItem(userKey, pendingWrite.activeNav);
@@ -146,7 +149,10 @@ export function createIDBChatStorage(): StateStorage {
         }
 
         // Get chats from IndexedDB
-        const chats = await chatDB.getAllChats();
+        const [chats, folders] = await Promise.all([
+          chatDB.getAllChats(),
+          chatDB.getAllFolders(),
+        ]);
 
         // Get activeNav from localStorage (small enough)
         const userKey = getUserStorageName('chat-nav');
@@ -172,6 +178,7 @@ export function createIDBChatStorage(): StateStorage {
         return JSON.stringify({
           state: {
             chats: revivedChats,
+            folders,
             activeNav,
             deletedChatIds: deletedChatIds,
           },
@@ -186,6 +193,7 @@ export function createIDBChatStorage(): StateStorage {
       try {
         const parsed = JSON.parse(value);
         const chats: Chat[] = parsed.state?.chats || [];
+        const folders: Folder[] = parsed.state?.folders || [];
         const activeNav: string = parsed.state?.activeNav || 'chats';
 
         // Handle deletedChatIds - can be Set, array, or object (from bad serialization)
@@ -211,7 +219,7 @@ export function createIDBChatStorage(): StateStorage {
 
         if (isStreaming) {
           // Throttle writes during streaming
-          pendingWrite = { chats, activeNav };
+          pendingWrite = { chats, folders, activeNav };
           if (!writeTimer) {
             writeTimer = setTimeout(() => {
               flushWrite();
@@ -228,7 +236,7 @@ export function createIDBChatStorage(): StateStorage {
             await flushWrite();
           }
           // Then write current data
-          pendingWrite = { chats, activeNav };
+          pendingWrite = { chats, folders, activeNav };
           await flushWrite();
         }
       } catch (error) {

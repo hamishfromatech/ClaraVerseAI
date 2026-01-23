@@ -24,6 +24,7 @@ import (
 type ChatSyncService struct {
 	db                *database.MongoDB
 	collection        *mongo.Collection
+	foldersCollection *mongo.Collection
 	encryptionService *crypto.EncryptionService
 }
 
@@ -32,6 +33,7 @@ func NewChatSyncService(db *database.MongoDB, encryptionService *crypto.Encrypti
 	return &ChatSyncService{
 		db:                db,
 		collection:        db.Collection(database.CollectionChats),
+		foldersCollection: db.Collection(database.CollectionFolders),
 		encryptionService: encryptionService,
 	}
 }
@@ -78,6 +80,7 @@ func (s *ChatSyncService) CreateOrUpdateChat(ctx context.Context, userID string,
 	update := bson.M{
 		"$set": bson.M{
 			"title":             req.Title,
+			"folderId":          req.FolderID,
 			"encryptedMessages": compressedMessages,
 			"isStarred":         req.IsStarred,
 			"model":             req.Model,
@@ -105,6 +108,7 @@ func (s *ChatSyncService) CreateOrUpdateChat(ctx context.Context, userID string,
 
 	return &models.ChatResponse{
 		ID:        req.ID,
+		FolderID:  resultChat.FolderID,
 		Title:     resultChat.Title,
 		Messages:  req.Messages,
 		IsStarred: resultChat.IsStarred,
@@ -143,6 +147,7 @@ func (s *ChatSyncService) GetChat(ctx context.Context, userID, chatID string) (*
 
 	return &models.ChatResponse{
 		ID:        chat.ChatID,
+		FolderID:  chat.FolderID,
 		Title:     chat.Title,
 		Messages:  messages,
 		IsStarred: chat.IsStarred,
@@ -186,6 +191,7 @@ func (s *ChatSyncService) ListChats(ctx context.Context, userID string, page, pa
 		SetProjection(bson.M{
 			"_id":               1,
 			"chatId":            1,
+			"folderId":          1,
 			"title":             1,
 			"isStarred":         1,
 			"model":             1,
@@ -220,6 +226,7 @@ func (s *ChatSyncService) ListChats(ctx context.Context, userID string, page, pa
 
 		chats = append(chats, models.ChatListItem{
 			ID:           encChat.ChatID,
+			FolderID:     encChat.FolderID,
 			Title:        encChat.Title,
 			IsStarred:    encChat.IsStarred,
 			Model:        encChat.Model,
@@ -258,6 +265,9 @@ func (s *ChatSyncService) UpdateChat(ctx context.Context, userID, chatID string,
 	if req.Title != nil {
 		updateFields["title"] = *req.Title
 	}
+	if req.FolderID != nil {
+		updateFields["folderId"] = *req.FolderID
+	}
 	if req.IsStarred != nil {
 		updateFields["isStarred"] = *req.IsStarred
 	}
@@ -291,6 +301,7 @@ func (s *ChatSyncService) UpdateChat(ctx context.Context, userID, chatID string,
 
 	return &models.ChatListItem{
 		ID:           updatedChat.ChatID,
+		FolderID:     updatedChat.FolderID,
 		Title:        updatedChat.Title,
 		IsStarred:    updatedChat.IsStarred,
 		Model:        updatedChat.Model,
@@ -381,6 +392,7 @@ func (s *ChatSyncService) GetAllChats(ctx context.Context, userID string) (*mode
 
 		chats = append(chats, models.ChatResponse{
 			ID:        encChat.ChatID,
+			FolderID:  encChat.FolderID,
 			Title:     encChat.Title,
 			Messages:  messages,
 			IsStarred: encChat.IsStarred,
@@ -468,6 +480,7 @@ func (s *ChatSyncService) AddMessage(ctx context.Context, userID, chatID string,
 
 	return &models.ChatResponse{
 		ID:        chatID,
+		FolderID:  updatedChat.FolderID,
 		Title:     updatedChat.Title,
 		Messages:  messages,
 		IsStarred: updatedChat.IsStarred,
@@ -485,12 +498,80 @@ func (s *ChatSyncService) DeleteAllUserChats(ctx context.Context, userID string)
 	}
 
 	filter := bson.M{"userId": userID}
+
+	// Delete folders too
+	_, _ = s.foldersCollection.DeleteMany(ctx, filter)
+
 	result, err := s.collection.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0, fmt.Errorf("failed to delete user chats: %w", err)
 	}
 
 	return result.DeletedCount, nil
+}
+
+// CreateOrUpdateFolder creates or updates a folder
+func (s *ChatSyncService) CreateOrUpdateFolder(ctx context.Context, userID string, req *models.FolderRequest) (*models.Folder, error) {
+	if userID == "" || req.ID == "" {
+		return nil, fmt.Errorf("user ID and folder ID are required")
+	}
+
+	now := time.Now()
+	filter := bson.M{"userId": userID, "_id": req.ID}
+	update := bson.M{
+		"$set": bson.M{
+			"name":      req.Name,
+			"updatedAt": now,
+		},
+		"$setOnInsert": bson.M{
+			"userId":    userID,
+			"createdAt": now,
+		},
+	}
+
+	opts := options.FindOneAndUpdate().SetUpsert(true).SetReturnDocument(options.After)
+	var folder models.Folder
+	err := s.foldersCollection.FindOneAndUpdate(ctx, filter, update, opts).Decode(&folder)
+	if err != nil {
+		return nil, fmt.Errorf("failed to upsert folder: %w", err)
+	}
+
+	return &folder, nil
+}
+
+// ListFolders returns all folders for a user
+func (s *ChatSyncService) ListFolders(ctx context.Context, userID string) ([]models.Folder, error) {
+	filter := bson.M{"userId": userID}
+	opts := options.Find().SetSort(bson.D{{Key: "updatedAt", Value: -1}})
+
+	cursor, err := s.foldersCollection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	folders := make([]models.Folder, 0)
+	if err := cursor.All(ctx, &folders); err != nil {
+		return nil, err
+	}
+
+	return folders, nil
+}
+
+// DeleteFolder removes a folder and uncategorizes its chats
+func (s *ChatSyncService) DeleteFolder(ctx context.Context, userID, folderID string) error {
+	filter := bson.M{"userId": userID, "_id": folderID}
+	_, err := s.foldersCollection.DeleteOne(ctx, filter)
+	if err != nil {
+		return err
+	}
+
+	// Uncategorize chats
+	chatFilter := bson.M{"userId": userID, "folderId": folderID}
+	chatUpdate := bson.M{"$set": bson.M{"folderId": nil, "updatedAt": time.Now()}}
+	_, err = s.collection.UpdateMany(ctx, chatFilter, chatUpdate)
+
+	return err
 }
 
 // decryptMessages decrypts and decompresses the encrypted messages JSON

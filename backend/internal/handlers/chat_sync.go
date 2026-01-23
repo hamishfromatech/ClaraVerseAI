@@ -326,8 +326,69 @@ func (h *ChatSyncHandler) DeleteAll(c *fiber.Ctx) error {
 	}
 
 	log.Printf("✅ Deleted %d chats for user %s", count, userID)
-	return c.JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 		"deleted": count,
 	})
+}
+
+// CreateOrUpdateFolder creates or updates a folder
+// POST /api/chats/folders
+func (h *ChatSyncHandler) CreateOrUpdateFolder(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Authentication required"})
+	}
+
+	var req models.FolderRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request body"})
+	}
+
+	folder, err := h.service.CreateOrUpdateFolder(c.Context(), userID, &req)
+	if err != nil {
+		log.Printf("❌ Failed to create/update folder: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save folder"})
+	}
+
+	return c.JSON(folder)
+}
+
+// ListFolders returns all folders for a user
+// GET /api/chats/folders
+func (h *ChatSyncHandler) ListFolders(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Authentication required"})
+	}
+
+	folders, err := h.service.ListFolders(c.Context(), userID)
+	if err != nil {
+		log.Printf("❌ Failed to list folders: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to list folders"})
+	}
+
+	return c.JSON(folders)
+}
+
+// DeleteFolder removes a folder
+// DELETE /api/chats/folders/:id
+func (h *ChatSyncHandler) DeleteFolder(c *fiber.Ctx) error {
+	userID, ok := c.Locals("user_id").(string)
+	if !ok || userID == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Authentication required"})
+	}
+
+	folderID := c.Params("id")
+	if folderID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Folder ID is required"})
+	}
+
+	err := h.service.DeleteFolder(c.Context(), userID, folderID)
+	if err != nil {
+		log.Printf("❌ Failed to delete folder: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to delete folder"})
+	}
+
+	return c.JSON(fiber.Map{"success": true})
 }

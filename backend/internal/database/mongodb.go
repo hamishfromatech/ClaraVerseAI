@@ -33,6 +33,7 @@ const (
 	CollectionMCPAuditLog          = "mcp_audit_log"
 	CollectionCredentials          = "credentials"
 	CollectionChats                = "chats"
+	CollectionFolders              = "folders"
 
 	// Memory system collections
 	CollectionMemories                = "memories"
@@ -182,8 +183,17 @@ func (m *MongoDB) Initialize(ctx context.Context) error {
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "updatedAt", Value: -1}}}, // List user's chats sorted by recent
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "chatId", Value: 1}}, Options: options.Index().SetUnique(true)}, // Unique chat per user
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "isStarred", Value: 1}}}, // Filter starred chats
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "folderId", Value: 1}}},  // Filter by folder
 	}); err != nil {
 		return fmt.Errorf("failed to create chats indexes: %w", err)
+	}
+
+	// Folders collection indexes
+	if err := m.createIndexes(ctx, CollectionFolders, []mongo.IndexModel{
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "updatedAt", Value: -1}}},
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "name", Value: 1}}},
+	}); err != nil {
+		return fmt.Errorf("failed to create folders indexes: %w", err)
 	}
 
 	// Memories collection indexes

@@ -10,11 +10,12 @@
  */
 
 import { openDB, type IDBPDatabase } from 'idb';
-import type { Chat, Message, ChatStatus } from '@/types/chat';
+import type { Chat, Message, ChatStatus, Folder } from '@/types/chat';
 
 // Database schema types
 interface ChatRecord {
   id: string;
+  folderId?: string;
   title: string;
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +43,14 @@ interface ChatDBSchema {
     indexes: {
       'by-updatedAt': Date;
       'by-starred': boolean;
+      'by-folderId': string;
+    };
+  };
+  folders: {
+    key: string;
+    value: Folder;
+    indexes: {
+      'by-updatedAt': Date;
     };
   };
   messages: {
@@ -60,7 +69,7 @@ interface ChatDBSchema {
 }
 
 const DB_NAME_PREFIX = 'atech-chats';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 // Current user ID for user-specific database
 let currentUserId: string | null = null;
@@ -127,7 +136,7 @@ function getDB(): Promise<IDBPDatabase<ChatDBSchema>> {
     console.log(`[ChatDB] Opening database: ${dbName}`);
 
     dbPromise = openDB<ChatDBSchema>(dbName, DB_VERSION, {
-      upgrade(db, oldVersion, newVersion) {
+      upgrade(db, oldVersion, newVersion, transaction) {
         console.log(`[ChatDB] Upgrading ${dbName} from v${oldVersion} to v${newVersion}`);
 
         // Create chats store
@@ -135,6 +144,16 @@ function getDB(): Promise<IDBPDatabase<ChatDBSchema>> {
           const chatStore = db.createObjectStore('chats', { keyPath: 'id' });
           chatStore.createIndex('by-updatedAt', 'updatedAt');
           chatStore.createIndex('by-starred', 'isStarred');
+          chatStore.createIndex('by-folderId', 'folderId');
+        } else if (oldVersion < 2) {
+          const chatStore = transaction.objectStore('chats');
+          chatStore.createIndex('by-folderId', 'folderId');
+        }
+
+        // Create folders store
+        if (!db.objectStoreNames.contains('folders')) {
+          const folderStore = db.createObjectStore('folders', { keyPath: 'id' });
+          folderStore.createIndex('by-updatedAt', 'updatedAt');
         }
 
         // Create messages store
@@ -180,6 +199,7 @@ export async function saveChat(chat: Chat): Promise<void> {
     // Save chat metadata
     const chatRecord: ChatRecord = {
       id: chat.id,
+      folderId: chat.folderId,
       title: chat.title,
       createdAt: chat.createdAt,
       updatedAt: chat.updatedAt,
@@ -223,6 +243,7 @@ export async function saveChats(chats: Chat[]): Promise<void> {
       // Save chat metadata
       const chatRecord: ChatRecord = {
         id: chat.id,
+        folderId: chat.folderId,
         title: chat.title,
         createdAt: chat.createdAt,
         updatedAt: chat.updatedAt,
@@ -277,6 +298,7 @@ export async function getChat(chatId: string): Promise<Chat | undefined> {
     // (IndexedDB doesn't preserve Date objects, they become strings/numbers)
     const chat: Chat = {
       id: chatRecord.id,
+      folderId: chatRecord.folderId,
       title: chatRecord.title,
       createdAt: ensureDate(chatRecord.createdAt),
       updatedAt: ensureDate(chatRecord.updatedAt),
@@ -330,6 +352,7 @@ export async function getAllChats(): Promise<Chat[]> {
 
       return {
         id: chatRecord.id,
+        folderId: chatRecord.folderId,
         title: chatRecord.title,
         createdAt: ensureDate(chatRecord.createdAt),
         updatedAt: ensureDate(chatRecord.updatedAt),
@@ -575,6 +598,70 @@ export async function updateChatMeta(
     await db.put('chats', updated);
   } catch (error) {
     console.error('[ChatDB] Failed to update chat metadata:', error);
+    throw error;
+  }
+}
+
+// ===== FOLDER OPERATIONS =====
+
+/**
+ * Save a folder (upsert)
+ */
+export async function saveFolder(folder: Folder): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.put('folders', folder);
+  } catch (error) {
+    console.error('[ChatDB] Failed to save folder:', error);
+    throw error;
+  }
+}
+
+/**
+ * Save multiple folders
+ */
+export async function saveFolders(folders: Folder[]): Promise<void> {
+  if (folders.length === 0) return;
+  try {
+    const db = await getDB();
+    const tx = db.transaction('folders', 'readwrite');
+    for (const folder of folders) {
+      await tx.store.put(folder);
+    }
+    await tx.done;
+  } catch (error) {
+    console.error('[ChatDB] Failed to save folders:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get all folders
+ */
+export async function getAllFolders(): Promise<Folder[]> {
+  try {
+    const db = await getDB();
+    const folders = await db.getAll('folders');
+    return folders.map(f => ({
+      ...f,
+      createdAt: ensureDate(f.createdAt),
+      updatedAt: ensureDate(f.updatedAt),
+    }));
+  } catch (error) {
+    console.error('[ChatDB] Failed to get folders:', error);
+    return [];
+  }
+}
+
+/**
+ * Delete a folder
+ */
+export async function deleteFolder(folderId: string): Promise<void> {
+  try {
+    const db = await getDB();
+    await db.delete('folders', folderId);
+  } catch (error) {
+    console.error('[ChatDB] Failed to delete folder:', error);
     throw error;
   }
 }

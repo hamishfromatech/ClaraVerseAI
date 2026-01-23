@@ -64,6 +64,14 @@ export interface Message {
 
 export type ChatStatus = 'local-only' | 'active' | 'stale' | 'expired';
 
+export interface Folder {
+  id: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+  isExpanded?: boolean;
+}
+
 export interface Chat {
   id: string;
   title: string;
@@ -75,4 +83,5 @@ export interface Chat {
   backendStatus?: ChatStatus; // Status of conversation on backend
   isStarred?: boolean; // Whether the chat is starred/favorited
   pendingPrompt?: ActivePrompt; // Prompt waiting for user response (persists across navigation)
+  folderId?: string; // ID of the folder this chat belongs to
 }

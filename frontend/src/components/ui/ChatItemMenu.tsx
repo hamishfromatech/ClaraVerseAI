@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Star, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Star, Edit2, Trash2, FolderInput } from 'lucide-react';
 import styles from './ChatItemMenu.module.css';
 
 export interface ChatItemMenuProps {
@@ -8,6 +8,7 @@ export interface ChatItemMenuProps {
   onStar: (chatId: string) => void;
   onRename: (chatId: string) => void;
   onDelete: (chatId: string) => void;
+  onMoveToFolder?: (chatId: string) => void;
 }
 
 export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
@@ -16,6 +17,7 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
   onStar,
   onRename,
   onDelete,
+  onMoveToFolder,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,14 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
     setIsOpen(false);
   };
 
+  const handleMoveToFolder = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onMoveToFolder) {
+      onMoveToFolder(chatId);
+    }
+    setIsOpen(false);
+  };
+
   return (
     <div className={styles.menuContainer} ref={menuRef}>
       <button
@@ -80,6 +90,12 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
             <Edit2 size={16} />
             <span>Rename</span>
           </button>
+          {onMoveToFolder && (
+            <button className={styles.menuItem} onClick={handleMoveToFolder} type="button">
+              <FolderInput size={16} />
+              <span>Move to Folder</span>
+            </button>
+          )}
           <button
             className={`${styles.menuItem} ${styles.danger}`}
             onClick={handleDelete}

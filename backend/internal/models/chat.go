@@ -11,6 +11,7 @@ type EncryptedChat struct {
 	ID                primitive.ObjectID `bson:"_id,omitempty" json:"id"`
 	UserID            string             `bson:"userId" json:"user_id"`
 	ChatID            string             `bson:"chatId" json:"chat_id"`             // Frontend-generated UUID
+	FolderID          string             `bson:"folderId,omitempty" json:"folder_id,omitempty"`
 	Title             string             `bson:"title" json:"title"`                // Plaintext title for listing
 	EncryptedMessages string             `bson:"encryptedMessages" json:"-"`        // AES-256-GCM encrypted JSON array of messages
 	IsStarred         bool               `bson:"isStarred" json:"is_starred"`
@@ -18,6 +19,15 @@ type EncryptedChat struct {
 	Version           int64              `bson:"version" json:"version"`            // Optimistic locking
 	CreatedAt         time.Time          `bson:"createdAt" json:"created_at"`
 	UpdatedAt         time.Time          `bson:"updatedAt" json:"updated_at"`
+}
+
+// Folder represents a group of chats
+type Folder struct {
+	ID        string    `bson:"_id" json:"id"`
+	UserID    string    `bson:"userId" json:"user_id"`
+	Name      string    `bson:"name" json:"name"`
+	CreatedAt time.Time `bson:"createdAt" json:"created_at"`
+	UpdatedAt time.Time `bson:"updatedAt" json:"updated_at"`
 }
 
 // ChatMessage represents a single message in a chat (unencrypted form)
@@ -103,6 +113,7 @@ type DataPreview struct {
 // ChatResponse is the decrypted chat returned to the frontend
 type ChatResponse struct {
 	ID        string        `json:"id"`
+	FolderID  string        `json:"folder_id,omitempty"`
 	Title     string        `json:"title"`
 	Messages  []ChatMessage `json:"messages"`
 	IsStarred bool          `json:"is_starred"`
@@ -115,6 +126,7 @@ type ChatResponse struct {
 // ChatListItem is a summary of a chat for listing (no messages)
 type ChatListItem struct {
 	ID           string    `json:"id"`
+	FolderID     string    `json:"folder_id,omitempty"`
 	Title        string    `json:"title"`
 	IsStarred    bool      `json:"is_starred"`
 	Model        string    `json:"model,omitempty"`
@@ -127,6 +139,7 @@ type ChatListItem struct {
 // CreateChatRequest is the request body for creating/updating a chat
 type CreateChatRequest struct {
 	ID        string        `json:"id"`        // Frontend-generated UUID
+	FolderID  string        `json:"folder_id,omitempty"`
 	Title     string        `json:"title"`
 	Messages  []ChatMessage `json:"messages"`
 	IsStarred bool          `json:"is_starred"`
@@ -136,10 +149,17 @@ type CreateChatRequest struct {
 
 // UpdateChatRequest is the request body for partial chat updates
 type UpdateChatRequest struct {
+	FolderID  *string `json:"folder_id,omitempty"`
 	Title     *string `json:"title,omitempty"`
 	IsStarred *bool   `json:"is_starred,omitempty"`
 	Model     *string `json:"model,omitempty"`
 	Version   int64   `json:"version"` // Required for optimistic locking
+}
+
+// FolderRequest is the request body for creating/updating a folder
+type FolderRequest struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 // ChatAddMessageRequest is the request body for adding a single message to a synced chat

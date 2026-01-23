@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
-import type { Chat, Message } from '@/types/chat';
+import type { Chat, Message, Folder } from '@/types/chat';
 import type { ActivePrompt, PromptAnswer } from '@/types/interactivePrompt';
 import * as chatSyncService from '@/services/chatSyncService';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -72,6 +72,7 @@ function processMarkdownTags(rawContent: string): { content: string; reasoning: 
 interface ChatState {
   // State
   chats: Chat[];
+  folders: Folder[];
   activeNav: string;
   selectedChatId: string | null;
   isNewChat: boolean;
@@ -94,6 +95,7 @@ interface ChatState {
   lastSyncAt: Date | null;
   pendingSyncIds: Set<string>;
   deletedChatIds: Set<string>; // Track deleted chats to prevent re-sync from cloud
+  deletedFolderIds: Set<string>;
 
   // Computed
   selectedChat: () => Chat | null;
@@ -110,7 +112,8 @@ interface ChatState {
     title: string,
     firstMessage: Message,
     systemInstructions?: string,
-    chatId?: string
+    chatId?: string,
+    folderId?: string
   ) => string;
   updateChatTitle: (chatId: string, title: string) => void;
   toggleStarChat: (chatId: string) => void;
@@ -121,7 +124,16 @@ interface ChatState {
     messageId: string,
     status: 'sending' | 'sent' | 'error'
   ) => void;
+  editMessage: (chatId: string, messageId: string, newContent: string) => void;
   deleteChat: (chatId: string) => Promise<void>;
+  moveChatToFolder: (chatId: string, folderId: string | null) => void;
+
+  // Folder actions
+  createFolder: (name: string) => void;
+  updateFolder: (folderId: string, name: string) => void;
+  deleteFolder: (folderId: string) => Promise<void>;
+  toggleFolderExpanded: (folderId: string) => void;
+
   clearError: () => void;
   setError: (error: string) => void;
   setLoading: (loading: boolean) => void;
@@ -142,6 +154,7 @@ interface ChatState {
   // Cloud sync actions
   initializeCloudSync: () => Promise<void>;
   syncChatToCloud: (chatId: string) => Promise<void>;
+  syncFolderToCloud: (folderId: string) => Promise<void>;
   syncAllToCloud: () => Promise<void>;
   handlePrivacyModeSwitch: (newMode: 'local' | 'cloud') => Promise<void>;
   clearSyncError: () => void;
@@ -157,6 +170,7 @@ export const useChatStore = create<ChatState>()(
       (set, get) => ({
         // Initial state
         chats: [],
+        folders: [],
         activeNav: 'chats',
         selectedChatId: null,
         isNewChat: true,
@@ -178,6 +192,7 @@ export const useChatStore = create<ChatState>()(
         lastSyncAt: null,
         pendingSyncIds: new Set(),
         deletedChatIds: new Set(),
+        deletedFolderIds: new Set(),
 
         // Computed
         selectedChat: () => {
@@ -294,12 +309,13 @@ export const useChatStore = create<ChatState>()(
             };
           }),
 
-        createChat: (title, firstMessage, systemInstructions?, chatId?) => {
+        createChat: (title, firstMessage, systemInstructions?, chatId?, folderId?) => {
           const finalChatId = chatId || crypto.randomUUID(); // Use provided ID or generate new UUID v4
           const now = new Date();
 
           const newChat: Chat = {
             id: finalChatId,
+            folderId,
             title,
             messages: [firstMessage],
             createdAt: now,
@@ -395,6 +411,29 @@ export const useChatStore = create<ChatState>()(
             ),
           })),
 
+        editMessage: (chatId, messageId, newContent) => {
+          set(state => ({
+            chats: state.chats.map(chat => {
+              if (chat.id !== chatId) return chat;
+              const messageIndex = chat.messages.findIndex(m => m.id === messageId);
+              if (messageIndex === -1) return chat;
+
+              // Keep all messages up to the edited one, update it, and discard all after it
+              const updatedMessages = chat.messages.slice(0, messageIndex + 1).map(msg =>
+                msg.id === messageId ? { ...msg, content: newContent, updatedAt: new Date() } : msg
+              );
+
+              return {
+                ...chat,
+                messages: updatedMessages,
+                updatedAt: new Date(),
+              };
+            }),
+          }));
+          // Trigger cloud sync
+          get().syncChatToCloud(chatId);
+        },
+
         deleteChat: async chatId => {
           // Add to deleted IDs immediately to prevent re-sync
           set(state => {
@@ -441,6 +480,105 @@ export const useChatStore = create<ChatState>()(
               return { deletedChatIds: newDeletedIds };
             });
           }
+        },
+
+        moveChatToFolder: (chatId, folderId) => {
+          set(state => ({
+            chats: state.chats.map(chat =>
+              chat.id === chatId ? { ...chat, folderId: folderId || undefined, updatedAt: new Date() } : chat
+            ),
+          }));
+          // Trigger cloud sync
+          get().syncChatToCloud(chatId);
+        },
+
+        // Folder actions
+        createFolder: name => {
+          const id = crypto.randomUUID();
+          const now = new Date();
+          const newFolder: Folder = {
+            id,
+            name,
+            createdAt: now,
+            updatedAt: now,
+            isExpanded: true,
+          };
+
+          set(state => ({
+            folders: [newFolder, ...state.folders],
+          }));
+
+          // Trigger cloud sync
+          get().syncFolderToCloud(id);
+        },
+
+        updateFolder: (folderId, name) => {
+          set(state => ({
+            folders: state.folders.map(f =>
+              f.id === folderId ? { ...f, name, updatedAt: new Date() } : f
+            ),
+          }));
+          // Trigger cloud sync
+          get().syncFolderToCloud(folderId);
+        },
+
+        deleteFolder: async folderId => {
+          // Track for deletion
+          set(state => {
+            const newDeletedIds = new Set(state.deletedFolderIds);
+            newDeletedIds.add(folderId);
+            return {
+              folders: state.folders.filter(f => f.id !== folderId),
+              // Uncategorize chats in this folder
+              chats: state.chats.map(chat =>
+                chat.folderId === folderId ? { ...chat, folderId: undefined, updatedAt: new Date() } : chat
+              ),
+              deletedFolderIds: newDeletedIds,
+            };
+          });
+
+          // Delete from IndexedDB
+          try {
+            await chatDatabase.deleteFolder(folderId);
+            // Also need to update chats in IndexedDB that were in this folder
+            get().chats.forEach(chat => {
+              if (chat.folderId === undefined) {
+                // If it was just uncategorized, trigger sync to cloud to update folderId
+                get().syncChatToCloud(chat.id);
+              }
+            });
+          } catch (error) {
+            console.error('Failed to delete folder from IndexedDB:', error);
+          }
+
+          // Delete from cloud
+          const chatPrivacyMode = useSettingsStore.getState().chatPrivacyMode;
+          if (chatPrivacyMode === 'cloud' && chatSyncService.isAuthenticated()) {
+            try {
+              await chatSyncService.deleteCloudFolder(folderId);
+              set(state => {
+                const newDeletedIds = new Set(state.deletedFolderIds);
+                newDeletedIds.delete(folderId);
+                return { deletedFolderIds: newDeletedIds };
+              });
+            } catch (error) {
+              console.error('Failed to delete folder from cloud:', error);
+            }
+          } else {
+            set(state => {
+              const newDeletedIds = new Set(state.deletedFolderIds);
+              newDeletedIds.delete(folderId);
+              return { deletedFolderIds: newDeletedIds };
+            });
+          }
+        },
+
+        toggleFolderExpanded: folderId => {
+          set(state => ({
+            folders: state.folders.map(f =>
+              f.id === folderId ? { ...f, isExpanded: !f.isExpanded } : f
+            ),
+          }));
         },
 
         clearError: () => set({ error: null }),
@@ -657,8 +795,35 @@ export const useChatStore = create<ChatState>()(
             // First, retry any pending deletes
             await get().retryPendingDeletes();
 
-            const cloudChats = await chatSyncService.fetchAllCloudChats();
+            const [cloudChats, cloudFolders] = await Promise.all([
+              chatSyncService.fetchAllCloudChats(),
+              chatSyncService.fetchAllCloudFolders(),
+            ]);
 
+            // Sync Folders
+            if (cloudFolders.length > 0) {
+              const localFolders = get().folders;
+              const deletedFolderIds = get().deletedFolderIds;
+              const localFolderIds = new Set(localFolders.map(f => f.id));
+
+              const newFolders = cloudFolders.filter(
+                f => !localFolderIds.has(f.id) && !deletedFolderIds.has(f.id)
+              );
+
+              const mergedFolders = localFolders.map(localFolder => {
+                const cloudVersion = cloudFolders.find(f => f.id === localFolder.id);
+                if (cloudVersion && !deletedFolderIds.has(localFolder.id)) {
+                  const localTime = new Date(localFolder.updatedAt).getTime();
+                  const cloudTime = new Date(cloudVersion.updatedAt).getTime();
+                  return cloudTime > localTime ? cloudVersion : localFolder;
+                }
+                return localFolder;
+              });
+
+              set({ folders: [...newFolders, ...mergedFolders] });
+            }
+
+            // Sync Chats
             if (cloudChats.length > 0) {
               // Merge cloud chats with local chats
               const localChats = get().chats;
@@ -802,6 +967,22 @@ export const useChatStore = create<ChatState>()(
           );
         },
 
+        syncFolderToCloud: async (folderId: string) => {
+          const chatPrivacyMode = useSettingsStore.getState().chatPrivacyMode;
+          if (chatPrivacyMode !== 'cloud') return;
+          if (!chatSyncService.isAuthenticated()) return;
+
+          const folder = get().folders.find(f => f.id === folderId);
+          if (!folder) return;
+
+          try {
+            await chatSyncService.syncFolderToCloud(folder);
+            set({ lastSyncAt: new Date() });
+          } catch (error) {
+            console.error(`Failed to sync folder ${folderId}:`, error);
+          }
+        },
+
         syncAllToCloud: async () => {
           const chatPrivacyMode = useSettingsStore.getState().chatPrivacyMode;
           if (chatPrivacyMode !== 'cloud') return;
@@ -896,6 +1077,7 @@ export const useChatStore = create<ChatState>()(
         resetStore: () => {
           set({
             chats: [],
+            folders: [],
             activeNav: 'chats',
             selectedChatId: null,
             isNewChat: true,
@@ -910,16 +1092,19 @@ export const useChatStore = create<ChatState>()(
             lastSyncAt: null,
             pendingSyncIds: new Set(),
             deletedChatIds: new Set(),
+            deletedFolderIds: new Set(),
           });
           console.log('[ChatStore] Store reset for user switch');
         },
       }),
       {
         name: 'chat-storage', // Name is handled by IDB storage adapter
-        partialize: (state): Pick<ChatState, 'chats' | 'activeNav' | 'deletedChatIds'> => ({
+        partialize: (state): Pick<ChatState, 'chats' | 'folders' | 'activeNav' | 'deletedChatIds' | 'deletedFolderIds'> => ({
           chats: state.chats,
+          folders: state.folders,
           activeNav: state.activeNav,
           deletedChatIds: state.deletedChatIds,
+          deletedFolderIds: state.deletedFolderIds,
         }),
         // IndexedDB storage with throttling (replaces localStorage for unlimited storage)
         storage: createJSONStorage(() => idbStorage as StateStorage),
@@ -935,10 +1120,20 @@ export const useChatStore = create<ChatState>()(
               deletedChatIds = new Set(persisted.deletedChatIds as unknown as string[]);
             }
           }
+          // Convert deletedFolderIds from array back to Set
+          let deletedFolderIds = currentState.deletedFolderIds;
+          if (persisted.deletedFolderIds) {
+            if (persisted.deletedFolderIds instanceof Set) {
+              deletedFolderIds = persisted.deletedFolderIds;
+            } else if (Array.isArray(persisted.deletedFolderIds)) {
+              deletedFolderIds = new Set(persisted.deletedFolderIds as unknown as string[]);
+            }
+          }
           return {
             ...currentState,
             ...persisted,
             deletedChatIds,
+            deletedFolderIds,
           };
         },
       }

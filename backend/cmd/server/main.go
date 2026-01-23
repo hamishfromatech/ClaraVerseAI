@@ -892,6 +892,12 @@ func main() {
 			chats := api.Group("/chats", middleware.LocalAuthMiddleware(jwtAuth))
 			chats.Get("/sync", chatSyncHandler.SyncAll)             // Get all chats for initial sync (must be before /:id)
 			chats.Post("/sync", chatSyncHandler.BulkSync)           // Bulk upload chats
+
+			// Folder routes
+			chats.Get("/folders", chatSyncHandler.ListFolders)
+			chats.Post("/folders", chatSyncHandler.CreateOrUpdateFolder)
+			chats.Delete("/folders/:id", chatSyncHandler.DeleteFolder)
+
 			chats.Get("/", chatSyncHandler.List)                    // List chats (paginated)
 			chats.Post("/", chatSyncHandler.CreateOrUpdate)         // Create or update a chat
 			chats.Get("/:id", chatSyncHandler.Get)                  // Get single chat

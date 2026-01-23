@@ -85,6 +85,7 @@ interface ApiDataPreview {
 
 interface ApiChatResponse {
   id: string;
+  folder_id?: string;
   title: string;
   messages: ApiChatMessage[];
   is_starred: boolean;
@@ -96,11 +97,19 @@ interface ApiChatResponse {
 
 interface ApiChatListItem {
   id: string;
+  folder_id?: string;
   title: string;
   is_starred: boolean;
   model?: string;
   message_count: number;
   version: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ApiFolder {
+  id: string;
+  name: string;
   created_at: string;
   updated_at: string;
 }
@@ -304,6 +313,7 @@ function apiToArtifactFormat(art: ApiArtifact): Artifact {
  */
 function chatToApiFormat(chat: Chat): {
   id: string;
+  folder_id?: string;
   title: string;
   messages: ApiChatMessage[];
   is_starred: boolean;
@@ -312,6 +322,7 @@ function chatToApiFormat(chat: Chat): {
 } {
   return {
     id: chat.id,
+    folder_id: chat.folderId,
     title: chat.title,
     messages: chat.messages.map(msg => ({
       id: msg.id,
@@ -345,6 +356,7 @@ function apiToChatFormat(apiChat: ApiChatResponse): Chat {
 
   return {
     id: apiChat.id,
+    folderId: apiChat.folder_id,
     title: apiChat.title,
     messages: apiChat.messages.map(msg => ({
       id: msg.id,
@@ -638,6 +650,7 @@ export function isAuthenticated(): boolean {
 export function downloadChatAsJSON(chat: Chat): void {
   const chatData = {
     id: chat.id,
+    folderId: chat.folderId,
     title: chat.title,
     messages: chat.messages.map(msg => ({
       id: msg.id,
@@ -671,4 +684,42 @@ export function downloadChatAsJSON(chat: Chat): void {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+// ===== FOLDERS =====
+
+/**
+ * Fetch all folders from cloud
+ */
+export async function fetchAllCloudFolders(): Promise<import('@/types/chat').Folder[]> {
+  try {
+    const response = await api.get<ApiFolder[]>('/api/chats/folders');
+    if (!Array.isArray(response)) return [];
+    return response.map(f => ({
+      id: f.id,
+      name: f.name,
+      createdAt: new Date(f.created_at),
+      updatedAt: new Date(f.updated_at),
+    }));
+  } catch (error) {
+    console.error('Failed to fetch cloud folders:', error);
+    return [];
+  }
+}
+
+/**
+ * Sync folder to cloud
+ */
+export async function syncFolderToCloud(folder: import('@/types/chat').Folder): Promise<void> {
+  await api.post('/api/chats/folders', {
+    id: folder.id,
+    name: folder.name,
+  });
+}
+
+/**
+ * Delete folder from cloud
+ */
+export async function deleteCloudFolder(folderId: string): Promise<void> {
+  await api.delete(`/api/chats/folders/${folderId}`);
 }

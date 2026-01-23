@@ -7,6 +7,9 @@ import {
   Star,
   X,
   MessageSquare,
+  ChevronRight,
+  Folder as FolderIcon,
+  FolderPlus,
   type LucideIcon,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
@@ -44,9 +47,20 @@ export interface RecentChat {
   status?: 'local-only' | 'active' | 'stale' | 'expired';
   lastActivityAt?: Date;
   isStarred?: boolean;
+  folderId?: string;
   onStar?: (chatId: string) => void;
   onRename?: (chatId: string) => void;
   onDelete?: (chatId: string) => void;
+  onMoveToFolder?: (chatId: string) => void;
+}
+
+export interface SidebarFolder {
+  id: string;
+  name: string;
+  isExpanded?: boolean;
+  onToggle?: (id: string) => void;
+  onRename?: (id: string) => void;
+  onDelete?: (id: string) => void;
 }
 
 export interface UserInfo {
@@ -64,8 +78,12 @@ export interface SidebarProps {
   navItems?: NavItem[];
   /** Recent chats to display */
   recentChats?: RecentChat[];
+  /** Folders to display */
+  folders?: SidebarFolder[];
   /** Callback when "New Chat" is clicked */
   onNewChat?: () => void;
+  /** Callback when "Add Folder" is clicked */
+  onAddFolder?: () => void;
   /** Custom width for the sidebar */
   width?: string;
   /** Additional CSS class name */
@@ -93,7 +111,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   brandName = '',
   navItems = [],
   recentChats = [],
+  folders = [],
   onNewChat,
+  onAddFolder,
   width,
   className = '',
   isOpen: externalIsOpen,
@@ -313,9 +333,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Recents Section */}
-        {!isCollapsed && (showSkeleton || recentChats.length > 0) && (
+        {!isCollapsed && (showSkeleton || recentChats.length > 0 || folders.length > 0) && (
           <section className={styles.recentsSection} aria-label="Recent chats">
-            <h2 className={styles.recentsHeader}>Recents</h2>
+            <div className={styles.foldersHeader}>
+              <h2 className={styles.recentsHeader}>Recents</h2>
+              {onAddFolder && (
+                <button
+                  onClick={onAddFolder}
+                  className={styles.addFolderButton}
+                  title="Create folder"
+                  aria-label="Create folder"
+                >
+                  <FolderPlus size={14} />
+                </button>
+              )}
+            </div>
             <div className={styles.recentsList} role="list">
               {showSkeleton ? (
                 // Show skeleton loaders (minimum 1 second display)
@@ -327,34 +359,100 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ))}
                 </div>
               ) : (
-                // Show actual chat list
-                recentChats.map(chat => (
-                  <div key={chat.id} className={styles.recentChatItem} role="listitem">
-                    <button
-                      onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
-                      onKeyDown={e => handleKeyDown(e, chat.onClick)}
-                      className={styles.recentChatButton}
-                      aria-label={`Open chat: ${chat.title}`}
-                      type="button"
-                    >
-                      {chat.isStarred && (
-                        <Star size={14} className={styles.starIcon} aria-hidden="true" />
-                      )}
-                      <span className={styles.chatTitle}>{chat.title}</span>
-                    </button>
-                    {chat.onStar && chat.onRename && chat.onDelete && (
-                      <div className={styles.chatMenu}>
-                        <ChatItemMenu
-                          chatId={chat.id}
-                          isStarred={chat.isStarred || false}
-                          onStar={chat.onStar}
-                          onRename={chat.onRename}
-                          onDelete={chat.onDelete}
-                        />
+                <>
+                  {/* Folders */}
+                  {folders.map(folder => {
+                    const folderChats = recentChats.filter(chat => chat.folderId === folder.id);
+                    return (
+                      <div key={folder.id} className={styles.folderItem}>
+                        <div
+                          className={styles.folderHeader}
+                          onClick={() => folder.onToggle?.(folder.id)}
+                        >
+                          <ChevronRight
+                            size={14}
+                            className={`${styles.folderChevron} ${folder.isExpanded ? styles.expanded : ''}`}
+                          />
+                          <FolderIcon size={14} className={styles.folderIcon} />
+                          <span className={styles.folderName}>{folder.name}</span>
+                          <div className={styles.folderMenu} onClick={e => e.stopPropagation()}>
+                            <ChatItemMenu
+                              chatId={folder.id}
+                              isStarred={false}
+                              onStar={() => {}}
+                              onRename={() => folder.onRename?.(folder.id)}
+                              onDelete={() => folder.onDelete?.(folder.id)}
+                            />
+                          </div>
+                        </div>
+                        {folder.isExpanded && (
+                          <div className={styles.folderContent}>
+                            {folderChats.length > 0 ? (
+                              folderChats.map(chat => (
+                                <div key={chat.id} className={styles.recentChatItem} role="listitem">
+                                  <button
+                                    onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
+                                    onKeyDown={e => handleKeyDown(e, chat.onClick)}
+                                    className={styles.recentChatButton}
+                                    aria-label={`Open chat: ${chat.title}`}
+                                    type="button"
+                                  >
+                                    {chat.isStarred && (
+                                      <Star size={14} className={styles.starIcon} aria-hidden="true" />
+                                    )}
+                                    <span className={styles.chatTitle}>{chat.title}</span>
+                                  </button>
+                                  <div className={styles.chatMenu}>
+                                    <ChatItemMenu
+                                      chatId={chat.id}
+                                      isStarred={chat.isStarred || false}
+                                      onStar={chat.onStar || (() => {})}
+                                      onRename={chat.onRename || (() => {})}
+                                      onDelete={chat.onDelete || (() => {})}
+                                      onMoveToFolder={chat.onMoveToFolder}
+                                    />
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className={styles.folderEmpty}>No chats</div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))
+                    );
+                  })}
+
+                  {/* Uncategorized Chats */}
+                  {recentChats
+                    .filter(chat => !chat.folderId)
+                    .map(chat => (
+                      <div key={chat.id} className={styles.recentChatItem} role="listitem">
+                        <button
+                          onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
+                          onKeyDown={e => handleKeyDown(e, chat.onClick)}
+                          className={styles.recentChatButton}
+                          aria-label={`Open chat: ${chat.title}`}
+                          type="button"
+                        >
+                          {chat.isStarred && (
+                            <Star size={14} className={styles.starIcon} aria-hidden="true" />
+                          )}
+                          <span className={styles.chatTitle}>{chat.title}</span>
+                        </button>
+                        <div className={styles.chatMenu}>
+                          <ChatItemMenu
+                            chatId={chat.id}
+                            isStarred={chat.isStarred || false}
+                            onStar={chat.onStar || (() => {})}
+                            onRename={chat.onRename || (() => {})}
+                            onDelete={chat.onDelete || (() => {})}
+                            onMoveToFolder={chat.onMoveToFolder}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                </>
               )}
             </div>
           </section>

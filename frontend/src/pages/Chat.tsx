@@ -28,10 +28,11 @@ import {
   Smartphone,
   Home,
   Bot,
+  Folder as FolderIcon,
 } from 'lucide-react';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { getIconByName } from '@/utils/iconMapper';
-import type { NavItem, RecentChat, FooterLink } from '@/components/ui';
+import type { NavItem, RecentChat, SidebarFolder, FooterLink } from '@/components/ui';
 import {
   Sidebar,
   CommandCenter,
@@ -142,6 +143,12 @@ export const Chat = () => {
     isPromptOpen,
     submitPromptResponse,
     skipPrompt,
+    folders,
+    createFolder,
+    updateFolder,
+    deleteFolder,
+    toggleFolderExpanded,
+    moveChatToFolder,
   } = useChatStore();
 
   const { selectedModelId, fetchModels, isLoading: isLoadingModels } = useModelStore();
@@ -260,8 +267,13 @@ export const Chat = () => {
   // Dialog states
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const [showFolderDialog, setShowFolderDialog] = useState(false);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [chatToDelete, setChatToDelete] = useState<string | null>(null);
   const [chatToRename, setChatToRename] = useState<{ id: string; title: string } | null>(null);
+  const [folderToRename, setFolderToRename] = useState<{ id: string; name: string } | null>(null);
+  const [folderToDelete, setFolderToDelete] = useState<string | null>(null);
+  const [chatToMove, setChatToMove] = useState<string | null>(null);
 
   // API Key Modal state
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
@@ -1468,17 +1480,76 @@ export const Chat = () => {
     if (chatToDelete) {
       await deleteChat(chatToDelete);
       setChatToDelete(null);
+    } else if (folderToDelete) {
+      await deleteFolder(folderToDelete);
+      setFolderToDelete(null);
     }
-  }, [chatToDelete, deleteChat]);
+  }, [chatToDelete, folderToDelete, deleteChat, deleteFolder]);
 
   const confirmRename = useCallback(
     (newTitle: string) => {
       if (chatToRename) {
         updateTitle(chatToRename.id, newTitle);
         setChatToRename(null);
+      } else if (folderToRename) {
+        updateFolder(folderToRename.id, newTitle);
+        setFolderToRename(null);
       }
     },
-    [chatToRename, updateTitle]
+    [chatToRename, folderToRename, updateTitle, updateFolder]
+  );
+
+  // Folder action handlers
+  const handleAddFolder = useCallback(() => {
+    setFolderToRename(null);
+    setShowFolderDialog(true);
+  }, []);
+
+  const confirmFolderCreate = useCallback(
+    (name: string) => {
+      createFolder(name);
+      setShowFolderDialog(false);
+    },
+    [createFolder]
+  );
+
+  const handleToggleFolder = useCallback(
+    (id: string) => {
+      toggleFolderExpanded(id);
+    },
+    [toggleFolderExpanded]
+  );
+
+  const handleRenameFolder = useCallback(
+    (id: string) => {
+      const folder = folders.find(f => f.id === id);
+      if (folder) {
+        setFolderToRename({ id, name: folder.name });
+        setShowRenameDialog(true);
+      }
+    },
+    [folders]
+  );
+
+  const handleDeleteFolder = useCallback((id: string) => {
+    setFolderToDelete(id);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleMoveToFolder = useCallback((chatId: string) => {
+    setChatToMove(chatId);
+    setShowMoveDialog(true);
+  }, []);
+
+  const confirmMoveChat = useCallback(
+    (folderId: string | null) => {
+      if (chatToMove) {
+        moveChatToFolder(chatToMove, folderId);
+        setChatToMove(null);
+        setShowMoveDialog(false);
+      }
+    },
+    [chatToMove, moveChatToFolder]
   );
 
   // Selection mode handlers
@@ -1521,11 +1592,22 @@ export const Chat = () => {
   const recentChats: RecentChat[] = recentChatsForSidebar.map(chat => ({
     id: chat.id,
     title: chat.title,
+    folderId: chat.folderId,
     onClick: () => handleChatSelect(chat.id),
     isStarred: chat.isStarred,
     onStar: handleStarChat,
     onRename: handleRenameChat,
     onDelete: handleDeleteChat,
+    onMoveToFolder: handleMoveToFolder,
+  }));
+
+  const sidebarFolders: SidebarFolder[] = folders.map(f => ({
+    id: f.id,
+    name: f.name,
+    isExpanded: f.isExpanded,
+    onToggle: handleToggleFolder,
+    onRename: handleRenameFolder,
+    onDelete: handleDeleteFolder,
   }));
 
   const handleNewChat = useCallback(() => {
@@ -1914,6 +1996,25 @@ export const Chat = () => {
     ]
   );
 
+  const handleEditMessage = useCallback(
+    (messageId: string, newContent: string) => {
+      if (!chat) return;
+      const message = messages.find(m => m.id === messageId);
+      if (!message) return;
+
+      console.log('✏️ [EDIT] Editing message:', messageId, 'with content:', newContent.substring(0, 50) + '...');
+
+      // 1. Update the message and truncate history in the store
+      useChatStore.getState().editMessage(chat.id, messageId, newContent);
+
+      // 2. Trigger new response
+      handleSendMessage(newContent, {
+        skipUserMessage: true, // We already updated the existing message in store
+      });
+    },
+    [chat, messages, handleSendMessage]
+  );
+
   const handleUpdateTitle = useCallback(() => {
     if (chat && editTitleValue.trim()) {
       updateTitle(chat.id, editTitleValue.trim());
@@ -2112,7 +2213,9 @@ export const Chat = () => {
         brandName="Chat"
         navItems={navItems}
         recentChats={recentChats}
+        folders={sidebarFolders}
         onNewChat={handleNewChat}
+        onAddFolder={handleAddFolder}
         isOpen={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
         footerLinks={CHAT_FOOTER_LINKS}
@@ -2478,6 +2581,7 @@ export const Chat = () => {
                                     userInitials={userInitials}
                                     copiedMessageId={copiedMessageId}
                                     onCopy={handleCopyMessage}
+                                    onEdit={handleEditMessage}
                                   />
                                 ) : (
                                   <AssistantMessage
@@ -2631,10 +2735,54 @@ export const Chat = () => {
         onClose={() => {
           setShowRenameDialog(false);
           setChatToRename(null);
+          setFolderToRename(null);
         }}
         onRename={confirmRename}
-        currentTitle={chatToRename?.title || ''}
-        title="Rename Chat"
+        currentTitle={chatToRename?.title || folderToRename?.name || ''}
+        title={chatToRename ? 'Rename Chat' : 'Rename Folder'}
+      />
+
+      {/* New Folder Dialog */}
+      <RenameDialog
+        isOpen={showFolderDialog}
+        onClose={() => setShowFolderDialog(false)}
+        onRename={confirmFolderCreate}
+        currentTitle=""
+        title="Create Folder"
+      />
+
+      {/* Move to Folder Dialog */}
+      <ConfirmDialog
+        isOpen={showMoveDialog}
+        onClose={() => {
+          setShowMoveDialog(false);
+          setChatToMove(null);
+        }}
+        onConfirm={() => {}} // Not used for this dialog as we have multiple options
+        title="Move to Folder"
+        message={
+          <div className={styles.folderMoveList}>
+            <button
+              className={styles.folderMoveItem}
+              onClick={() => confirmMoveChat(null)}
+            >
+              <Box size={16} />
+              <span>Root (No Folder)</span>
+            </button>
+            {folders.map(f => (
+              <button
+                key={f.id}
+                className={styles.folderMoveItem}
+                onClick={() => confirmMoveChat(f.id)}
+              >
+                <FolderIcon size={16} />
+                <span>{f.name}</span>
+              </button>
+            ))}
+          </div>
+        }
+        confirmText="" // Hide default confirm button
+        cancelText="Cancel"
       />
 
       {/* Mobile Image Gallery Modal */}
