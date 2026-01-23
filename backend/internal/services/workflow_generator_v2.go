@@ -99,7 +99,7 @@ Rules:
 - Don't select redundant tools - if search_web is enough, don't also select scrape_web unless needed
 - For file processing, select the appropriate reader tool based on file type mentioned
 
-Output format: JSON with selected_tools array and reasoning.`
+Output format: JSON with a "selected_tools" array (where each item is an object with "tool_id", "category", and "reason") and a "reasoning" string.`
 
 // BuildToolSelectionUserPrompt builds the user prompt for tool selection
 func (s *WorkflowGeneratorV2Service) BuildToolSelectionUserPrompt(userMessage string) string {
@@ -271,13 +271,38 @@ func (s *WorkflowGeneratorV2Service) Step1SelectTools(req *MultiStepGenerateRequ
 		return nil, fmt.Errorf("no response from model")
 	}
 
-	// Parse the tool selection result
-	var result ToolSelectionResult
-	content := utils.ExtractJSON(apiResponse.Choices[0].Message.Content)
+	// Parse the tool selection result with a flexible approach to handle different model behaviors
+	var rawResult struct {
+		SelectedTools json.RawMessage `json:"selected_tools"`
+		Reasoning     string          `json:"reasoning"`
+	}
 
-	if err := json.Unmarshal([]byte(content), &result); err != nil {
-		log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse tool selection: %v, content: %s", err, content)
+	content := utils.ExtractJSON(apiResponse.Choices[0].Message.Content)
+	if err := json.Unmarshal([]byte(content), &rawResult); err != nil {
+		log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse raw tool selection: %v, content: %s", err, content)
 		return nil, fmt.Errorf("failed to parse tool selection: %w", err)
+	}
+
+	var result ToolSelectionResult
+	result.Reasoning = rawResult.Reasoning
+
+	// Try to unmarshal selected_tools as []SelectedTool (the preferred format)
+	if err := json.Unmarshal(rawResult.SelectedTools, &result.SelectedTools); err != nil {
+		// If that fails, try to unmarshal as []string (fallback for simpler models)
+		var toolIDs []string
+		if err2 := json.Unmarshal(rawResult.SelectedTools, &toolIDs); err2 == nil {
+			log.Printf("ℹ️ [WORKFLOW-GEN-V2] Model returned string array for tools, converting to objects")
+			result.SelectedTools = make([]SelectedTool, len(toolIDs))
+			for i, id := range toolIDs {
+				result.SelectedTools[i] = SelectedTool{
+					ToolID: id,
+					Reason: "Automatically selected (string array fallback)",
+				}
+			}
+		} else {
+			log.Printf("⚠️ [WORKFLOW-GEN-V2] Failed to parse selected_tools field: %v, content: %s", err, string(rawResult.SelectedTools))
+			return nil, fmt.Errorf("failed to parse selected_tools: %w", err)
+		}
 	}
 
 	// Validate selected tools exist
