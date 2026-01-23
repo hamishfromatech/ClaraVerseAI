@@ -2,7 +2,7 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOnboardingTour } from './OnboardingTour';
-import faviconIcon from '@/assets/favicon-32x32.png';
+import logoIcon from '/logo.png';
 import {
   LayoutDashboard,
   Plug,
@@ -47,14 +47,14 @@ export const AdminLayout = () => {
         <div className="h-16 flex items-center justify-between px-4">
           {isSidebarOpen ? (
             <div className="flex items-center gap-3">
-              <img src={faviconIcon} alt="Clara" className="w-8 h-8" />
+              <img src={logoIcon} alt="Clara" className="w-8 h-8" />
               <h1 className="text-xl font-semibold bg-gradient-to-r from-[var(--color-accent)] to-[var(--color-accent-hover)] bg-clip-text text-transparent">
                 Admin
               </h1>
             </div>
           ) : (
             <div className="flex items-center justify-center w-full">
-              <img src={faviconIcon} alt="Clara" className="w-8 h-8" />
+              <img src={logoIcon} alt="Clara" className="w-8 h-8" />
             </div>
           )}
           {isSidebarOpen && (

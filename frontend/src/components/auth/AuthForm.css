@@ -38,6 +38,7 @@
   height: auto;
   max-height: 120px;
   object-fit: contain;
+  border-radius: 16px;
   animation: authBannerFadeIn 0.6s ease-out;
 }
 

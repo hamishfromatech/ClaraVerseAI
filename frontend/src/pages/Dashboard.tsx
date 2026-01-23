@@ -2,7 +2,7 @@ import { MessageSquare, Bot, Settings, Shield } from 'lucide-react';
 import { AppCard } from '@/components/dashboard';
 import { UserMenu, Snowfall } from '@/components/ui';
 import { useIsMobile } from '@/hooks';
-import faviconIcon from '@/assets/favicon-32x32.png';
+import logoIcon from '/logo.png';
 
 const apps = [
   {
@@ -66,7 +66,7 @@ export default function Dashboard() {
         >
           <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
             <img
-              src={faviconIcon}
+              src={logoIcon}
               alt="Clara logo"
               style={{
                 width: 28,
@@ -168,7 +168,7 @@ export default function Dashboard() {
       >
         <a href="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <img
-            src={faviconIcon}
+            src={logoIcon}
             alt="Clara logo"
             style={{
               width: 32,

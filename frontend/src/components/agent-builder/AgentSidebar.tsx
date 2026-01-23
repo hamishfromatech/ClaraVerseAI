@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { useAgentBuilderStore } from '@/store/useAgentBuilderStore';
 import type { AgentView } from '@/store/useAgentBuilderStore';
 import { deleteAgent as deleteAgentAPI } from '@/services/agentService';
-import faviconIcon from '@/assets/favicon-32x32.png';
+import logoIcon from '/logo.png';
 
 interface AgentSidebarProps {
   className?: string;
@@ -147,7 +147,7 @@ export function AgentSidebar({
       >
         {isExpanded && (
           <div className="flex items-center gap-2 flex-1 overflow-hidden">
-            <img src={faviconIcon} alt="Clara" className="w-6 h-6 flex-shrink-0 rounded-full" />
+            <img src={logoIcon} alt="Clara" className="w-6 h-6 flex-shrink-0 rounded-full" />
             <span className="text-[1.375rem] font-semibold text-[var(--color-text-primary)] whitespace-nowrap overflow-hidden">
               Agents
             </span>

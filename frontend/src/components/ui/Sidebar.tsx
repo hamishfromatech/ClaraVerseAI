@@ -10,7 +10,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
-import faviconIcon from '@/assets/favicon-32x32.png';
+import logoIcon from '/logo.png';
 import { ChatItemMenu } from './ChatItemMenu';
 import { Skeleton } from '@/components/design-system/Skeleton/Skeleton';
 
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <header className={styles.header}>
           {!isCollapsed && (
             <div className={styles.brandContainer}>
-              <img src={faviconIcon} alt="Clara logo" className={styles.brandIcon} />
+              <img src={logoIcon} alt="Clara logo" className={styles.brandIcon} />
               <span className={styles.brandName}>{brandName}</span>
             </div>
           )}
