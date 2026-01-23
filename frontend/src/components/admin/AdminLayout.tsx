@@ -40,8 +40,8 @@ export const AdminLayout = () => {
       <aside
         className={`${
           isSidebarOpen ? 'w-64' : 'w-20'
-        } bg-[var(--color-surface)] transition-all duration-300 flex flex-col`}
-        style={{ backdropFilter: 'blur(20px)' }}
+        } bg-[var(--color-background)] transition-all duration-300 flex flex-col`}
+        style={{ backdropFilter: 'blur(20px)', borderRight: '1px solid var(--color-border)' }}
       >
         {/* Sidebar Header */}
         <div className="h-16 flex items-center justify-between px-4">
@@ -80,7 +80,7 @@ export const AdminLayout = () => {
                 className={({ isActive }) =>
                   `group flex items-center gap-3 ${isSidebarOpen ? 'px-3' : 'justify-center px-3'} py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-[var(--color-accent-light)] text-[var(--color-accent)]'
+                      ? 'bg-[var(--color-surface-hover)] text-[var(--color-text-primary)]'
                       : 'text-[var(--color-text-secondary)] hover:bg-[var(--color-surface-hover)] hover:text-[var(--color-text-primary)]'
                   }`
                 }
@@ -139,7 +139,7 @@ export const AdminLayout = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 bg-[var(--color-surface)] flex items-center justify-between px-6">
+        <header className="h-16 bg-[var(--color-background)] flex items-center justify-between px-6" style={{ borderBottom: '1px solid var(--color-border)' }}>
           <div className="flex items-center gap-3">
             <div className="px-3 py-1 bg-[var(--color-accent-light)] text-[var(--color-accent)] rounded-full text-xs font-semibold uppercase tracking-wide">
               Admin
