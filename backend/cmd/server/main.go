@@ -629,6 +629,10 @@ func main() {
 	if chatSyncService != nil {
 		chatSyncHandler = handlers.NewChatSyncHandler(chatSyncService)
 		log.Println("✅ Chat sync handler initialized")
+
+		// Wire up chat sync service to conversation handler for folder features
+		conversationHandler.SetChatSyncService(chatSyncService)
+		log.Println("✅ Chat sync service wired to conversation handler")
 	}
 
 	// Initialize user preferences handler (requires userService)
@@ -788,6 +792,20 @@ func main() {
 			chats.Delete("/", chatSyncHandler.DeleteAll)   // Delete all chats (GDPR)
 			chats.Post("/:id/messages", chatSyncHandler.AddMessage) // Add message to chat
 			log.Println("✅ Chat sync routes registered (/api/chats/*)")
+		}
+
+		// Folder routes (requires authentication + chat sync service)
+		if chatSyncService != nil {
+			folders := api.Group("/conversations/folders", middleware.LocalAuthMiddleware(jwtAuth))
+			folders.Get("/", conversationHandler.ListFolders)           // List folders
+			folders.Post("/", conversationHandler.CreateFolder)         // Create folder
+			folders.Get("/:id", conversationHandler.GetFolder)          // Get folder
+			folders.Put("/:id", conversationHandler.UpdateFolder)       // Update folder
+			folders.Delete("/:id", conversationHandler.DeleteFolder)    // Delete folder
+			folders.Get("/:id/chats", conversationHandler.GetFolderChats) // Get chats in folder
+			// Move chat to folder route (separate group to avoid :id conflict)
+			api.Put("/conversations/:id/folder", middleware.LocalAuthMiddleware(jwtAuth), conversationHandler.MoveChatToFolder)
+			log.Println("✅ Folder routes registered (/api/conversations/folders/*)")
 		}
 
 		// Agent builder routes (requires authentication + MongoDB)

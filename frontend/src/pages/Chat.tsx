@@ -62,7 +62,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useModelStore } from '@/store/useModelStore';
 import { useArtifactStore } from '@/store/useArtifactStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
-import type { Message, ToolCall, RetryType } from '@/types/chat';
+import type { Message, ToolCall, RetryType, ChatFolder } from '@/types/chat';
 import type { ActivePrompt } from '@/types/interactivePrompt';
 import { generateChatTitle, validateMessage } from '@/services/chatService';
 import { websocketService } from '@/services/websocketService';
@@ -79,6 +79,7 @@ import {
   getCloudChat,
   isAuthenticated as isChatSyncAuthenticated,
 } from '@/services/chatSyncService';
+import { folderService } from '@/services/folderService';
 import { copyAsFormattedText } from '@/utils/markdownToPlainText';
 import { extractArtifacts } from '@/utils/artifactParser';
 import { ArtifactPane, ArtifactsGallery } from '@/components/artifacts';
@@ -87,6 +88,7 @@ import { useDocumentTitle } from '@/hooks';
 import { api } from '@/services/api';
 import { ImageGalleryModal } from '@/components/chat/ImageGalleryModal';
 import { useImageGalleryStore } from '@/store/useImageGalleryStore';
+import { useToastStore } from '@/store/useToastStore';
 import styles from './Chat.module.css';
 
 // Import test helper for interactive prompts (dev mode only)
@@ -125,6 +127,8 @@ export const Chat = () => {
     selectedChat,
     filteredChats,
     recentChats: getRecentChats,
+    folders,
+    expandedFolders,
     setActiveNav,
     setSearchQuery,
     selectChat,
@@ -144,7 +148,15 @@ export const Chat = () => {
     isPromptOpen,
     submitPromptResponse,
     skipPrompt,
+    setFolders,
+    addFolder,
+    updateFolder,
+    deleteFolder,
+    toggleFolderExpansion,
+    moveChatToFolder,
   } = useChatStore();
+
+  const { addToast } = useToastStore();
 
   const { selectedModelId, fetchModels, isLoading: isLoadingModels } = useModelStore();
   const {
@@ -229,6 +241,40 @@ export const Chat = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedChatIds, setSelectedChatIds] = useState<Set<string>>(new Set());
   const [showScrollButton, setShowScrollButton] = useState(false);
+
+  // Folder state and handlers
+  const [foldersWithCounts, setFoldersWithCounts] = useState<ChatFolder[]>([]);
+  const [isLoadingFolders, setIsLoadingFolders] = useState(false);
+
+  // Load folders from API
+  const loadFolders = useCallback(async () => {
+    if (!isChatSyncAuthenticated()) {
+      setFoldersWithCounts([]);
+      setFolders([]);
+      return;
+    }
+
+    setIsLoadingFolders(true);
+    try {
+      const response = await folderService.getFolders();
+      // Merge folder counts into folder objects
+      const foldersWithCounts = response.folders.map(folder => ({
+        ...folder,
+        chatCount: response.folder_counts[folder.id] || 0,
+      }));
+      setFoldersWithCounts(foldersWithCounts);
+      setFolders(foldersWithCounts);
+    } catch (error) {
+      console.error('Failed to load folders:', error);
+    } finally {
+      setIsLoadingFolders(false);
+    }
+  }, [setFolders]);
+
+  // Load folders when authenticated
+  useEffect(() => {
+    loadFolders();
+  }, [loadFolders, isChatSyncAuthenticated]);
 
   // Mobile sidebar state
   const [isMobile, setIsMobile] = useState(() =>
@@ -1466,6 +1512,78 @@ export const Chat = () => {
     setShowDeleteDialog(true);
   }, []);
 
+  // Folder handlers
+  const handleRenameFolder = useCallback(async (folderId: string, newName: string) => {
+    try {
+      const updated = await folderService.updateFolder(folderId, { name: newName });
+      updateFolder(folderId, updated);
+      addToast({
+        type: 'success',
+        title: 'Folder renamed',
+        message: `Folder renamed to "${newName}"`,
+        duration: 3000,
+      });
+      loadFolders(); // Refresh to get updated counts
+    } catch (error: any) {
+      addToast({
+        type: 'error',
+        title: 'Failed to rename folder',
+        message: error.message || 'Please try again',
+        duration: 3000,
+      });
+    }
+  }, [updateFolder, addToast, loadFolders]);
+
+  const handleDeleteFolder = useCallback(async (folderId: string) => {
+    const folder = folders.find(f => f.id === folderId);
+    const folderName = folder?.name || 'Folder';
+
+    try {
+      const result = await folderService.deleteFolder(folderId);
+      deleteFolder(folderId);
+      addToast({
+        type: 'success',
+        title: 'Folder deleted',
+        message: `"${folderName}" and ${result.chat_count} chat(s) deleted`,
+        duration: 3000,
+      });
+      loadFolders(); // Refresh folders
+    } catch (error: any) {
+      addToast({
+        type: 'error',
+        title: 'Failed to delete folder',
+        message: error.message || 'Please try again',
+        duration: 3000,
+      });
+    }
+  }, [folders, deleteFolder, addToast, loadFolders]);
+
+  const handleMoveChatToFolder = useCallback(async (chatId: string, folderId: string | null) => {
+    try {
+      await folderService.moveChatToFolder(chatId, folderId);
+      moveChatToFolder(chatId, folderId);
+      addToast({
+        type: 'success',
+        title: 'Chat moved',
+        message: folderId ? 'Chat moved to folder' : 'Chat moved out of folder',
+        duration: 3000,
+      });
+      loadFolders(); // Refresh folder counts
+    } catch (error: any) {
+      addToast({
+        type: 'error',
+        title: 'Failed to move chat',
+        message: error.message || 'Please try again',
+        duration: 3000,
+      });
+    }
+  }, [moveChatToFolder, addToast, loadFolders]);
+
+  const handleCreateFolder = useCallback(() => {
+    // The create folder modal is handled inline in the Sidebar component
+    // This is a placeholder for any pre-creation logic
+  }, []);
+
   const confirmDelete = useCallback(async () => {
     if (chatToDelete) {
       await deleteChat(chatToDelete);
@@ -1525,9 +1643,11 @@ export const Chat = () => {
     title: chat.title,
     onClick: () => handleChatSelect(chat.id),
     isStarred: chat.isStarred,
+    folderId: chat.folderId,
     onStar: handleStarChat,
     onRename: handleRenameChat,
     onDelete: handleDeleteChat,
+    onMoveToFolder: isChatSyncAuthenticated() ? handleMoveChatToFolder : undefined,
   }));
 
   const handleNewChat = useCallback(() => {
@@ -2118,6 +2238,13 @@ export const Chat = () => {
         isOpen={isSidebarOpen}
         onOpenChange={setIsSidebarOpen}
         footerLinks={CHAT_FOOTER_LINKS}
+        folders={foldersWithCounts}
+        onCreateFolder={isChatSyncAuthenticated() ? () => {/* Create folder modal is handled inline */} : undefined}
+        onRenameFolder={handleRenameFolder}
+        onDeleteFolder={handleDeleteFolder}
+        onToggleFolder={toggleFolderExpansion}
+        expandedFolders={expandedFolders}
+        onRefreshFolders={loadFolders}
       />
 
       {/* Main Window */}

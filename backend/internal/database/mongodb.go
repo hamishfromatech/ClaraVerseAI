@@ -33,6 +33,7 @@ const (
 	CollectionMCPAuditLog          = "mcp_audit_log"
 	CollectionCredentials          = "credentials"
 	CollectionChats                = "chats"
+	CollectionFolders              = "folders"
 
 	// Memory system collections
 	CollectionMemories                = "memories"

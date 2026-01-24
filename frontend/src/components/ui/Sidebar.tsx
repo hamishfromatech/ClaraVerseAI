@@ -7,12 +7,16 @@ import {
   Star,
   X,
   MessageSquare,
+  FolderPlus,
   type LucideIcon,
 } from 'lucide-react';
 import styles from './Sidebar.module.css';
 import logoIcon from '/logo.png';
 import { ChatItemMenu } from './ChatItemMenu';
 import { Skeleton } from '@/components/design-system/Skeleton/Skeleton';
+import { FolderItem } from '@/components/chat/FolderItem';
+import { CreateFolderModal } from '@/components/chat/CreateFolderModal';
+import type { ChatFolder } from '@/types/chat';
 
 /** Footer link configuration */
 export interface FooterLink {
@@ -44,9 +48,11 @@ export interface RecentChat {
   status?: 'local-only' | 'active' | 'stale' | 'expired';
   lastActivityAt?: Date;
   isStarred?: boolean;
+  folderId?: string | null;
   onStar?: (chatId: string) => void;
   onRename?: (chatId: string) => void;
   onDelete?: (chatId: string) => void;
+  onMoveToFolder?: (chatId: string, folderId: string | null) => void;
 }
 
 export interface UserInfo {
@@ -78,6 +84,20 @@ export interface SidebarProps {
   footerLinks?: FooterLink[];
   /** Loading state for chat list */
   isLoadingChats?: boolean;
+  /** Folders to display */
+  folders?: ChatFolder[];
+  /** Callback when creating a folder */
+  onCreateFolder?: () => void;
+  /** Callback when renaming a folder */
+  onRenameFolder?: (folderId: string, newName: string) => void;
+  /** Callback when deleting a folder */
+  onDeleteFolder?: (folderId: string) => void;
+  /** Callback when toggling folder expansion */
+  onToggleFolder?: (folderId: string) => void;
+  /** Set of expanded folder IDs */
+  expandedFolders?: Set<string>;
+  /** Callback when folder chat count should be updated */
+  onRefreshFolders?: () => void;
 }
 
 /**
@@ -100,12 +120,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenChange,
   footerLinks = DEFAULT_FOOTER_LINKS,
   isLoadingChats = false,
+  folders = [],
+  onCreateFolder,
+  onRenameFolder,
+  onDeleteFolder,
+  onToggleFolder,
+  expandedFolders = new Set(),
+  onRefreshFolders,
 }) => {
   // Internal state for when not externally controlled
   const [internalIsCollapsed, setInternalIsCollapsed] = useState(() => isMobileDevice());
   const [isMobile, setIsMobile] = useState(() => isMobileDevice());
   const [showSkeleton, setShowSkeleton] = useState(isLoadingChats);
   const loadingStartTimeRef = useRef<number>(Date.now());
+  const [isCreateFolderModalOpen, setIsCreateFolderModalOpen] = useState(false);
 
   // Use external control if provided, otherwise use internal state
   const isExternallyControlled = externalIsOpen !== undefined;
@@ -202,6 +230,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
       e.preventDefault();
       callback();
     }
+  };
+
+  // Folder handlers
+  const handleToggleFolderExpand = (folderId: string) => {
+    if (onToggleFolder) {
+      onToggleFolder(folderId);
+    }
+  };
+
+  const handleRenameFolder = (folderId: string, newName: string) => {
+    if (onRenameFolder) {
+      onRenameFolder(folderId, newName);
+    }
+  };
+
+  const handleDeleteFolder = (folderId: string) => {
+    if (onDeleteFolder) {
+      onDeleteFolder(folderId);
+    }
+  };
+
+  const handleCreateFolder = () => {
+    setIsCreateFolderModalOpen(true);
+  };
+
+  const handleFolderCreated = async () => {
+    setIsCreateFolderModalOpen(false);
+    if (onRefreshFolders) {
+      onRefreshFolders();
+    }
+  };
+
+  // Get chat count for a folder
+  const getFolderChatCount = (folderId: string) => {
+    return recentChats.filter(chat => chat.folderId === folderId).length;
+  };
+
+  // Get chats in a specific folder
+  const getFolderChats = (folderId: string) => {
+    return recentChats.filter(chat => chat.folderId === folderId);
+  };
+
+  // Get ungrouped chats
+  const getUngroupedChats = () => {
+    return recentChats.filter(chat => !chat.folderId);
   };
 
   return (
@@ -312,10 +385,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </nav>
         )}
 
-        {/* Recents Section */}
-        {!isCollapsed && (showSkeleton || recentChats.length > 0) && (
+        {/* Recents Section with Folders */}
+        {!isCollapsed && (showSkeleton || recentChats.length > 0 || folders.length > 0) && (
           <section className={styles.recentsSection} aria-label="Recent chats">
-            <h2 className={styles.recentsHeader}>Recents</h2>
+            {/* Recents Header with Create Folder button */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className={styles.recentsHeader}>Recents</h2>
+              {onCreateFolder && (
+                <button
+                  onClick={handleCreateFolder}
+                  className="p-1 text-gray-400 hover:text-white hover:bg-white/10 rounded transition-colors"
+                  title="Create folder"
+                  type="button"
+                >
+                  <FolderPlus size={16} />
+                </button>
+              )}
+            </div>
             <div className={styles.recentsList} role="list">
               {showSkeleton ? (
                 // Show skeleton loaders (minimum 1 second display)
@@ -327,34 +413,111 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ))}
                 </div>
               ) : (
-                // Show actual chat list
-                recentChats.map(chat => (
-                  <div key={chat.id} className={styles.recentChatItem} role="listitem">
-                    <button
-                      onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
-                      onKeyDown={e => handleKeyDown(e, chat.onClick)}
-                      className={styles.recentChatButton}
-                      aria-label={`Open chat: ${chat.title}`}
-                      type="button"
-                    >
-                      {chat.isStarred && (
-                        <Star size={14} className={styles.starIcon} aria-hidden="true" />
+                <>
+                  {/* Render folders */}
+                  {folders.length > 0 && (
+                    <>
+                      {folders.map(folder => {
+                        const isExpanded = expandedFolders.has(folder.id);
+                        const folderChats = getFolderChats(folder.id);
+                        const chatCount = folder.chatCount ?? folderChats.length;
+
+                        return (
+                          <div key={folder.id} className="mb-1">
+                            <FolderItem
+                              folder={folder}
+                              isExpanded={isExpanded}
+                              chatCount={chatCount}
+                              onToggleExpand={handleToggleFolderExpand}
+                              onRename={handleRenameFolder}
+                              onDelete={handleDeleteFolder}
+                            />
+                            {/* Render chats inside expanded folder */}
+                            {isExpanded && folderChats.length > 0 && (
+                              <div className="ml-6 mt-1 space-y-0.5" role="list">
+                                {folderChats.map(chat => (
+                                  <div
+                                    key={chat.id}
+                                    className={styles.recentChatItem}
+                                    role="listitem"
+                                  >
+                                    <button
+                                      onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
+                                      onKeyDown={e => handleKeyDown(e, chat.onClick)}
+                                      className={styles.recentChatButton}
+                                      aria-label={`Open chat: ${chat.title}`}
+                                      type="button"
+                                    >
+                                      {chat.isStarred && (
+                                        <Star size={14} className={styles.starIcon} aria-hidden="true" />
+                                      )}
+                                      <span className={styles.chatTitle}>{chat.title}</span>
+                                    </button>
+                                    {chat.onStar && chat.onRename && chat.onDelete && (
+                                      <div className={styles.chatMenu}>
+                                        <ChatItemMenu
+                                          chatId={chat.id}
+                                          isStarred={chat.isStarred || false}
+                                          onStar={chat.onStar}
+                                          onRename={chat.onRename}
+                                          onDelete={chat.onDelete}
+                                          folders={folders}
+                                          currentFolderId={chat.folderId}
+                                          onMoveToFolder={chat.onMoveToFolder}
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </>
+                  )}
+
+                  {/* Render ungrouped chats */}
+                  {getUngroupedChats().length > 0 && (
+                    <>
+                      {folders.length > 0 && (
+                        <div className="px-2 py-1 text-xs font-semibold text-gray-500 mt-4 mb-2">
+                          UNGROUPED
+                        </div>
                       )}
-                      <span className={styles.chatTitle}>{chat.title}</span>
-                    </button>
-                    {chat.onStar && chat.onRename && chat.onDelete && (
-                      <div className={styles.chatMenu}>
-                        <ChatItemMenu
-                          chatId={chat.id}
-                          isStarred={chat.isStarred || false}
-                          onStar={chat.onStar}
-                          onRename={chat.onRename}
-                          onDelete={chat.onDelete}
-                        />
-                      </div>
-                    )}
-                  </div>
-                ))
+                      {getUngroupedChats().map(chat => (
+                        <div key={chat.id} className={styles.recentChatItem} role="listitem">
+                          <button
+                            onClick={() => handleRecentChatClick(chat.id, chat.onClick)}
+                            onKeyDown={e => handleKeyDown(e, chat.onClick)}
+                            className={styles.recentChatButton}
+                            aria-label={`Open chat: ${chat.title}`}
+                            type="button"
+                          >
+                            {chat.isStarred && (
+                              <Star size={14} className={styles.starIcon} aria-hidden="true" />
+                            )}
+                            <span className={styles.chatTitle}>{chat.title}</span>
+                          </button>
+                          {chat.onStar && chat.onRename && chat.onDelete && (
+                            <div className={styles.chatMenu}>
+                              <ChatItemMenu
+                                chatId={chat.id}
+                                isStarred={chat.isStarred || false}
+                                onStar={chat.onStar}
+                                onRename={chat.onRename}
+                                onDelete={chat.onDelete}
+                                folders={folders}
+                                currentFolderId={chat.folderId}
+                                onMoveToFolder={chat.onMoveToFolder}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </>
               )}
             </div>
           </section>
@@ -380,6 +543,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </footer>
       </aside>
+
+      {/* Create Folder Modal */}
+      {onCreateFolder && (
+        <CreateFolderModal
+          isOpen={isCreateFolderModalOpen}
+          onClose={() => setIsCreateFolderModalOpen(false)}
+          onCreate={handleFolderCreated}
+        />
+      )}
     </>
   );
 };

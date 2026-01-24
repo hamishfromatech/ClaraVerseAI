@@ -90,6 +90,7 @@ interface ApiChatResponse {
   is_starred: boolean;
   model?: string;
   version: number;
+  folder_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -101,6 +102,7 @@ interface ApiChatListItem {
   model?: string;
   message_count: number;
   version: number;
+  folder_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -367,6 +369,8 @@ function apiToChatFormat(apiChat: ApiChatResponse): Chat {
     createdAt: new Date(apiChat.created_at),
     updatedAt: new Date(apiChat.updated_at),
     isStarred: apiChat.is_starred,
+    model: apiChat.model,
+    folderId: apiChat.folder_id,
   };
 }
 

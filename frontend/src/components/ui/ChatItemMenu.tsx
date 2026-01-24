@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Star, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Star, Edit2, Trash2, Folder, FolderOpen } from 'lucide-react';
 import styles from './ChatItemMenu.module.css';
+import type { ChatFolder } from '@/types/chat';
 
 export interface ChatItemMenuProps {
   chatId: string;
@@ -8,6 +9,9 @@ export interface ChatItemMenuProps {
   onStar: (chatId: string) => void;
   onRename: (chatId: string) => void;
   onDelete: (chatId: string) => void;
+  folders?: ChatFolder[];
+  currentFolderId?: string | null;
+  onMoveToFolder?: (chatId: string, folderId: string | null) => void;
 }
 
 export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
@@ -16,25 +20,33 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
   onStar,
   onRename,
   onDelete,
+  folders = [],
+  currentFolderId,
+  onMoveToFolder,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [showFolderMenu, setShowFolderMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const folderMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
+      if (folderMenuRef.current && !folderMenuRef.current.contains(event.target as Node)) {
+        setShowFolderMenu(false);
+      }
     };
 
-    if (isOpen) {
+    if (isOpen || showFolderMenu) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isOpen]);
+  }, [isOpen, showFolderMenu]);
 
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,6 +71,20 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
     setIsOpen(false);
   };
 
+  const handleFolderClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowFolderMenu(!showFolderMenu);
+  };
+
+  const handleMoveToFolder = (e: React.MouseEvent, folderId: string | null) => {
+    e.stopPropagation();
+    if (onMoveToFolder) {
+      onMoveToFolder(chatId, folderId);
+    }
+    setShowFolderMenu(false);
+    setIsOpen(false);
+  };
+
   return (
     <div className={styles.menuContainer} ref={menuRef}>
       <button
@@ -80,6 +106,53 @@ export const ChatItemMenu: React.FC<ChatItemMenuProps> = ({
             <Edit2 size={16} />
             <span>Rename</span>
           </button>
+          {onMoveToFolder && (
+            <div className="relative" ref={folderMenuRef}>
+              <button
+                className={styles.menuItem}
+                onClick={handleFolderClick}
+                type="button"
+              >
+                <Folder size={16} />
+                <span>Move to Folder</span>
+              </button>
+              {showFolderMenu && (
+                <div className="absolute bottom-full right-0 mb-1 w-48 bg-zinc-800 border border-zinc-700 rounded-lg shadow-lg py-1 z-50">
+                  {folders.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-gray-400">
+                      No folders yet
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={e => handleMoveToFolder(e, null)}
+                        className={`w-full px-3 py-1.5 text-sm text-left hover:bg-white/10 flex items-center gap-2 transition-colors ${
+                          currentFolderId === null ? 'bg-white/10' : ''
+                        }`}
+                        type="button"
+                      >
+                        <FolderOpen size={14} />
+                        <span>Ungrouped</span>
+                      </button>
+                      {folders.map(folder => (
+                        <button
+                          key={folder.id}
+                          onClick={e => handleMoveToFolder(e, folder.id)}
+                          className={`w-full px-3 py-1.5 text-sm text-left hover:bg-white/10 flex items-center gap-2 transition-colors ${
+                            currentFolderId === folder.id ? 'bg-white/10' : ''
+                          }`}
+                          type="button"
+                        >
+                          <Folder size={14} className="text-blue-400" />
+                          <span className="truncate">{folder.name}</span>
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
           <button
             className={`${styles.menuItem} ${styles.danger}`}
             onClick={handleDelete}

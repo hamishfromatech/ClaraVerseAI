@@ -16,6 +16,7 @@ type EncryptedChat struct {
 	IsStarred         bool               `bson:"isStarred" json:"is_starred"`
 	Model             string             `bson:"model,omitempty" json:"model,omitempty"` // Selected model for this chat
 	Version           int64              `bson:"version" json:"version"`            // Optimistic locking
+	FolderID          *string            `bson:"folderId,omitempty" json:"folder_id,omitempty"` // Nullable - chats not in folders have null
 	CreatedAt         time.Time          `bson:"createdAt" json:"created_at"`
 	UpdatedAt         time.Time          `bson:"updatedAt" json:"updated_at"`
 }
@@ -108,6 +109,7 @@ type ChatResponse struct {
 	IsStarred bool          `json:"is_starred"`
 	Model     string        `json:"model,omitempty"`
 	Version   int64         `json:"version"`
+	FolderID  *string       `json:"folder_id,omitempty"`
 	CreatedAt time.Time     `json:"created_at"`
 	UpdatedAt time.Time     `json:"updated_at"`
 }
@@ -120,6 +122,7 @@ type ChatListItem struct {
 	Model        string    `json:"model,omitempty"`
 	MessageCount int       `json:"message_count"`
 	Version      int64     `json:"version"`
+	FolderID     *string   `json:"folder_id,omitempty"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
 }
@@ -175,4 +178,50 @@ type ChatListResponse struct {
 	Page       int            `json:"page"`
 	PageSize   int            `json:"page_size"`
 	HasMore    bool           `json:"has_more"`
+}
+
+// ChatFolder represents a folder for organizing chats
+type ChatFolder struct {
+	ID        string    `bson:"_id,omitempty" json:"id"`
+	UserID    string    `bson:"userId" json:"user_id"`
+	Name      string    `bson:"name" json:"name"`
+	Color     string    `bson:"color,omitempty" json:"color,omitempty"` // Optional color for folder icon
+	Icon      string    `bson:"icon,omitempty" json:"icon,omitempty"`   // Optional icon
+	Order     int       `bson:"order" json:"order"`                   // Sort order
+	CreatedAt time.Time `bson:"createdAt" json:"created_at"`
+	UpdatedAt time.Time `bson:"updatedAt" json:"updated_at"`
+}
+
+// FolderListResponse is the response for listing folders with chat counts
+type FolderListResponse struct {
+	Folders      []ChatFolder `json:"folders"`
+	FolderCounts map[string]int `json:"folder_counts"` // folder_id -> chat count
+}
+
+// FolderWithChatsResponse is the response for getting a folder with its chats
+type FolderWithChatsResponse struct {
+	Folder     ChatFolder     `json:"folder"`
+	Chats      []ChatListItem `json:"chats"`
+	TotalCount int            `json:"total_count"`
+}
+
+// CreateFolderRequest is the request body for creating a folder
+type CreateFolderRequest struct {
+	Name  string `json:"name"`
+	Color string `json:"color,omitempty"`
+	Icon  string `json:"icon,omitempty"`
+	Order int    `json:"order,omitempty"`
+}
+
+// UpdateFolderRequest is the request body for updating a folder
+type UpdateFolderRequest struct {
+	Name  *string `json:"name,omitempty"`
+	Color *string `json:"color,omitempty"`
+	Icon  *string `json:"icon,omitempty"`
+	Order *int    `json:"order,omitempty"`
+}
+
+// MoveChatRequest is the request body for moving a chat to a folder
+type MoveChatRequest struct {
+	FolderID *string `json:"folder_id"` // null to move out of folder
 }

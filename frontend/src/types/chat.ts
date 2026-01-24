@@ -75,4 +75,17 @@ export interface Chat {
   backendStatus?: ChatStatus; // Status of conversation on backend
   isStarred?: boolean; // Whether the chat is starred/favorited
   pendingPrompt?: ActivePrompt; // Prompt waiting for user response (persists across navigation)
+  folderId?: string | null; // ID of folder the chat belongs to (null if not in a folder)
+}
+
+export interface ChatFolder {
+  id: string;
+  userId: string;
+  name: string;
+  color?: string;
+  icon?: string;
+  order: number;
+  createdAt: Date;
+  updatedAt: Date;
+  chatCount?: number; // Computed from backend
 }

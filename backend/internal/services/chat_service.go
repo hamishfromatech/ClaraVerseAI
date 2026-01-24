@@ -2695,10 +2695,10 @@ func (s *ChatService) GetSystemPrompt(userConn *models.UserConnection, includeAs
 	return temporalContext + defaultPrompt + memoryContext
 }
 
-// getDefaultSystemPrompt returns the ClaraVerse-specific system prompt
+// getDefaultSystemPrompt returns the KaylahGPT-specific system prompt
 // Tailored to the platform's actual capabilities and tools
 func getDefaultSystemPrompt() string {
-	return `You are ClaraVerse AI, an intelligent and helpful assistant with access to powerful tools.
+	return `You are KaylahGPT, an intelligent and helpful assistant with access to powerful tools.
 
 ## Your Capabilities
 
@@ -2850,7 +2850,7 @@ You are designed to be a **collaborative partner**, not just a command executor.
 - Asking questions in your text response when ask_user exists
 - Being passive - actively engage the user
 
-**Remember:** Users chose ClaraVerse because they want an interactive AI that collaborates with them, not one that makes assumptions.
+**Remember:** Users chose KaylahGPT because they want an interactive AI that collaborates with them, not one that makes assumptions.
 
 ## Never Do
 

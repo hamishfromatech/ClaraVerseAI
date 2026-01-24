@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { devtools, persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
-import type { Chat, Message } from '@/types/chat';
+import type { Chat, Message, ChatFolder } from '@/types/chat';
 import type { ActivePrompt, PromptAnswer } from '@/types/interactivePrompt';
 import * as chatSyncService from '@/services/chatSyncService';
 import { useSettingsStore } from '@/store/useSettingsStore';
@@ -95,10 +95,16 @@ interface ChatState {
   pendingSyncIds: Set<string>;
   deletedChatIds: Set<string>; // Track deleted chats to prevent re-sync from cloud
 
+  // Folder state
+  folders: ChatFolder[];
+  expandedFolders: Set<string>; // Track which folders are expanded
+
   // Computed
   selectedChat: () => Chat | null;
   filteredChats: () => Chat[];
   recentChats: () => Chat[];
+  chatsByFolder: (folderId: string) => Chat[];
+  ungroupedChats: () => Chat[];
 
   // Actions
   setActiveNav: (nav: string) => void;
@@ -147,6 +153,14 @@ interface ChatState {
   clearSyncError: () => void;
   retryPendingDeletes: () => Promise<void>;
 
+  // Folder actions
+  setFolders: (folders: ChatFolder[]) => void;
+  addFolder: (folder: ChatFolder) => void;
+  updateFolder: (folderId: string, updates: Partial<ChatFolder>) => void;
+  deleteFolder: (folderId: string) => void;
+  toggleFolderExpansion: (folderId: string) => void;
+  moveChatToFolder: (chatId: string, folderId: string | null) => void;
+
   // Reset store (call on logout to clear in-memory state)
   resetStore: () => void;
 }
@@ -179,6 +193,10 @@ export const useChatStore = create<ChatState>()(
         pendingSyncIds: new Set(),
         deletedChatIds: new Set(),
 
+        // Folder state
+        folders: [],
+        expandedFolders: new Set(),
+
         // Computed
         selectedChat: () => {
           const { chats, selectedChatId } = get();
@@ -207,6 +225,16 @@ export const useChatStore = create<ChatState>()(
               return dateB.getTime() - dateA.getTime();
             })
             .slice(0, 10);
+        },
+
+        chatsByFolder: (folderId: string) => {
+          const { chats } = get();
+          return chats.filter(chat => chat.folderId === folderId);
+        },
+
+        ungroupedChats: () => {
+          const { chats } = get();
+          return chats.filter(chat => !chat.folderId);
         },
 
         // Actions
@@ -892,6 +920,51 @@ export const useChatStore = create<ChatState>()(
           }
         },
 
+        // Folder actions
+        setFolders: (folders: ChatFolder[]) => set({ folders }),
+
+        addFolder: (folder: ChatFolder) =>
+          set(state => ({
+            folders: [...state.folders, folder].sort((a, b) => a.order - b.order),
+          })),
+
+        updateFolder: (folderId: string, updates: Partial<ChatFolder>) =>
+          set(state => ({
+            folders: state.folders.map(folder =>
+              folder.id === folderId ? { ...folder, ...updates, updatedAt: new Date() } : folder
+            ),
+          })),
+
+        deleteFolder: (folderId: string) =>
+          set(state => ({
+            folders: state.folders.filter(folder => folder.id !== folderId),
+            chats: state.chats.filter(chat => chat.folderId !== folderId), // Also remove chats from this folder
+            expandedFolders: new Set(
+              Array.from(state.expandedFolders).filter(id => id !== folderId)
+            ),
+          })),
+
+        toggleFolderExpansion: (folderId: string) =>
+          set(state => {
+            const newExpanded = new Set(state.expandedFolders);
+            if (newExpanded.has(folderId)) {
+              newExpanded.delete(folderId);
+            } else {
+              newExpanded.add(folderId);
+            }
+            return { expandedFolders: newExpanded };
+          }),
+
+        moveChatToFolder: (chatId: string, folderId: string | null) => {
+          set(state => ({
+            chats: state.chats.map(chat =>
+              chat.id === chatId ? { ...chat, folderId, updatedAt: new Date() } : chat
+            ),
+          }));
+          // Trigger cloud sync
+          get().syncChatToCloud(chatId);
+        },
+
         // Reset store to initial state (call on logout)
         resetStore: () => {
           set({
@@ -910,6 +983,8 @@ export const useChatStore = create<ChatState>()(
             lastSyncAt: null,
             pendingSyncIds: new Set(),
             deletedChatIds: new Set(),
+            folders: [],
+            expandedFolders: new Set(),
           });
           console.log('[ChatStore] Store reset for user switch');
         },

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -24,6 +25,7 @@ import (
 type ChatSyncService struct {
 	db                *database.MongoDB
 	collection        *mongo.Collection
+	folderCollection  *mongo.Collection
 	encryptionService *crypto.EncryptionService
 }
 
@@ -32,6 +34,7 @@ func NewChatSyncService(db *database.MongoDB, encryptionService *crypto.Encrypti
 	return &ChatSyncService{
 		db:                db,
 		collection:        db.Collection(database.CollectionChats),
+		folderCollection:  db.Collection(database.CollectionFolders),
 		encryptionService: encryptionService,
 	}
 }
@@ -110,6 +113,7 @@ func (s *ChatSyncService) CreateOrUpdateChat(ctx context.Context, userID string,
 		IsStarred: resultChat.IsStarred,
 		Model:     resultChat.Model,
 		Version:   resultChat.Version,
+		FolderID:  resultChat.FolderID,
 		CreatedAt: resultChat.CreatedAt,
 		UpdatedAt: resultChat.UpdatedAt,
 	}, nil
@@ -148,6 +152,7 @@ func (s *ChatSyncService) GetChat(ctx context.Context, userID, chatID string) (*
 		IsStarred: chat.IsStarred,
 		Model:     chat.Model,
 		Version:   chat.Version,
+		FolderID:  chat.FolderID,
 		CreatedAt: chat.CreatedAt,
 		UpdatedAt: chat.UpdatedAt,
 	}, nil
@@ -190,6 +195,7 @@ func (s *ChatSyncService) ListChats(ctx context.Context, userID string, page, pa
 			"isStarred":         1,
 			"model":             1,
 			"version":           1,
+			"folderId":          1,
 			"createdAt":         1,
 			"updatedAt":         1,
 			"encryptedMessages": 1, // Need this to count messages
@@ -225,6 +231,7 @@ func (s *ChatSyncService) ListChats(ctx context.Context, userID string, page, pa
 			Model:        encChat.Model,
 			MessageCount: messageCount,
 			Version:      encChat.Version,
+			FolderID:     encChat.FolderID,
 			CreatedAt:    encChat.CreatedAt,
 			UpdatedAt:    encChat.UpdatedAt,
 		})
@@ -296,6 +303,7 @@ func (s *ChatSyncService) UpdateChat(ctx context.Context, userID, chatID string,
 		Model:        updatedChat.Model,
 		MessageCount: messageCount,
 		Version:      updatedChat.Version,
+		FolderID:     updatedChat.FolderID,
 		CreatedAt:    updatedChat.CreatedAt,
 		UpdatedAt:    updatedChat.UpdatedAt,
 	}, nil
@@ -386,6 +394,7 @@ func (s *ChatSyncService) GetAllChats(ctx context.Context, userID string) (*mode
 			IsStarred: encChat.IsStarred,
 			Model:     encChat.Model,
 			Version:   encChat.Version,
+			FolderID:  encChat.FolderID,
 			CreatedAt: encChat.CreatedAt,
 			UpdatedAt: encChat.UpdatedAt,
 		})
@@ -473,6 +482,7 @@ func (s *ChatSyncService) AddMessage(ctx context.Context, userID, chatID string,
 		IsStarred: updatedChat.IsStarred,
 		Model:     updatedChat.Model,
 		Version:   updatedChat.Version,
+		FolderID:  updatedChat.FolderID,
 		CreatedAt: updatedChat.CreatedAt,
 		UpdatedAt: updatedChat.UpdatedAt,
 	}, nil
@@ -570,6 +580,7 @@ func (s *ChatSyncService) EnsureIndexes(ctx context.Context) error {
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "updatedAt", Value: -1}}},
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "chatId", Value: 1}}, Options: options.Index().SetUnique(true)},
 		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "isStarred", Value: 1}}},
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "folderId", Value: 1}}},
 	}
 
 	_, err := s.collection.Indexes().CreateMany(ctx, indexes)
@@ -577,5 +588,417 @@ func (s *ChatSyncService) EnsureIndexes(ctx context.Context) error {
 		return fmt.Errorf("failed to create chat indexes: %w", err)
 	}
 
+	// Create indexes for folders collection
+	folderIndexes := []mongo.IndexModel{
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "order", Value: 1}}},
+		{Keys: bson.D{{Key: "userId", Value: 1}, {Key: "name", Value: 1}}},
+	}
+
+	_, err = s.folderCollection.Indexes().CreateMany(ctx, folderIndexes)
+	if err != nil {
+		return fmt.Errorf("failed to create folder indexes: %w", err)
+	}
+
 	return nil
+}
+
+// CreateFolder creates a new folder for a user
+func (s *ChatSyncService) CreateFolder(ctx context.Context, userID string, req *models.CreateFolderRequest) (*models.ChatFolder, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+	if req.Name == "" {
+		return nil, fmt.Errorf("folder name is required")
+	}
+
+	now := time.Now()
+	folder := &models.ChatFolder{
+		ID:        primitive.NewObjectID().Hex(),
+		UserID:    userID,
+		Name:      req.Name,
+		Color:     req.Color,
+		Icon:      req.Icon,
+		Order:     req.Order,
+		CreatedAt: now,
+		UpdatedAt: now,
+	}
+
+	_, err := s.folderCollection.InsertOne(ctx, folder)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create folder: %w", err)
+	}
+
+	return folder, nil
+}
+
+// GetFolders retrieves all folders for a user
+func (s *ChatSyncService) GetFolders(ctx context.Context, userID string) ([]models.ChatFolder, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+
+	filter := bson.M{"userId": userID}
+	opts := options.Find().SetSort(bson.D{{Key: "order", Value: 1}})
+
+	cursor, err := s.folderCollection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get folders: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var folders []models.ChatFolder
+	for cursor.Next(ctx) {
+		var folder models.ChatFolder
+		if err := cursor.Decode(&folder); err != nil {
+			log.Printf("⚠️ Failed to decode folder: %v", err)
+			continue
+		}
+		folders = append(folders, folder)
+	}
+
+	return folders, nil
+}
+
+// GetFolder retrieves a specific folder by ID
+func (s *ChatSyncService) GetFolder(ctx context.Context, userID, folderID string) (*models.ChatFolder, error) {
+	if userID == "" || folderID == "" {
+		return nil, fmt.Errorf("user ID and folder ID are required")
+	}
+
+	filter := bson.M{"userId": userID, "_id": folderID}
+
+	var folder models.ChatFolder
+	err := s.folderCollection.FindOne(ctx, filter).Decode(&folder)
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("folder not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to get folder: %w", err)
+	}
+
+	return &folder, nil
+}
+
+// UpdateFolder updates a folder
+func (s *ChatSyncService) UpdateFolder(ctx context.Context, userID, folderID string, req *models.UpdateFolderRequest) (*models.ChatFolder, error) {
+	if userID == "" || folderID == "" {
+		return nil, fmt.Errorf("user ID and folder ID are required")
+	}
+
+	filter := bson.M{"userId": userID, "_id": folderID}
+
+	update := bson.M{"updatedAt": time.Now()}
+	if req.Name != nil {
+		update["name"] = *req.Name
+	}
+	if req.Color != nil {
+		update["color"] = *req.Color
+	}
+	if req.Icon != nil {
+		update["icon"] = *req.Icon
+	}
+	if req.Order != nil {
+		update["order"] = *req.Order
+	}
+
+	opts := options.FindOneAndUpdate().SetReturnDocument(options.After)
+	var folder models.ChatFolder
+	err := s.folderCollection.FindOneAndUpdate(ctx, filter, bson.M{"$set": update}, opts).Decode(&folder)
+	if err == mongo.ErrNoDocuments {
+		return nil, fmt.Errorf("folder not found")
+	}
+	if err != nil {
+		return nil, fmt.Errorf("failed to update folder: %w", err)
+	}
+
+	return &folder, nil
+}
+
+// DeleteFolder deletes a folder and ALL chats in it
+func (s *ChatSyncService) DeleteFolder(ctx context.Context, userID, folderID string) (int64, error) {
+	if userID == "" || folderID == "" {
+		return 0, fmt.Errorf("user ID and folder ID are required")
+	}
+
+	// First, delete all chats in the folder
+	chatFilter := bson.M{"userId": userID, "folderId": folderID}
+	chatResult, err := s.collection.DeleteMany(ctx, chatFilter)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete chats in folder: %w", err)
+	}
+
+	// Then delete the folder
+	folderFilter := bson.M{"userId": userID, "_id": folderID}
+	folderResult, err := s.folderCollection.DeleteOne(ctx, folderFilter)
+	if err != nil {
+		return 0, fmt.Errorf("failed to delete folder: %w", err)
+	}
+
+	if folderResult.DeletedCount == 0 {
+		return 0, fmt.Errorf("folder not found")
+	}
+
+	return chatResult.DeletedCount, nil
+}
+
+// MoveChatToFolder moves a chat to a folder (or out of folder if folderID is nil)
+func (s *ChatSyncService) MoveChatToFolder(ctx context.Context, userID, chatID string, folderID *string) error {
+	if userID == "" || chatID == "" {
+		return fmt.Errorf("user ID and chat ID are required")
+	}
+
+	filter := bson.M{"userId": userID, "chatId": chatID}
+
+	update := bson.M{
+		"$set": bson.M{
+			"folderId":  folderID,
+			"updatedAt": time.Now(),
+		},
+		"$inc": bson.M{"version": 1},
+	}
+
+	result, err := s.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to move chat to folder: %w", err)
+	}
+
+	if result.MatchedCount == 0 {
+		return fmt.Errorf("chat not found")
+	}
+
+	return nil
+}
+
+// GetChatsByFolder retrieves chats in a specific folder
+func (s *ChatSyncService) GetChatsByFolder(ctx context.Context, userID, folderID string, page, pageSize int) (*models.ChatListResponse, error) {
+	if userID == "" || folderID == "" {
+		return nil, fmt.Errorf("user ID and folder ID are required")
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	filter := bson.M{
+		"userId":   userID,
+		"folderId": folderID,
+	}
+
+	// Get total count
+	totalCount, err := s.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count chats: %w", err)
+	}
+
+	// Find chats with pagination
+	skip := int64((page - 1) * pageSize)
+	opts := options.Find().
+		SetSort(bson.D{{Key: "updatedAt", Value: -1}}).
+		SetSkip(skip).
+		SetLimit(int64(pageSize)).
+		SetProjection(bson.M{
+			"_id":               1,
+			"chatId":            1,
+			"title":             1,
+			"isStarred":         1,
+			"model":             1,
+			"version":           1,
+			"folderId":          1,
+			"createdAt":         1,
+			"updatedAt":         1,
+			"encryptedMessages": 1, // Need this to count messages
+		})
+
+	cursor, err := s.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list chats: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var chats []models.ChatListItem
+	for cursor.Next(ctx) {
+		var encChat models.EncryptedChat
+		if err := cursor.Decode(&encChat); err != nil {
+			log.Printf("⚠️ Failed to decode chat: %v", err)
+			continue
+		}
+
+		// Count messages (decrypt to get count)
+		messageCount := 0
+		if encChat.EncryptedMessages != "" {
+			messages, err := s.decryptMessages(userID, encChat.EncryptedMessages)
+			if err == nil {
+				messageCount = len(messages)
+			}
+		}
+
+		chats = append(chats, models.ChatListItem{
+			ID:           encChat.ChatID,
+			Title:        encChat.Title,
+			IsStarred:    encChat.IsStarred,
+			Model:        encChat.Model,
+			MessageCount: messageCount,
+			Version:      encChat.Version,
+			FolderID:     encChat.FolderID,
+			CreatedAt:    encChat.CreatedAt,
+			UpdatedAt:    encChat.UpdatedAt,
+		})
+	}
+
+	return &models.ChatListResponse{
+		Chats:      chats,
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
+		HasMore:    int64(page*pageSize) < totalCount,
+	}, nil
+}
+
+// GetFolderCounts returns a map of folder ID to chat count for a user
+func (s *ChatSyncService) GetFolderCounts(ctx context.Context, userID string) (map[string]int, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+
+	// Get all folders first
+	folders, err := s.GetFolders(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get folders: %w", err)
+	}
+
+	// Initialize map with 0 counts
+	folderCounts := make(map[string]int)
+	for _, folder := range folders {
+		folderCounts[folder.ID] = 0
+	}
+
+	// Count chats per folder using aggregation
+	pipeline := []bson.M{
+		{"$match": bson.M{"userId": userID}},
+		{"$group": bson.M{"_id": "$folderId", "count": bson.M{"$sum": 1}}},
+	}
+
+	cursor, err := s.collection.Aggregate(ctx, pipeline)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count chats per folder: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var results []struct {
+		ID    *string `bson:"_id"`
+		Count int     `bson:"count"`
+	}
+
+	for cursor.Next(ctx) {
+		var result struct {
+			ID    *string `bson:"_id"`
+			Count int     `bson:"count"`
+		}
+		if err := cursor.Decode(&result); err != nil {
+			log.Printf("⚠️ Failed to decode folder count: %v", err)
+			continue
+		}
+		results = append(results, result)
+	}
+
+	// Update the folder counts map
+	for _, result := range results {
+		if result.ID != nil {
+			folderCounts[*result.ID] = result.Count
+		}
+	}
+
+	return folderCounts, nil
+}
+
+// GetUngroupedChats returns chats not in any folder
+func (s *ChatSyncService) GetUngroupedChats(ctx context.Context, userID string, page, pageSize int) (*models.ChatListResponse, error) {
+	if userID == "" {
+		return nil, fmt.Errorf("user ID is required")
+	}
+
+	if page < 1 {
+		page = 1
+	}
+	if pageSize < 1 || pageSize > 100 {
+		pageSize = 20
+	}
+
+	// Chats not in any folder have folderId as null or missing
+	filter := bson.M{
+		"userId":   userID,
+		"folderId": bson.M{"$exists": false},
+	}
+
+	// Get total count
+	totalCount, err := s.collection.CountDocuments(ctx, filter)
+	if err != nil {
+		return nil, fmt.Errorf("failed to count ungrouped chats: %w", err)
+	}
+
+	// Find chats with pagination
+	skip := int64((page - 1) * pageSize)
+	opts := options.Find().
+		SetSort(bson.D{{Key: "updatedAt", Value: -1}}).
+		SetSkip(skip).
+		SetLimit(int64(pageSize)).
+		SetProjection(bson.M{
+			"_id":               1,
+			"chatId":            1,
+			"title":             1,
+			"isStarred":         1,
+			"model":             1,
+			"version":           1,
+			"folderId":          1,
+			"createdAt":         1,
+			"updatedAt":         1,
+			"encryptedMessages": 1, // Need this to count messages
+		})
+
+	cursor, err := s.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list ungrouped chats: %w", err)
+	}
+	defer cursor.Close(ctx)
+
+	var chats []models.ChatListItem
+	for cursor.Next(ctx) {
+		var encChat models.EncryptedChat
+		if err := cursor.Decode(&encChat); err != nil {
+			log.Printf("⚠️ Failed to decode chat: %v", err)
+			continue
+		}
+
+		// Count messages (decrypt to get count)
+		messageCount := 0
+		if encChat.EncryptedMessages != "" {
+			messages, err := s.decryptMessages(userID, encChat.EncryptedMessages)
+			if err == nil {
+				messageCount = len(messages)
+			}
+		}
+
+		chats = append(chats, models.ChatListItem{
+			ID:           encChat.ChatID,
+			Title:        encChat.Title,
+			IsStarred:    encChat.IsStarred,
+			Model:        encChat.Model,
+			MessageCount: messageCount,
+			Version:      encChat.Version,
+			FolderID:     encChat.FolderID,
+			CreatedAt:    encChat.CreatedAt,
+			UpdatedAt:    encChat.UpdatedAt,
+		})
+	}
+
+	return &models.ChatListResponse{
+		Chats:      chats,
+		TotalCount: totalCount,
+		Page:       page,
+		PageSize:   pageSize,
+		HasMore:    int64(page*pageSize) < totalCount,
+	}, nil
 }
