@@ -24,7 +24,7 @@
 
 .avatar-initials {
   font-weight: var(--font-semibold);
-  color: white;
+  color: black;
   text-align: center;
   user-select: none;
 }

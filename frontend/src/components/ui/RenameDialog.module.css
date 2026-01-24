@@ -54,7 +54,7 @@
 
 .submitButton {
   background: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .submitButton:hover {

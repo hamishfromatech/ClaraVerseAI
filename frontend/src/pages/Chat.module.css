@@ -237,7 +237,7 @@
 .checkboxChecked {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .chatItemContent {
@@ -1048,7 +1048,7 @@
 .toolTimelineIcon.completed {
   border-color: var(--color-accent);
   background: var(--color-accent);
-  color: white;
+  color: #000000;
   box-shadow: 0 0 8px var(--color-accent-light);
 }
 
@@ -1224,7 +1224,7 @@
 
 .saveButton {
   background: var(--color-accent);
-  color: white;
+  color: #000000;
 }
 
 .saveButton:hover {

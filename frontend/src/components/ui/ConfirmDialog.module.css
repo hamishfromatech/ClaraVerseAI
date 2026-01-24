@@ -42,7 +42,7 @@
 
 .confirmButton {
   background: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .confirmButton:hover {

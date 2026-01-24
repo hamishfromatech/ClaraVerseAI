@@ -49,7 +49,7 @@
 .checkbox-input:checked + .checkbox-box {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .checkbox-input:checked + .checkbox-box svg {
@@ -59,7 +59,7 @@
 .checkbox-box-indeterminate {
   background: var(--color-accent);
   border-color: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .checkbox-box-indeterminate svg {
