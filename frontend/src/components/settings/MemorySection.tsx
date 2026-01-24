@@ -164,7 +164,7 @@ export const MemorySection: React.FC<MemorySectionProps> = ({ onSave }) => {
         <>
           {/* Extraction Threshold */}
           <div
-            style={{ backgroundColor: '#0d0d0d', borderColor: '#e91e63' }}
+            style={{ backgroundColor: '#0d0d0d', borderColor: '#267C7E' }}
             className="rounded-lg p-6 border"
           >
             <div className="flex items-start justify-between mb-4">
@@ -203,7 +203,7 @@ export const MemorySection: React.FC<MemorySectionProps> = ({ onSave }) => {
 
           {/* Max Injection */}
           <div
-            style={{ backgroundColor: '#0d0d0d', borderColor: '#e91e63' }}
+            style={{ backgroundColor: '#0d0d0d', borderColor: '#267C7E' }}
             className="rounded-lg p-6 border"
           >
             <div className="flex items-start justify-between mb-4">
@@ -242,7 +242,7 @@ export const MemorySection: React.FC<MemorySectionProps> = ({ onSave }) => {
 
           {/* Statistics */}
           <div
-            style={{ backgroundColor: '#0d0d0d', borderColor: '#e91e63' }}
+            style={{ backgroundColor: '#0d0d0d', borderColor: '#267C7E' }}
             className="rounded-lg p-6 border"
           >
             <div className="flex items-start justify-between mb-4">
@@ -331,7 +331,7 @@ export const MemorySection: React.FC<MemorySectionProps> = ({ onSave }) => {
 
           {/* How it Works */}
           <div
-            style={{ backgroundColor: '#0d0d0d', borderColor: '#e91e63' }}
+            style={{ backgroundColor: '#0d0d0d', borderColor: '#267C7E' }}
             className="border rounded-lg p-6"
           >
             <h3 className="text-lg font-semibold flex items-center gap-2 mb-3">

@@ -33,29 +33,29 @@
 :root {
   /* ==================== COLORS ==================== */
 
-  /* Background & Surfaces - KaylahGPT Theme */
-  --color-background: #1D4148;
-  --color-surface: rgba(242, 238, 228, 0.05);
-  --color-surface-elevated: rgba(242, 238, 228, 0.08);
-  --color-surface-hover: rgba(242, 238, 228, 0.12);
+  /* Background & Surfaces - KaylahGPT Brand */
+  --color-background: #1D4148; /* Primary Deep Teal */
+  --color-surface: #2D2D2D;    /* Deep Charcoal - Grounded/Card Background */
+  --color-surface-elevated: #3D3D3D;
+  --color-surface-hover: rgba(242, 238, 228, 0.08); /* Cream low opacity for hover */
 
   /* Borders - Champagne tinted */
-  --color-border: rgba(217, 203, 179, 0.15);
-  --color-border-hover: rgba(217, 203, 179, 0.25);
-  --color-border-focus: rgba(38, 124, 126, 0.5);
+  --color-border: rgba(217, 203, 179, 0.3); /* Champagne with opacity */
+  --color-border-hover: rgba(217, 203, 179, 0.5);
+  --color-border-focus: #267C7E; /* Vibrant Teal */
 
-  /* Text Colors - Cream base */
+  /* Text Colors - Off-White/Cream base */
   --color-text-primary: #F2EEE4;
   --color-text-secondary: rgba(242, 238, 228, 0.85);
   --color-text-tertiary: rgba(242, 238, 228, 0.6);
   --color-text-disabled: rgba(242, 238, 228, 0.3);
 
-  /* Vibrant Teal Accent (Primary) - KaylahGPT */
+  /* Vibrant Teal Accent (Primary) */
   --color-accent: #267C7E;
   --color-accent-hover: #2D8F91;
   --color-accent-active: #1F6365;
-  --color-accent-light: rgba(38, 124, 126, 0.1);
-  --color-accent-border: rgba(38, 124, 126, 0.3);
+  --color-accent-light: rgba(38, 124, 126, 0.15);
+  --color-accent-border: rgba(38, 124, 126, 0.4);
 
   /* Champagne Gold for premium accents */
   --color-champagne: #D9CBB3;
@@ -83,7 +83,7 @@
   --color-info-light: rgba(100, 181, 246, 0.15);
   --color-info-border: rgba(100, 181, 246, 0.3);
 
-  /* Gradients - KaylahGPT Theme */
+  /* Gradients */
   --gradient-text: linear-gradient(180deg, #F2EEE4 0%, rgba(242, 238, 228, 0.7) 100%);
   --gradient-accent: linear-gradient(135deg, #267C7E 0%, #1D4148 100%);
   --gradient-glow: radial-gradient(circle, rgba(38, 124, 126, 0.3) 0%, transparent 70%);
@@ -92,26 +92,26 @@
 
   /* ==================== SHADCN THEME VARIABLES ==================== */
 
-  /* Base colors using HSL */
-  --background: 177 29% 20%;
-  --foreground: 34 17% 94%;
-  --card: 177 25% 12%;
-  --card-foreground: 34 17% 94%;
-  --popover: 177 25% 12%;
-  --popover-foreground: 34 17% 94%;
-  --primary: 177 54% 31%;
+  /* Base colors using HSL - Brand Matched */
+  --background: 190 43% 20%;  /* #1D4148 Primary Deep Teal */
+  --foreground: 43 33% 94%;   /* #F2EEE4 Off-White/Cream */
+  --card: 0 0% 18%;           /* #2D2D2D Deep Charcoal */
+  --card-foreground: 43 33% 94%;
+  --popover: 0 0% 18%;        /* #2D2D2D Deep Charcoal */
+  --popover-foreground: 43 33% 94%;
+  --primary: 181 54% 32%;     /* #267C7E Vibrant Teal */
   --primary-foreground: 0 0% 100%;
-  --secondary: 180 10% 10%;
-  --secondary-foreground: 34 17% 94%;
-  --muted: 180 10% 10%;
-  --muted-foreground: 34 17% 60%;
-  --accent: 180 10% 10%;
-  --accent-foreground: 34 17% 94%;
+  --secondary: 38 33% 78%;    /* #D9CBB3 Champagne */
+  --secondary-foreground: 190 43% 20%; /* Deep Teal text on Champagne */
+  --muted: 190 30% 25%;       /* Slightly lighter Deep Teal */
+  --muted-foreground: 43 33% 70%;
+  --accent: 181 54% 32%;      /* #267C7E Vibrant Teal */
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 96%;
-  --border: 35 18% 22%;
-  --input: 35 18% 22%;
-  --ring: 177 54% 31%;
+  --border: 38 33% 78%;       /* #D9CBB3 Champagne */
+  --input: 38 33% 78%;        /* #D9CBB3 Champagne */
+  --ring: 181 54% 32%;        /* #267C7E Vibrant Teal */
   --radius: 1rem;
 
   /* ==================== SPACING ==================== */

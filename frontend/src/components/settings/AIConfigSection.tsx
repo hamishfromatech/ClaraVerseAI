@@ -850,7 +850,7 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                           <span
                             style={{
                               fontSize: '0.75rem',
-                              color: '#e91e63',
+                              color: '#267C7E',
                               fontWeight: 'normal',
                             }}
                           >
@@ -870,7 +870,7 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                             style={{
                               borderColor:
                                 newProviderForm.apiKey && !newProviderForm.baseUrl
-                                  ? '#e91e63'
+                                  ? '#267C7E'
                                   : undefined,
                             }}
                           />
@@ -969,8 +969,8 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                             <span
                               style={{
                                 fontFamily: 'ui-monospace',
-                                color: '#e91e63',
-                                background: 'rgba(233, 30, 99, 0.1)',
+                                color: '#267C7E',
+                                background: 'rgba(38, 124, 126, 0.1)',
                                 padding: '0.125rem 0.375rem',
                                 borderRadius: '0.25rem',
                                 fontSize: '0.75rem',

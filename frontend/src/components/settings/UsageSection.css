@@ -138,7 +138,7 @@
 
 /* Progress bar color variants */
 .usage-progress-fill.progress-safe {
-  background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
+  background: linear-gradient(135deg, #267C7E 0%, #f06292 100%);
 }
 
 .usage-progress-fill.progress-warning {
