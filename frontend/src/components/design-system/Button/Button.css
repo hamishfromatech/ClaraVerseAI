@@ -38,7 +38,7 @@
 /* Primary Button */
 .btn-primary {
   background: var(--color-accent);
-  color: #000000;
+  color: #000000 !important;
   border-radius: var(--radius-full);
   box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
 }

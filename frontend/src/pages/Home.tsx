@@ -45,7 +45,7 @@ export const Home = () => {
             {/* CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link to="/chat">
-                <Button className="h-14 px-8 bg-white text-black hover:bg-gray-100 text-base font-medium">
+                <Button className="h-14 px-8 bg-white text-black hover:bg-gray-100 text-base font-medium" style={{ color: 'black' }}>
                   Get Started
                   <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
@@ -199,7 +199,7 @@ export const Home = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/chat">
-              <Button className="h-14 px-10 bg-white text-black hover:bg-gray-100 text-lg font-semibold">
+              <Button className="h-14 px-10 bg-white text-black hover:bg-gray-100 text-lg font-semibold" style={{ color: 'black' }}>
                 Start Free
                 <ArrowRight className="ml-2 w-5 h-5" />
               </Button>

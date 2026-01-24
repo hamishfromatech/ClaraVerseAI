@@ -5,8 +5,8 @@
  * Prevents re-renders during streaming since user messages don't change.
  */
 
-import { memo } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useState, memo, useRef, useEffect } from 'react';
+import { Copy, Check, Pencil, X } from 'lucide-react';
 import type { Message } from '@/types/chat';
 import { MarkdownRenderer } from '@/components/design-system/content/MarkdownRenderer';
 import { MessageAttachment } from './MessageAttachment';
@@ -17,6 +17,7 @@ export interface UserMessageProps {
   userInitials: string;
   copiedMessageId: string | null;
   onCopy: (content: string, id: string) => void;
+  onEdit?: (messageId: string, newContent: string) => void;
 }
 
 function UserMessageComponent({
@@ -24,7 +25,46 @@ function UserMessageComponent({
   userInitials,
   copiedMessageId,
   onCopy,
+  onEdit,
 }: UserMessageProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editValue, setEditValue] = useState(message.content);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+      textareaRef.current.focus();
+    }
+  }, [isEditing, editValue]);
+
+  const handleStartEdit = () => {
+    setEditValue(message.content);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditValue(message.content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editValue.trim() && editValue !== message.content && onEdit) {
+      onEdit(message.id, editValue.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    }
+  };
+
   return (
     <>
       {/* File Attachments - shown above chat bubble */}
@@ -39,21 +79,64 @@ function UserMessageComponent({
             {userInitials}
           </div>
           <div className={styles.messageText}>
-            <MarkdownRenderer content={message.content} />
+            {isEditing ? (
+              <div className={styles.editContainer}>
+                <textarea
+                  ref={textareaRef}
+                  className={styles.editTextarea}
+                  value={editValue}
+                  onChange={e => setEditValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Edit message..."
+                />
+                <div className={styles.editActions}>
+                  <button
+                    onClick={handleSaveEdit}
+                    className={styles.saveButton}
+                    title="Save & Send (Ctrl+Enter)"
+                  >
+                    <Check size={14} />
+                    <span>Save & Send</span>
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    className={styles.cancelButton}
+                    title="Cancel (Esc)"
+                  >
+                    <X size={14} />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <MarkdownRenderer content={message.content} />
+            )}
           </div>
         </div>
-        {/* Copy button - inline on mobile */}
-        <button
-          onClick={() => onCopy(message.content, message.id)}
-          className={styles.userCopyButton}
-          aria-label={copiedMessageId === message.id ? 'Copied' : 'Copy message'}
-        >
-          {copiedMessageId === message.id ? (
-            <Check size={14} aria-hidden="true" />
-          ) : (
-            <Copy size={14} aria-hidden="true" />
-          )}
-        </button>
+        {!isEditing && (
+          <div className={styles.messageActions}>
+            <button
+              onClick={handleStartEdit}
+              className={styles.userActionButton}
+              aria-label="Edit message"
+              title="Edit message"
+            >
+              <Pencil size={14} aria-hidden="true" />
+            </button>
+            <button
+              onClick={() => onCopy(message.content, message.id)}
+              className={styles.userActionButton}
+              aria-label={copiedMessageId === message.id ? 'Copied' : 'Copy message'}
+              title="Copy message"
+            >
+              {copiedMessageId === message.id ? (
+                <Check size={14} aria-hidden="true" />
+              ) : (
+                <Copy size={14} aria-hidden="true" />
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </>
   );

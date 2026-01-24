@@ -179,7 +179,7 @@
   background: var(--color-accent);
   border: none;
   border-radius: var(--radius-lg);
-  color: white;
+  color: #000000;
   cursor: pointer;
   transition: all var(--transition-fast);
   box-shadow: none;
@@ -782,7 +782,7 @@
 
 .answerButtonPrimary {
   background: var(--color-accent);
-  color: white;
+  color: black;
 }
 
 .answerButtonPrimary:hover:not(:disabled) {
