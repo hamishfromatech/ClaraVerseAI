@@ -19,6 +19,8 @@ import {
   ExternalLink,
   X,
   ZoomIn,
+  Volume2,
+  VolumeX,
 } from 'lucide-react';
 import type { Message, ToolCall, Artifact, RetryType } from '@/types/chat';
 import { MarkdownRenderer } from '@/components/design-system/content/MarkdownRenderer';
@@ -31,6 +33,8 @@ import { VersionNavigator } from './VersionNavigator';
 import { ArtifactRenderer } from './ArtifactRenderer';
 import { getIconByName } from '@/utils/iconMapper';
 import { api } from '@/services/api';
+import { ttsService } from '@/services/ttsService';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { CustomSpinner } from '@/components/ui';
 import styles from '@/pages/Chat.module.css';
 
@@ -309,6 +313,13 @@ function AssistantMessageComponent({
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [galleryIndex, setGalleryIndex] = useState(0);
+
+  // TTS state
+  const [isPlayingTTS, setIsPlayingTTS] = useState(false);
+  const [currentTTSMessageId, setCurrentTTSMessageId] = useState<string | null>(null);
+
+  // Get TTS settings
+  const { ttsHuggingFaceToken } = useSettingsStore();
 
   // Open gallery with images
   const openImageGallery = useCallback((images: GalleryImage[], startIndex = 0) => {
@@ -592,6 +603,58 @@ function AssistantMessageComponent({
       };
     }
   }, [showSources]);
+
+  // Stop TTS when component unmounts or message changes
+  useEffect(() => {
+    return () => {
+      if (currentTTSMessageId === message.id && isPlayingTTS) {
+        ttsService.stop();
+        setIsPlayingTTS(false);
+        setCurrentTTSMessageId(null);
+      }
+    };
+  }, [message.id, isPlayingTTS, currentTTSMessageId]);
+
+  // Handle TTS playback
+  const handleTTSPlay = useCallback(async () => {
+    // If already playing this message, stop it
+    if (isPlayingTTS && currentTTSMessageId === message.id) {
+      ttsService.stop();
+      setIsPlayingTTS(false);
+      setCurrentTTSMessageId(null);
+      return;
+    }
+
+    // Stop any currently playing TTS from other messages
+    if (isPlayingTTS && currentTTSMessageId !== message.id) {
+      ttsService.stop();
+    }
+
+    try {
+      setIsPlayingTTS(true);
+      setCurrentTTSMessageId(message.id);
+      await ttsService.speak(message.content, undefined, undefined, ttsHuggingFaceToken);
+    } catch (error) {
+      console.error('TTS error:', error);
+      setIsPlayingTTS(false);
+      setCurrentTTSMessageId(null);
+    }
+  }, [message.content, message.id, isPlayingTTS, currentTTSMessageId, ttsHuggingFaceToken]);
+
+  // Listen for audio end events from TTS service
+  useEffect(() => {
+    const checkAudioEnd = () => {
+      if (!ttsService.getIsPlaying() && isPlayingTTS) {
+        setIsPlayingTTS(false);
+        setCurrentTTSMessageId(null);
+      }
+    };
+
+    if (isPlayingTTS) {
+      const interval = setInterval(checkAudioEnd, 100);
+      return () => clearInterval(interval);
+    }
+  }, [isPlayingTTS]);
 
   // Render download tile or artifact viewer for document/file creation results
   const renderDownloadTile = () => {
@@ -1706,6 +1769,19 @@ function AssistantMessageComponent({
                 <Check size={16} aria-hidden="true" style={{ color: 'var(--color-success)' }} />
               ) : (
                 <Copy size={16} aria-hidden="true" />
+              )}
+            </button>
+            <button
+              onClick={handleTTSPlay}
+              className={styles.iconButton}
+              aria-label={isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
+              title={isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
+              style={{ color: isPlayingTTS ? 'var(--color-accent)' : undefined }}
+            >
+              {isPlayingTTS ? (
+                <VolumeX size={16} aria-hidden="true" />
+              ) : (
+                <Volume2 size={16} aria-hidden="true" />
               )}
             </button>
             <RetryDropdown onRetry={type => onRetry(index, type)} disabled={isLoading} />
