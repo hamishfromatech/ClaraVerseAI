@@ -17,9 +17,6 @@ type StateCallback = (state: WebSocketState) => void;
 
 // Dynamically construct WebSocket URL from current location if not provided
 const getWsUrl = (): string => {
-  if (import.meta.env.VITE_WS_URL) {
-    return import.meta.env.VITE_WS_URL;
-  }
   // Use current page's protocol and host
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   return `${protocol}//${window.location.host}`;

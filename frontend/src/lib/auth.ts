@@ -45,7 +45,8 @@ class AuthClient {
    * Register a new user
    */
   async signUp(email: string, password: string): Promise<User> {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/register`, {
+    const baseUrl = window.location.origin;
+    const response = await fetch(`${baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +69,8 @@ class AuthClient {
    * Sign in an existing user
    */
   async signIn(email: string, password: string): Promise<User> {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/login`, {
+    const baseUrl = window.location.origin;
+    const response = await fetch(`${baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -92,7 +94,8 @@ class AuthClient {
    */
   async signOut(): Promise<void> {
     try {
-      await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/logout`, {
+      const baseUrl = window.location.origin;
+      await fetch(`${baseUrl}/api/auth/logout`, {
         method: 'POST',
         headers: this.getAuthHeaders(),
         credentials: 'include',
@@ -109,7 +112,8 @@ class AuthClient {
    * Refresh the access token
    */
   async refreshToken(): Promise<string> {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/refresh`, {
+    const baseUrl = window.location.origin;
+    const response = await fetch(`${baseUrl}/api/auth/refresh`, {
       method: 'POST',
       credentials: 'include', // Refresh token is in httpOnly cookie
     });

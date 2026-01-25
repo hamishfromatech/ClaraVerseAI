@@ -20,7 +20,7 @@ export const Onboarding = () => {
   useEffect(() => {
     const checkUsersExist = async () => {
       try {
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+        const baseUrl = window.location.origin;
         const response = await fetch(`${baseUrl}/api/auth/status`);
         if (response.ok) {
           const data = await response.json();

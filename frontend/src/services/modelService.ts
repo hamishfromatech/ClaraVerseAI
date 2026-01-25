@@ -1,7 +1,7 @@
 import { apiClient } from '@/lib/apiClient';
 import type { Model, ModelsResponse } from '@/types/websocket';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = window.location.origin;
 
 /**
  * Fetch available models from the backend API

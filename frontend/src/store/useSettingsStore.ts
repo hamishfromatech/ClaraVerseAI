@@ -120,6 +120,12 @@ export interface SettingsState {
   transcriptionProvider: 'local' | 'remote';
   transcriptionModel: string;
 
+  // Text-to-Speech
+  ttsEnabled: boolean;
+  ttsVoice: string; // Built-in voice ID or 'custom'
+  ttsCustomVoiceId: string | null; // Custom voice file ID
+  ttsHuggingFaceToken: string; // HuggingFace token for gated models
+
   // Actions
   setDefaultSystemInstructions: (instructions: string) => void;
   setDefaultModelId: (modelId: string | null) => void;
@@ -151,6 +157,12 @@ export interface SettingsState {
   // Transcription actions
   setTranscriptionProvider: (provider: 'local' | 'remote') => void;
   setTranscriptionModel: (model: string) => void;
+
+  // TTS actions
+  setTTSEnabled: (enabled: boolean) => void;
+  setTTSVoice: (voice: string) => void;
+  setTTSCustomVoiceId: (customVoiceId: string | null) => void;
+  setTTSHuggingFaceToken: (token: string) => void;
 
   // Backend sync
   initializeFromBackend: () => Promise<void>;
@@ -195,6 +207,12 @@ export const useSettingsStore = create<SettingsState>()(
         // Transcription
         transcriptionProvider: 'local',
         transcriptionModel: 'base.en',
+
+        // Text-to-Speech
+        ttsEnabled: false,
+        ttsVoice: 'alba',
+        ttsCustomVoiceId: null,
+        ttsHuggingFaceToken: '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',
 
         // Actions
         setDefaultSystemInstructions: (instructions: string) => {
@@ -386,6 +404,46 @@ export const useSettingsStore = create<SettingsState>()(
           }
         },
 
+        setTTSEnabled: (enabled: boolean) => {
+          set({ ttsEnabled: enabled });
+
+          if (userPreferencesService.isAuthenticated()) {
+            userPreferencesService
+              .updatePreferences({ tts_enabled: enabled })
+              .catch(error => {
+                console.error('Failed to sync TTS enabled to backend:', error);
+              });
+          }
+        },
+
+        setTTSVoice: (voice: string) => {
+          set({ ttsVoice: voice });
+
+          if (userPreferencesService.isAuthenticated()) {
+            userPreferencesService
+              .updatePreferences({ tts_voice: voice })
+              .catch(error => {
+                console.error('Failed to sync TTS voice to backend:', error);
+              });
+          }
+        },
+
+        setTTSCustomVoiceId: (customVoiceId: string | null) => {
+          set({ ttsCustomVoiceId: customVoiceId });
+
+          if (userPreferencesService.isAuthenticated()) {
+            userPreferencesService
+              .updatePreferences({ tts_custom_voice_id: customVoiceId || undefined })
+              .catch(error => {
+                console.error('Failed to sync TTS custom voice ID to backend:', error);
+              });
+          }
+        },
+
+        setTTSHuggingFaceToken: (token: string) => {
+          set({ ttsHuggingFaceToken: token });
+        },
+
         resetSettings: () => {
           set({
             defaultSystemInstructions: '',
@@ -404,6 +462,10 @@ export const useSettingsStore = create<SettingsState>()(
             memorySelectorModelId: null,
             transcriptionProvider: 'local',
             transcriptionModel: 'base.en',
+            ttsEnabled: false,
+            ttsVoice: 'alba',
+            ttsCustomVoiceId: null,
+            ttsHuggingFaceToken: '',
           });
         },
 
@@ -431,6 +493,9 @@ export const useSettingsStore = create<SettingsState>()(
               memorySelectorModelId: string | null;
               transcriptionProvider: 'local' | 'remote';
               transcriptionModel: string;
+              ttsEnabled: boolean;
+              ttsVoice: string;
+              ttsCustomVoiceId: string | null;
             }> = {};
 
             if (prefs.chat_privacy_mode) {
@@ -465,6 +530,15 @@ export const useSettingsStore = create<SettingsState>()(
             }
             if (prefs.transcription_model) {
               updates.transcriptionModel = prefs.transcription_model;
+            }
+            if (prefs.tts_enabled !== undefined) {
+              updates.ttsEnabled = prefs.tts_enabled;
+            }
+            if (prefs.tts_voice) {
+              updates.ttsVoice = prefs.tts_voice;
+            }
+            if (prefs.tts_custom_voice_id) {
+              updates.ttsCustomVoiceId = prefs.tts_custom_voice_id;
             }
 
             if (Object.keys(updates).length > 0) {

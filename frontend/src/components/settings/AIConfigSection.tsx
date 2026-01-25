@@ -16,6 +16,7 @@ import type { CustomProvider } from '@/store/useSettingsStore';
 import { useModelStore } from '@/store/useModelStore';
 import { MemorySection } from '@/components/settings/MemorySection';
 import { TranscriptionSection } from '@/components/settings/TranscriptionSection';
+import { VoiceSection } from '@/components/settings/VoiceSection';
 import { fetchToolPredictorModels } from '@/services/modelService';
 import type { Model } from '@/types/websocket';
 
@@ -774,6 +775,12 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
 
                 {/* Transcription Settings */}
                 <TranscriptionSection onSave={onSave} />
+
+                {/* Divider */}
+                <div className="ai-config-divider"></div>
+
+                {/* Voice Settings */}
+                <VoiceSection onSave={onSave} />
               </div>
             </section>
           </div>

@@ -6,7 +6,7 @@
 import { api } from './api';
 import type { BuilderMessage } from '@/types/agent';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+const API_BASE_URL = window.location.origin;
 
 // Conversation is considered stale after 25 minutes (backend TTL is 30 minutes)
 const STALE_THRESHOLD_MS = 25 * 60 * 1000; // 25 minutes in milliseconds
