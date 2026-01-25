@@ -117,17 +117,39 @@ services:
 
   whisper-service:
     build:
-      context: ./backend/whisper-service
+      context: ./backend/faster-whisper-service
       dockerfile: Dockerfile
     container_name: claraverse-whisper
     volumes:
       - whisper-models:/app/models
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:3005/health').then(r => r.ok ? process.exit(0) : process.exit(1))"]
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
       interval: 30s
       timeout: 10s
       start_period: 10s
+      retries: 3
+    networks:
+      - claraverse-network
+
+  tts-service:
+    build:
+      context: ./backend/pocket-tts-service
+      dockerfile: Dockerfile
+    container_name: claraverse-tts
+    ports:
+      - "3006:3006"
+    volumes:
+      - tts-cache:/app/cache
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
       retries: 3
     networks:
       - claraverse-network
@@ -157,7 +179,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
       # CORS
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:82,http://localhost:5173}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:82,http://localhost:5173,https://clara.atechds.com}
       # SearXNG integration (supports multiple URLs for load balancing)
       - SEARXNG_URLS=${SEARXNG_URLS:-http://searxng:8080}
       - SEARXNG_URL=${SEARXNG_URLS:-http://searxng:8080}
@@ -165,6 +187,8 @@ services:
       - E2B_SERVICE_URL=http://e2b-service:8001
       # Whisper Local STT integration
       - WHISPER_SERVICE_URL=http://whisper-service:3005
+      # Pocket TTS integration
+      - TTS_SERVICE_URL=http://tts-service:3006
       # Frontend URL (for payment redirects)
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       # Backend public URL for generating absolute download URLs
@@ -205,6 +229,8 @@ services:
         condition: service_healthy
       whisper-service:
         condition: service_healthy
+      tts-service:
+        condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -226,8 +252,8 @@ services:
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3003}
-        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3003}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}  # Empty = relative URL, use same origin as frontend
+        VITE_WS_URL: ${VITE_WS_URL:-}  # Empty = relative URL
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
     container_name: claraverse-frontend
     ports:
@@ -253,6 +279,8 @@ volumes:
   backend-logs:
     driver: local
   whisper-models:
+    driver: local
+  tts-cache:
     driver: local
   mongodb-data:
     driver: local

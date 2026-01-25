@@ -582,7 +582,9 @@ func main() {
 	toolsHandler := handlers.NewToolsHandler(tools.GetRegistry(), toolService)
 	imageProxyHandler := handlers.NewImageProxyHandler()
 	audioHandler := handlers.NewAudioHandler()
+	ttsHandler := handlers.NewTTSHandler()
 	log.Println("✅ Audio handler initialized")
+	log.Println("✅ TTS handler initialized")
 
 	// Initialize schedule handler (requires scheduler service)
 	var scheduleHandler *handlers.ScheduleHandler
@@ -737,6 +739,15 @@ func main() {
 
 		// Audio transcription endpoint (requires authentication + rate limiting for expensive GPU operation)
 		api.Post("/audio/transcribe", middleware.OptionalLocalAuthMiddleware(jwtAuth), transcribeLimiter, audioHandler.Transcribe)
+
+		// TTS endpoints (proxies to internal pocket-tts service)
+		tts := api.Group("/tts")
+		tts.Get("/health", ttsHandler.Health)                        // Health check
+		tts.Get("/voices", ttsHandler.ListVoices)                     // List voices
+		tts.Post("/", ttsHandler.TextToSpeech)                        // Generate speech
+		tts.Post("/voices/upload", middleware.OptionalLocalAuthMiddleware(jwtAuth), ttsHandler.UploadCustomVoice) // Upload custom voice
+		tts.Delete("/voices/:id", middleware.OptionalLocalAuthMiddleware(jwtAuth), ttsHandler.DeleteCustomVoice) // Delete custom voice
+		log.Println("✅ TTS routes registered")
 
 		// Document download (requires authentication for access control)
 		api.Get("/download/:id", middleware.OptionalLocalAuthMiddleware(jwtAuth), downloadHandler.Download)

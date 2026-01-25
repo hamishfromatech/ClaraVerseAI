@@ -13,12 +13,13 @@ import (
 
 // Config holds all application configuration
 type Config struct {
-	Port         string
-	DatabaseURL  string // MySQL DSN: mysql://user:pass@host:port/dbname?parseTime=true
-	SupabaseURL  string
-	SupabaseKey  string
-	SearXNGURL   string
-	RedisURL     string
+	Port          string
+	DatabaseURL   string // MySQL DSN: mysql://user:pass@host:port/dbname?parseTime=true
+	SupabaseURL   string
+	SupabaseKey   string
+	SearXNGURL    string
+	RedisURL      string
+	TTSServiceURL string // Pocket TTS service URL
 
 	// DodoPayments configuration
 	DodoAPIKey        string
@@ -50,12 +51,13 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Port:        getEnv("PORT", "3001"),
-		DatabaseURL: getEnv("DATABASE_URL", ""),
-		SupabaseURL: getEnv("SUPABASE_URL", ""),
-		SupabaseKey: getEnv("SUPABASE_KEY", ""),
-		SearXNGURL:  getEnv("SEARXNG_URL", "http://localhost:8080"),
-		RedisURL:    getEnv("REDIS_URL", "redis://localhost:6379"),
+		Port:          getEnv("PORT", "3001"),
+		DatabaseURL:   getEnv("DATABASE_URL", ""),
+		SupabaseURL:   getEnv("SUPABASE_URL", ""),
+		SupabaseKey:   getEnv("SUPABASE_KEY", ""),
+		SearXNGURL:    getEnv("SEARXNG_URL", "http://localhost:8080"),
+		RedisURL:      getEnv("REDIS_URL", "redis://localhost:6379"),
+		TTSServiceURL: getEnv("TTS_SERVICE_URL", "http://tts-service:3006"),
 
 		// DodoPayments configuration
 		DodoAPIKey:        getEnv("DODO_API_KEY", ""),

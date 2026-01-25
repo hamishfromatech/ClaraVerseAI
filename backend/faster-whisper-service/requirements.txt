@@ -1,0 +1,15 @@
+# Core dependencies
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
+requests==2.32.3
+
+# Faster-Whisper (CTranslate2)
+faster-whisper==1.0.3
+
+# Optional: PyTorch for CUDA support (install separately if needed)
+# torch>=2.0.0
+# torchvision>=0.15.0
+
+# Audio processing (optional, ffmpeg is installed system-wide)
+# We use subprocess to call ffmpeg directly
