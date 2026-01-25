@@ -115,6 +115,46 @@ services:
     networks:
       - kaylahgpt-network
 
+  whisper-service:
+    build:
+      context: ./backend/faster-whisper-service
+      dockerfile: Dockerfile
+    container_name: kaylahgpt-whisper
+    volumes:
+      - whisper-models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 10s
+      retries: 3
+    networks:
+      - kaylahgpt-network
+
+  tts-service:
+    build:
+      context: ./backend/pocket-tts-service
+      dockerfile: Dockerfile
+    container_name: kaylahgpt-tts
+    ports:
+      - "3006:3006"
+    volumes:
+      - tts-cache:/app/cache
+      - tts-custom-voices:/app/custom_voices
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    environment:
+      - HF_TOKEN=${HF_TOKEN}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    networks:
+      - kaylahgpt-network
+
   backend:
     build:
       context: ./backend
@@ -146,6 +186,10 @@ services:
       - SEARXNG_URL=${SEARXNG_URLS:-http://searxng:8080}
       # E2B service integration
       - E2B_SERVICE_URL=http://e2b-service:8001
+      # Whisper Local STT integration
+      - WHISPER_SERVICE_URL=http://whisper-service:3005
+      # Pocket TTS integration
+      - TTS_SERVICE_URL=http://tts-service:3006
       # Frontend URL (for payment redirects)
       - FRONTEND_URL=${FRONTEND_URL:-http://localhost:5173}
       # Backend public URL for generating absolute download URLs
@@ -184,6 +228,10 @@ services:
         condition: service_healthy
       e2b-service:
         condition: service_healthy
+      whisper-service:
+        condition: service_healthy
+      tts-service:
+        condition: service_healthy
       redis:
         condition: service_healthy
     restart: unless-stopped
@@ -205,8 +253,8 @@ services:
       args:
         VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
         VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3002}
-        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:3002}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}  # Empty = relative URL, use same origin as frontend
+        VITE_WS_URL: ${VITE_WS_URL:-}  # Empty = relative URL
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
     container_name: kaylahgpt-frontend
     ports:
@@ -230,6 +278,12 @@ volumes:
   backend-uploads:
     driver: local
   backend-logs:
+    driver: local
+  whisper-models:
+    driver: local
+  tts-cache:
+    driver: local
+  tts-custom-voices:
     driver: local
   mongodb-data:
     driver: local
