@@ -199,13 +199,13 @@ async def list_voices():
 @app.post("/tts")
 async def text_to_speech(request: TTSRequest):
     """
-    Convert text to speech.
+    Convert text to speech with streaming.
 
     Args:
         request: TTSRequest with text and optional voice
 
     Returns:
-        WAV audio file
+        Streamed WAV audio file (chunks generated as they're ready)
     """
     # Validate text
     if not request.text or not request.text.strip():
@@ -216,7 +216,7 @@ async def text_to_speech(request: TTSRequest):
         raise HTTPException(status_code=400, detail="Text is too long (max 10000 characters)")
 
     try:
-        logger.info(f"Generating speech for {len(request.text)} characters with voice: {request.voice or DEFAULT_VOICE}")
+        logger.info(f"Generating speech (streaming) for {len(request.text)} characters with voice: {request.voice or DEFAULT_VOICE}")
 
         # Use HF token from request or fall back to environment variable
         hf_token = request.hf_token or DEFAULT_HF_TOKEN
@@ -242,35 +242,53 @@ async def text_to_speech(request: TTSRequest):
             # Use built-in voice
             voice_state = get_voice_state(voice_to_use, hf_token=hf_token)
 
-        # Generate audio
-        audio = model.generate_audio(
+        # Generate audio using streaming
+        sample_rate = model.sample_rate
+        byte_depth = 2  # 16-bit
+        bytes_per_second = sample_rate * byte_depth
+
+        # Keep track of total samples for WAV header
+        total_samples = 0
+
+        import struct
+
+        # Collect chunks first to calculate proper WAV header
+        # This is necessary because WAV format requires the total size in the header
+        # For true streaming without header, we would need to use a different format
+        audio_chunks = []
+
+        for chunk in model.generate_audio_stream(
             voice_state,
             request.text,
             frames_after_eos=2,
             copy_state=True
-        )
+        ):
+            # Convert chunk to int16
+            chunk_array = chunk.cpu().numpy()
+            chunk_samples = len(chunk_array)
+            total_samples += chunk_samples
 
-        # Convert to WAV format in memory
-        audio_array = audio.cpu().numpy()
-        sample_rate = model.sample_rate
+            # Normalize to [-1, 1] range first if needed
+            if chunk_array.dtype != np.int16:
+                chunk_normalized = np.clip(chunk_array, -1.0, 1.0)
+                chunk_int16 = (chunk_normalized * 32767).astype(np.int16)
+            else:
+                chunk_int16 = chunk_array
 
-        # Calculate sizes (needed for logging and response headers)
-        num_samples = len(audio_array)
-        byte_depth = 2  # 16-bit
-        bytes_per_second = sample_rate * byte_depth
-        data_size = num_samples * byte_depth
-        total_size = 36 + data_size
+            audio_chunks.append(chunk_int16)
 
-        logger.info(f"Generated audio: {num_samples} samples ({num_samples/sample_rate:.2f} seconds)")
+        # Concatenate all chunks and convert to bytes
+        full_audio = np.concatenate(audio_chunks)
+        data_size = len(full_audio) * byte_depth
+        final_total_size = 36 + data_size
 
-        # Create WAV file in memory
+        logger.info(f"Generated audio: {total_samples} samples ({total_samples/sample_rate:.2f} seconds)")
+
+        # Create WAV file in memory with streaming
         def generate_wav():
-            # WAV file header
-            import struct
-
             # Write WAV header
             yield b"RIFF"
-            yield struct.pack("<I", total_size)
+            yield struct.pack("<I", final_total_size)
             yield b"WAVE"
             yield b"fmt "
             yield struct.pack("<I", 16)  # PCM chunk size
@@ -283,15 +301,9 @@ async def text_to_speech(request: TTSRequest):
             yield b"data"
             yield struct.pack("<I", data_size)
 
-            # Write audio data (convert float32 to int16)
-            # Normalize to [-1, 1] range first if needed
-            if audio_array.dtype != np.int16:
-                audio_normalized = np.clip(audio_array, -1.0, 1.0)
-                audio_int16 = (audio_normalized * 32767).astype(np.int16)
-            else:
-                audio_int16 = audio_array
-
-            yield audio_int16.tobytes()
+            # Write audio data in chunks for streaming
+            for chunk in audio_chunks:
+                yield chunk.tobytes()
 
         return StreamingResponse(
             generate_wav(),
@@ -299,7 +311,7 @@ async def text_to_speech(request: TTSRequest):
             headers={
                 "Content-Disposition": f'attachment; filename="tts_{datetime.now().strftime("%Y%m%d_%H%M%S")}.wav"',
                 "X-Sample-Rate": str(sample_rate),
-                "X-Duration": str(num_samples / sample_rate),
+                "X-Duration": str(total_samples / sample_rate),
             }
         )
 

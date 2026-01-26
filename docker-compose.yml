@@ -141,6 +141,7 @@ services:
       - "3006:3006"
     volumes:
       - tts-cache:/app/cache
+      - tts-custom-voices:/app/custom_voices
       - ~/.cache/huggingface:/root/.cache/huggingface
     environment:
       - HF_TOKEN=${HF_TOKEN}
@@ -281,6 +282,8 @@ volumes:
   whisper-models:
     driver: local
   tts-cache:
+    driver: local
+  tts-custom-voices:
     driver: local
   mongodb-data:
     driver: local

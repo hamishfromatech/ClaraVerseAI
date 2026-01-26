@@ -4,7 +4,7 @@
  * Routes through the backend API to avoid CORS/mixed content issues on production
  */
 
-const TTS_SERVICE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const TTS_SERVICE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3003';
 
 export interface Voice {
   id: string;
@@ -67,13 +67,34 @@ class TTSService {
       }
 
       const audioBlob = await response.blob();
+
+      // Validate the blob
+      if (!audioBlob || audioBlob.size === 0) {
+        throw new Error('TTS service returned empty audio data');
+      }
+
+      if (audioBlob.size < 44) {
+        throw new Error('Audio data too small (WAV header requires at least 44 bytes)');
+      }
+
+      console.log('TTS: Received audio blob', {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        contentType: response.headers.get('Content-Type'),
+      });
+
       const audioUrl = URL.createObjectURL(audioBlob);
+      console.log('TTS: Created audio URL', audioUrl);
 
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
 
+      // Store audio element reference for error handler
+      const audioElement = this.currentAudio;
+
       // Call callback when audio actually starts playing
       this.currentAudio.addEventListener('play', () => {
+        console.log('TTS: Audio started playing');
         if (onPlayStart) {
           onPlayStart();
         }
@@ -81,22 +102,37 @@ class TTSService {
 
       // Clean up blob URL when audio ends
       this.currentAudio.addEventListener('ended', () => {
+        console.log('TTS: Audio ended');
         if (onPlayEnd) {
           onPlayEnd();
         }
         this.cleanup();
       });
 
-      this.currentAudio.addEventListener('error', () => {
+      // Handle errors - capture details from event target
+      this.currentAudio.addEventListener('error', (e) => {
+        const error = (e.target as HTMLAudioElement).error;
+        console.error('Audio playback error details:', {
+          code: error?.code,
+          message: error?.message,
+          src: audioElement.src,
+          networkState: audioElement.networkState,
+          readyState: audioElement.readyState,
+          currentSrc: audioElement.currentSrc,
+          blobUrl: audioUrl,
+        });
+
         if (onPlayEnd) {
           onPlayEnd();
         }
         this.cleanup();
-        throw new Error('Audio playback error');
+        throw new Error(`Audio playback error: ${error?.message || 'Unknown error'}`);
       });
 
+      console.log('TTS: Calling audio.play()');
       await this.currentAudio.play();
     } catch (error) {
+      console.error('TTS: Error during speak()', error);
       if (onPlayEnd) {
         onPlayEnd();
       }
@@ -109,11 +145,12 @@ class TTSService {
    * Stop currently playing audio
    */
   stop(): void {
+    console.log('TTS: stop() called');
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;
-      this.cleanup();
     }
+    this.cleanup();
   }
 
   /**
