@@ -319,7 +319,7 @@ function AssistantMessageComponent({
   const [currentTTSMessageId, setCurrentTTSMessageId] = useState<string | null>(null);
 
   // Get TTS settings
-  const { ttsHuggingFaceToken } = useSettingsStore();
+  const { ttsHuggingFaceToken, ttsVoice, ttsCustomVoiceId } = useSettingsStore();
 
   // Open gallery with images
   const openImageGallery = useCallback((images: GalleryImage[], startIndex = 0) => {
@@ -630,31 +630,31 @@ function AssistantMessageComponent({
       ttsService.stop();
     }
 
+    // Set current message ID immediately, but wait for audio to actually start
+    setCurrentTTSMessageId(message.id);
+
     try {
-      setIsPlayingTTS(true);
-      setCurrentTTSMessageId(message.id);
-      await ttsService.speak(message.content, undefined, undefined, ttsHuggingFaceToken);
+      await ttsService.speak(
+        message.content,
+        ttsVoice === 'custom' ? undefined : ttsVoice,
+        ttsVoice === 'custom' ? ttsCustomVoiceId : undefined,
+        ttsHuggingFaceToken,
+        // Callback when audio actually starts playing
+        () => {
+          setIsPlayingTTS(true);
+        },
+        // Callback when audio ends or errors
+        () => {
+          setIsPlayingTTS(false);
+          setCurrentTTSMessageId(null);
+        }
+      );
     } catch (error) {
       console.error('TTS error:', error);
       setIsPlayingTTS(false);
       setCurrentTTSMessageId(null);
     }
-  }, [message.content, message.id, isPlayingTTS, currentTTSMessageId, ttsHuggingFaceToken]);
-
-  // Listen for audio end events from TTS service
-  useEffect(() => {
-    const checkAudioEnd = () => {
-      if (!ttsService.getIsPlaying() && isPlayingTTS) {
-        setIsPlayingTTS(false);
-        setCurrentTTSMessageId(null);
-      }
-    };
-
-    if (isPlayingTTS) {
-      const interval = setInterval(checkAudioEnd, 100);
-      return () => clearInterval(interval);
-    }
-  }, [isPlayingTTS]);
+  }, [message.content, message.id, isPlayingTTS, currentTTSMessageId, ttsHuggingFaceToken, ttsVoice, ttsCustomVoiceId]);
 
   // Render download tile or artifact viewer for document/file creation results
   const renderDownloadTile = () => {

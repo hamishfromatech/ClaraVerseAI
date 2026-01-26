@@ -23,6 +23,8 @@ class TTSService {
   private isPlaying: boolean = false;
   private selectedVoice: string | null = null;
   private selectedCustomVoice: string | null = null;
+  private onPlayStartCallback: (() => void) | null = null;
+  private onPlayEndCallback: (() => void) | null = null;
 
   /**
    * Convert text to speech and play it
@@ -30,9 +32,18 @@ class TTSService {
    * @param voice - Built-in voice name (alba, marius, etc.)
    * @param customVoiceId - ID of custom uploaded voice
    * @param hfToken - Optional HuggingFace token for gated models
+   * @param onPlayStart - Callback when audio starts playing
+   * @param onPlayEnd - Callback when audio ends or errors
    * @returns Promise that resolves when audio starts playing
    */
-  async speak(text: string, voice?: string, customVoiceId?: string, hfToken?: string): Promise<void> {
+  async speak(
+    text: string,
+    voice?: string,
+    customVoiceId?: string,
+    hfToken?: string,
+    onPlayStart?: () => void,
+    onPlayEnd?: () => void
+  ): Promise<void> {
     // Stop any currently playing audio
     this.stop();
 
@@ -61,18 +72,34 @@ class TTSService {
       this.currentAudio = new Audio(audioUrl);
       this.isPlaying = true;
 
+      // Call callback when audio actually starts playing
+      this.currentAudio.addEventListener('play', () => {
+        if (onPlayStart) {
+          onPlayStart();
+        }
+      });
+
       // Clean up blob URL when audio ends
       this.currentAudio.addEventListener('ended', () => {
+        if (onPlayEnd) {
+          onPlayEnd();
+        }
         this.cleanup();
       });
 
       this.currentAudio.addEventListener('error', () => {
+        if (onPlayEnd) {
+          onPlayEnd();
+        }
         this.cleanup();
         throw new Error('Audio playback error');
       });
 
       await this.currentAudio.play();
     } catch (error) {
+      if (onPlayEnd) {
+        onPlayEnd();
+      }
       this.cleanup();
       throw error;
     }
