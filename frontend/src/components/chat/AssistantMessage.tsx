@@ -316,6 +316,7 @@ function AssistantMessageComponent({
 
   // TTS state
   const [isPlayingTTS, setIsPlayingTTS] = useState(false);
+  const [isLoadingTTS, setIsLoadingTTS] = useState(false);
   const [currentTTSMessageId, setCurrentTTSMessageId] = useState<string | null>(null);
 
   // Get TTS settings
@@ -607,16 +608,24 @@ function AssistantMessageComponent({
   // Stop TTS when component unmounts or message changes
   useEffect(() => {
     return () => {
-      if (currentTTSMessageId === message.id && isPlayingTTS) {
+      // Only stop TTS if this message was the one playing
+      // We check currentTTSMessageId to determine if we should stop
+      if (currentTTSMessageId === message.id) {
         ttsService.stop();
         setIsPlayingTTS(false);
+        setIsLoadingTTS(false);
         setCurrentTTSMessageId(null);
       }
     };
-  }, [message.id, isPlayingTTS, currentTTSMessageId]);
+  }, [message.id, currentTTSMessageId]);
 
   // Handle TTS playback
   const handleTTSPlay = useCallback(async () => {
+    // Prevent multiple clicks while loading or playing
+    if (isLoadingTTS) {
+      return;
+    }
+
     // If already playing this message, stop it
     if (isPlayingTTS && currentTTSMessageId === message.id) {
       ttsService.stop();
@@ -630,8 +639,9 @@ function AssistantMessageComponent({
       ttsService.stop();
     }
 
-    // Set current message ID immediately, but wait for audio to actually start
+    // Set current message ID and loading state immediately
     setCurrentTTSMessageId(message.id);
+    setIsLoadingTTS(true);
 
     try {
       await ttsService.speak(
@@ -641,20 +651,23 @@ function AssistantMessageComponent({
         ttsHuggingFaceToken,
         // Callback when audio actually starts playing
         () => {
+          setIsLoadingTTS(false);
           setIsPlayingTTS(true);
         },
         // Callback when audio ends or errors
         () => {
+          setIsLoadingTTS(false);
           setIsPlayingTTS(false);
           setCurrentTTSMessageId(null);
         }
       );
     } catch (error) {
       console.error('TTS error:', error);
+      setIsLoadingTTS(false);
       setIsPlayingTTS(false);
       setCurrentTTSMessageId(null);
     }
-  }, [message.content, message.id, isPlayingTTS, currentTTSMessageId, ttsHuggingFaceToken, ttsVoice, ttsCustomVoiceId]);
+  }, [message.content, message.id, isPlayingTTS, currentTTSMessageId, ttsHuggingFaceToken, ttsVoice, ttsCustomVoiceId, isLoadingTTS]);
 
   // Render download tile or artifact viewer for document/file creation results
   const renderDownloadTile = () => {
@@ -1774,11 +1787,14 @@ function AssistantMessageComponent({
             <button
               onClick={handleTTSPlay}
               className={styles.iconButton}
-              aria-label={isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
-              title={isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
+              aria-label={isLoadingTTS ? 'Loading...' : isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
+              title={isLoadingTTS ? 'Loading...' : isPlayingTTS ? 'Stop speaking' : 'Read aloud'}
               style={{ color: isPlayingTTS ? 'var(--color-accent)' : undefined }}
+              disabled={isLoadingTTS}
             >
-              {isPlayingTTS ? (
+              {isLoadingTTS ? (
+                <Loader2 size={16} aria-hidden="true" className={styles.spinner} />
+              ) : isPlayingTTS ? (
                 <VolumeX size={16} aria-hidden="true" />
               ) : (
                 <Volume2 size={16} aria-hidden="true" />
