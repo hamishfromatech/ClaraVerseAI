@@ -979,23 +979,89 @@ func main() {
 				adminRoutes.Post("/providers/:providerId/fetch", modelMgmtHandler.FetchModelsFromProvider)
 				adminRoutes.Post("/providers/:providerId/sync", modelMgmtHandler.SyncProviderToJSON)
 
-				// Parameterized model routes (MUST come after all specific /models/* paths)
-				adminRoutes.Put("/models/:modelId", modelMgmtHandler.UpdateModel)
-				adminRoutes.Delete("/models/:modelId", modelMgmtHandler.DeleteModel)
-				adminRoutes.Post("/models/:modelId/tier", modelMgmtHandler.SetModelTier)
-				adminRoutes.Delete("/models/:modelId/tier", modelMgmtHandler.ClearModelTier)
+				// Model management routes - use middleware to handle model IDs with slashes
+				// Model IDs can contain slashes (e.g., qwen/qwen3-4b-2507) which get URL-decoded before routing
+				// We use a custom middleware to extract the full model ID from the path
 
-				// Model testing
-				adminRoutes.Post("/models/:modelId/test/connection", modelMgmtHandler.TestModelConnection)
-				adminRoutes.Post("/models/:modelId/test/capability", modelMgmtHandler.TestModelCapability)
-				adminRoutes.Post("/models/:modelId/benchmark", modelMgmtHandler.RunModelBenchmark)
-				adminRoutes.Get("/models/:modelId/test-results", modelMgmtHandler.GetModelTestResults)
+				// Helper middleware to extract model ID from path (handles both single and multi-segment IDs)
+				modelIdMiddleware := func(c *fiber.Ctx) error {
+					// Get the path after /api/admin/models/
+					path := c.Path()
+					prefix := "/api/admin/models/"
+					if strings.HasPrefix(path, prefix) {
+						modelID := strings.TrimPrefix(path, prefix)
+						// Remove any trailing segments (like /tier, /aliases, /test/*, etc.)
+						if idx := strings.Index(modelID, "/tier"); idx >= 0 {
+							modelID = modelID[:idx]
+							c.Locals("suffix", "/tier"+modelID[idx+5:])
+							modelID = modelID[:idx]
+						} else if idx := strings.Index(modelID, "/aliases"); idx >= 0 {
+							c.Locals("suffix", "/aliases"+modelID[idx+8:])
+							modelID = modelID[:idx]
+						} else if idx := strings.Index(modelID, "/test/"); idx >= 0 {
+							c.Locals("suffix", "/test/"+modelID[idx+6:])
+							modelID = modelID[:idx]
+						} else if idx := strings.Index(modelID, "/benchmark"); idx >= 0 {
+							c.Locals("suffix", "/benchmark"+modelID[idx+9:])
+							modelID = modelID[:idx]
+						} else if idx := strings.Index(modelID, "/test-results"); idx >= 0 {
+							c.Locals("suffix", "/test-results"+modelID[idx+13:])
+							modelID = modelID[:idx]
+						}
+						c.Locals("model_id", modelID)
+					}
+					return c.Next()
+				}
 
-				// Alias management (parameterized routes must come after specific paths)
-				adminRoutes.Get("/models/:modelId/aliases", modelMgmtHandler.GetModelAliases)
-				adminRoutes.Post("/models/:modelId/aliases", modelMgmtHandler.CreateModelAlias)
-				adminRoutes.Put("/models/:modelId/aliases/:alias", modelMgmtHandler.UpdateModelAlias)
-				adminRoutes.Delete("/models/:modelId/aliases/:alias", modelMgmtHandler.DeleteModelAlias)
+				// Register routes with wildcard + middleware
+				adminRoutes.Put("/models*", modelIdMiddleware, modelMgmtHandler.UpdateModel)
+				adminRoutes.Delete("/models*", modelIdMiddleware, modelMgmtHandler.DeleteModel)
+				adminRoutes.Post("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+					// Handle /tier, /test/*, /aliases, /benchmark, /test-results
+					suffix, _ := c.Locals("suffix").(string)
+					if suffix == "/tier" {
+						return modelMgmtHandler.SetModelTier(c)
+					} else if strings.HasPrefix(suffix, "/test/") {
+						if suffix == "/test/connection" {
+							return modelMgmtHandler.TestModelConnection(c)
+						} else if suffix == "/test/capability" {
+							return modelMgmtHandler.TestModelCapability(c)
+						}
+					} else if suffix == "/benchmark" {
+						return modelMgmtHandler.RunModelBenchmark(c)
+					} else if suffix == "/test-results" {
+						return modelMgmtHandler.GetModelTestResults(c)
+					} else if strings.HasPrefix(suffix, "/aliases") {
+						if c.Method() == "GET" {
+							return modelMgmtHandler.GetModelAliases(c)
+						} else if c.Method() == "POST" {
+							return modelMgmtHandler.CreateModelAlias(c)
+						}
+					}
+					return c.SendStatus(404)
+				})
+				adminRoutes.Delete("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+					suffix, _ := c.Locals("suffix").(string)
+					if suffix == "/tier" {
+						return modelMgmtHandler.ClearModelTier(c)
+					} else if strings.HasPrefix(suffix, "/aliases/") {
+						// Extract alias name from suffix
+						aliasName := strings.TrimPrefix(suffix, "/aliases/")
+						c.Locals("alias", aliasName)
+						return modelMgmtHandler.DeleteModelAlias(c)
+					}
+					return c.SendStatus(404)
+				})
+				adminRoutes.Put("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+					suffix, _ := c.Locals("suffix").(string)
+					if strings.HasPrefix(suffix, "/aliases/") {
+						// Extract alias name from suffix
+						aliasName := strings.TrimPrefix(suffix, "/aliases/")
+						c.Locals("alias", aliasName)
+						return modelMgmtHandler.UpdateModelAlias(c)
+					}
+					return c.SendStatus(404)
+				})
 
 				log.Println("✅ Model management routes registered (CRUD, testing, tiers, aliases)")
 			}

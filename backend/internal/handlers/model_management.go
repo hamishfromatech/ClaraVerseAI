@@ -17,9 +17,36 @@ type ModelManagementHandler struct {
 	providerService  *services.ProviderService
 }
 
-// Helper function to decode URL-encoded model IDs (handles slashes and special characters)
-func decodeModelID(encodedID string) (string, error) {
-	return url.QueryUnescape(encodedID)
+// Helper function to get model ID from URL parameter
+// Handles both regular :modelId and wildcard *modelId parameters
+// For wildcards, the value includes a leading / that needs to be trimmed
+// Also checks c.Locals("model_id") for custom middleware-based routes
+func getModelID(c *fiber.Ctx) string {
+	// First check if model_id was set by middleware (for paths with slashes)
+	if modelID, ok := c.Locals("model_id").(string); ok && modelID != "" {
+		return modelID
+	}
+
+	modelID := c.Params("modelId")
+	// If modelID starts with /, trim it (from wildcard capture)
+	if len(modelID) > 0 && modelID[0] == '/' {
+		modelID = modelID[1:]
+	}
+	// Decode URL-encoded model ID (handles %2F for / in model IDs)
+	if decoded, err := url.QueryUnescape(modelID); err == nil {
+		return decoded
+	}
+	return modelID
+}
+
+// Helper function to get alias ID from URL parameter
+func getAliasID(c *fiber.Ctx) string {
+	alias := c.Params("alias")
+	// If alias starts with /, trim it (from wildcard capture)
+	if len(alias) > 0 && alias[0] == '/' {
+		alias = alias[1:]
+	}
+	return alias
 }
 
 // NewModelManagementHandler creates a new model management handler
@@ -90,19 +117,11 @@ func (h *ModelManagementHandler) CreateModel(c *fiber.Ctx) error {
 // PUT /api/admin/models/:modelId
 func (h *ModelManagementHandler) UpdateModel(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
-		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
 		})
 	}
 
@@ -179,19 +198,11 @@ func (h *ModelManagementHandler) UpdateModel(c *fiber.Ctx) error {
 // DELETE /api/admin/models/:modelId
 func (h *ModelManagementHandler) DeleteModel(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
-		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
 		})
 	}
 
@@ -278,19 +289,11 @@ func (h *ModelManagementHandler) SyncProviderToJSON(c *fiber.Ctx) error {
 // POST /api/admin/models/:modelId/test/connection
 func (h *ModelManagementHandler) TestModelConnection(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
-		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
 		})
 	}
 
@@ -326,19 +329,11 @@ func (h *ModelManagementHandler) TestModelConnection(c *fiber.Ctx) error {
 // POST /api/admin/models/:modelId/test/capability
 func (h *ModelManagementHandler) TestModelCapability(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
-		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
 		})
 	}
 
@@ -356,41 +351,26 @@ func (h *ModelManagementHandler) TestModelCapability(c *fiber.Ctx) error {
 // POST /api/admin/models/:modelId/benchmark
 func (h *ModelManagementHandler) RunModelBenchmark(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
 		})
 	}
 
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
-		})
-	}
+	log.Printf("📊 Admin %s running benchmark for model: %s", adminUserID, modelID)
 
-	// URL decode the model ID (handles IDs with slashes)
-	decodedModelID, err := url.QueryUnescape(modelID)
+	results, err := h.modelMgmtService.RunBenchmark(c.Context(), modelID)
 	if err != nil {
-		log.Printf("❌ Failed to decode model ID: %v", err)
-		decodedModelID = modelID // Fallback to original
-	}
-
-	log.Printf("📊 Admin %s running benchmark for model: %s (decoded: %s)", adminUserID, modelID, decodedModelID)
-
-	results, err := h.modelMgmtService.RunBenchmark(c.Context(), decodedModelID)
-	if err != nil {
-		log.Printf("❌ Benchmark failed for model %s: %v", decodedModelID, err)
+		log.Printf("❌ Benchmark failed for model %s: %v", modelID, err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Benchmark failed: " + err.Error(),
 		})
 	}
 
 	log.Printf("✅ Benchmark completed for model %s. Results: connection=%v, structured=%v, performance=%v",
-		decodedModelID,
+		modelID,
 		results.ConnectionTest != nil,
 		results.StructuredOutput != nil,
 		results.Performance != nil)
@@ -402,19 +382,11 @@ func (h *ModelManagementHandler) RunModelBenchmark(c *fiber.Ctx) error {
 // GET /api/admin/models/:modelId/test-results
 func (h *ModelManagementHandler) GetModelTestResults(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
-		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
 		})
 	}
 
@@ -433,32 +405,17 @@ func (h *ModelManagementHandler) GetModelTestResults(c *fiber.Ctx) error {
 // GET /api/admin/models/:modelId/aliases
 func (h *ModelManagementHandler) GetModelAliases(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
 		})
 	}
 
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
-		})
-	}
+	log.Printf("🔍 Admin %s fetching aliases for model: %s", adminUserID, modelID)
 
-	// URL decode the model ID (handles IDs with slashes)
-	decodedModelID, err := url.QueryUnescape(modelID)
-	if err != nil {
-		log.Printf("❌ Failed to decode model ID: %v", err)
-		decodedModelID = modelID // Fallback to original
-	}
-
-	log.Printf("🔍 Admin %s fetching aliases for model: %s (decoded: %s)", adminUserID, modelID, decodedModelID)
-
-	aliases, err := h.modelMgmtService.GetAliases(c.Context(), decodedModelID)
+	aliases, err := h.modelMgmtService.GetAliases(c.Context(), modelID)
 	if err != nil {
 		log.Printf("❌ Failed to get aliases: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -466,7 +423,7 @@ func (h *ModelManagementHandler) GetModelAliases(c *fiber.Ctx) error {
 		})
 	}
 
-	log.Printf("✅ Returning %d aliases for model %s", len(aliases), decodedModelID)
+	log.Printf("✅ Returning %d aliases for model %s", len(aliases), modelID)
 	return c.JSON(aliases)
 }
 
@@ -474,27 +431,12 @@ func (h *ModelManagementHandler) GetModelAliases(c *fiber.Ctx) error {
 // POST /api/admin/models/:modelId/aliases
 func (h *ModelManagementHandler) CreateModelAlias(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	encodedModelID := c.Params("modelId")
+	modelID := getModelID(c)
 
-	if encodedModelID == "" {
+	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
 		})
-	}
-
-	// Decode URL-encoded model ID
-	modelID, err := decodeModelID(encodedModelID)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
-		})
-	}
-
-	// URL decode the model ID (handles IDs with slashes)
-	decodedModelID, err := url.QueryUnescape(modelID)
-	if err != nil {
-		log.Printf("❌ Failed to decode model ID: %v", err)
-		decodedModelID = modelID // Fallback to original
 	}
 
 	var req services.CreateAliasRequest
@@ -505,7 +447,7 @@ func (h *ModelManagementHandler) CreateModelAlias(c *fiber.Ctx) error {
 	}
 
 	// Set model ID from URL parameter
-	req.ModelID = decodedModelID
+	req.ModelID = modelID
 
 	// Validate required fields
 	if req.AliasName == "" || req.ProviderID == 0 {
@@ -533,8 +475,8 @@ func (h *ModelManagementHandler) CreateModelAlias(c *fiber.Ctx) error {
 // PUT /api/admin/models/:modelId/aliases/:alias
 func (h *ModelManagementHandler) UpdateModelAlias(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	modelID := c.Params("modelId")
-	aliasName := c.Params("alias")
+	modelID := getModelID(c)
+	aliasName := getAliasID(c)
 
 	if modelID == "" || aliasName == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -555,8 +497,8 @@ func (h *ModelManagementHandler) UpdateModelAlias(c *fiber.Ctx) error {
 // DELETE /api/admin/models/:modelId/aliases/:alias
 func (h *ModelManagementHandler) DeleteModelAlias(c *fiber.Ctx) error {
 	adminUserID := c.Locals("user_id").(string)
-	modelID := c.Params("modelId")
-	aliasName := c.Params("alias")
+	modelID := getModelID(c)
+	aliasName := getAliasID(c)
 
 	if modelID == "" || aliasName == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -693,22 +635,12 @@ func (h *ModelManagementHandler) BulkUpdateVisibility(c *fiber.Ctx) error {
 // SetModelTier assigns a model to a global tier (tier1-tier5)
 // POST /api/admin/models/:modelId/tier
 func (h *ModelManagementHandler) SetModelTier(c *fiber.Ctx) error {
-	modelID := c.Params("modelId")
+	modelID := getModelID(c)
 	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Model ID is required",
 		})
 	}
-
-	// URL decode the model ID (handles slashes and other special characters)
-	decodedModelID, err := url.QueryUnescape(modelID)
-	if err != nil {
-		log.Printf("❌ Failed to decode model ID '%s': %v", modelID, err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid model ID encoding",
-		})
-	}
-	modelID = decodedModelID
 
 	var req struct {
 		ProviderID int    `json:"provider_id"`
