@@ -61,7 +61,7 @@ import { useChatStore } from '@/store/useChatStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useModelStore } from '@/store/useModelStore';
 import { useArtifactStore } from '@/store/useArtifactStore';
-import { useSettingsStore } from '@/store/useSettingsStore';
+import { useSettingsStore, decryptApiKey } from '@/store/useSettingsStore';
 import type { Message, ToolCall, RetryType, ChatFolder } from '@/types/chat';
 import type { ActivePrompt } from '@/types/interactivePrompt';
 import { generateChatTitle, validateMessage } from '@/services/chatService';
@@ -1937,8 +1937,6 @@ export const Chat = () => {
             // Find the provider
             const provider = settingsState.customProviders.find(p => p.id === providerId);
             if (provider && provider.enabled) {
-              const { decryptApiKey } = await import('@/store/useSettingsStore');
-
               // Check for API key (temp, persistent, or session)
               let apiKey = tempApiKey;
 

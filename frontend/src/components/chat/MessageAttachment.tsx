@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { FileText, FileSpreadsheet, FileJson, X, ZoomIn, AlertCircle } from 'lucide-react';
+import { FileText, FileSpreadsheet, FileJson, X, ZoomIn, AlertCircle, Mic } from 'lucide-react';
 import type {
   Attachment,
   ImageAttachment,
   DocumentAttachment,
   DataAttachment,
+  AudioAttachment,
 } from '@/types/websocket';
 import { formatFileSize } from '@/services/uploadService';
 import { useCachedImage } from '@/hooks/useCachedImage';
 import { DataTablePreview } from './DataTablePreview';
+import { AudioAttachment as AudioAttachmentComponent } from './AudioAttachment';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -373,6 +375,15 @@ export const MessageAttachment = ({ attachments }: MessageAttachmentProps) => {
                     </div>
                   </div>
                 </div>
+              </div>
+            );
+          }
+
+          if (attachment.type === 'audio') {
+            const audioAttachment = attachment as AudioAttachment;
+            return (
+              <div key={`${audioAttachment.file_id}-${index}`} style={{ gridColumn: '1 / -1' }}>
+                <AudioAttachmentComponent attachment={audioAttachment} />
               </div>
             );
           }

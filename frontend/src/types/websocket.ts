@@ -1,4 +1,4 @@
-// WebSocket message types for ClaraVerse backend
+// WebSocket message types for KaylahGPT backend
 
 // Model types
 export interface Model {

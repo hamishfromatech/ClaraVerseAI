@@ -138,7 +138,7 @@ services:
       dockerfile: Dockerfile
     container_name: kaylahgpt-tts
     ports:
-      - "3006:3006"
+      - "3008:3006"
     volumes:
       - tts-cache:/app/cache
       - tts-custom-voices:/app/custom_voices

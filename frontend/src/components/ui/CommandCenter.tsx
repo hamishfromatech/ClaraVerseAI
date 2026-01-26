@@ -518,7 +518,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           formData.append('model', transcriptionModel);
 
           // Upload to backend transcription endpoint
-          const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '';
+          const apiBaseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
           const response = await fetch(`${apiBaseUrl}/api/audio/transcribe`, {
             method: 'POST',
             body: formData,
@@ -532,7 +532,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           const result = await response.json();
           console.log('📝 Transcription result:', result);
           if (result.text) {
-            // Update the text input with transcribed text instead of auto-sending
+            // Update the text input with transcribed text (user can edit before sending)
             setMessage(prev => {
               const current = prev.trim();
               const newText = current ? `${current} ${result.text}` : result.text;
@@ -554,7 +554,7 @@ export const CommandCenter = forwardRef<CommandCenterHandle, CommandCenterProps>
           setIsTranscribing(false);
         }
       },
-      [onSendMessage, isDeepThinking, selectedFiles, filePreviewUrls]
+      [setMessage, textareaRef]
     );
 
     const startRecording = useCallback(async () => {

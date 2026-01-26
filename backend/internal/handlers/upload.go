@@ -69,7 +69,8 @@ func NewUploadHandler(uploadDir string, usageLimiter *services.UsageLimiterServi
 			"audio/wave":    true, // .wav alternate
 			"audio/mp4":     true, // .m4a
 			"audio/x-m4a":   true, // .m4a alternate
-			"audio/webm":    true, // .webm
+			"audio/webm":    true, // .webm audio
+			"video/webm":    true, // .webm (browser audio recordings use video/webm type)
 			"audio/ogg":     true, // .ogg
 			"audio/flac":    true, // .flac
 		},
@@ -180,7 +181,7 @@ func (h *UploadHandler) Upload(c *fiber.Ctx) error {
 	if !h.allowedTypes[mimeType] {
 		log.Printf("⚠️  [UPLOAD] Disallowed file type: %s (detected as: %s)", mimeType, detectedMimeType)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": fmt.Sprintf("File type not allowed: %s. Allowed types: PNG, JPG, WebP, GIF, PDF, DOCX, PPTX, CSV, Excel, JSON, MP3, WAV, M4A, OGG, FLAC", mimeType),
+			"error": fmt.Sprintf("File type not allowed: %s. Allowed types: PNG, JPG, WebP, GIF, PDF, DOCX, PPTX, CSV, Excel, JSON, MP3, WAV, M4A, OGG, FLAC, WebM", mimeType),
 		})
 	}
 

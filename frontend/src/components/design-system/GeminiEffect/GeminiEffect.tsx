@@ -14,7 +14,7 @@ export interface GeminiEffectProps {
 }
 
 export const GeminiEffect = ({
-  title = 'ClaraVerse',
+  title = 'KaylahGPT',
   description = 'All that AI is capable of doing is here',
 }: GeminiEffectProps) => {
   const ref = useRef<HTMLDivElement>(null);

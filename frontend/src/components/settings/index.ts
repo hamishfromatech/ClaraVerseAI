@@ -13,6 +13,8 @@ export { PrivacySection } from './PrivacySection';
 export { AccountSection } from './AccountSection';
 export { PrivacyPolicySidebar } from './PrivacyPolicySidebar';
 export { MemorySection } from './MemorySection';
+export { TranscriptionSection } from './TranscriptionSection';
+export { VoiceSection } from './VoiceSection';
 
 // Modal components
 export { PlanChangeModal } from './PlanChangeModal';

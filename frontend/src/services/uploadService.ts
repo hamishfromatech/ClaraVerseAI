@@ -9,7 +9,7 @@ import type {
 import { useAuthStore } from '@/store/useAuthStore';
 import { storeImage } from './imageCache';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3001';
 
 export interface UploadedFile {
   file_id: string;

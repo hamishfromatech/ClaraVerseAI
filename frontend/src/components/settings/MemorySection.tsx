@@ -134,7 +134,7 @@ export const MemorySection: React.FC<MemorySectionProps> = ({ onSave }) => {
             >
               <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-gray-300">
-                All memories are encrypted with your user-specific key. Not even ClaraVerse
+                All memories are encrypted with your user-specific key. Not even KaylahGPT
                 administrators can access your memories.
               </p>
             </div>
