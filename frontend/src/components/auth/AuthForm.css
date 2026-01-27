@@ -61,17 +61,13 @@
 .auth-form-header h2 {
   font-size: var(--font-size-3xl);
   font-weight: var(--font-bold);
-  color: var(--color-text);
+  color: white;
   margin: 0 0 var(--space-3) 0;
-  background: linear-gradient(135deg, var(--color-text) 0%, var(--color-text-secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .auth-form-header p {
   font-size: var(--font-size-base);
-  color: var(--color-text-secondary);
+  color: white;
   margin: 0;
   line-height: 1.5;
 }
@@ -273,7 +269,7 @@
 .auth-form-container .auth-link-button {
   background: none;
   border: none;
-  color: var(--color-accent);
+  color: white;
   cursor: pointer;
   font-size: var(--font-size-sm);
   padding: 0;
@@ -282,7 +278,7 @@
 }
 
 .auth-form-container .auth-link-button:hover:not(:disabled) {
-  color: var(--color-accent-hover);
+  color: var(--color-accent);
   text-decoration: underline;
 }
 

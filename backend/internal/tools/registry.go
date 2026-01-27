@@ -344,6 +344,18 @@ func registerBuiltInTools(r *Registry) {
 	_ = r.Register(NewComposioGmailListLabelsTool())
 	_ = r.Register(NewComposioGmailTrashTool())
 
+	// Register Composio SharePoint tools
+	_ = r.Register(NewComposioSharePointListSitesTool())
+	_ = r.Register(NewComposioSharePointGetSiteTool())
+	_ = r.Register(NewComposioSharePointListListsTool())
+	_ = r.Register(NewComposioSharePointGetListItemsTool())
+	_ = r.Register(NewComposioSharePointCreateListItemTool())
+	_ = r.Register(NewComposioSharePointUpdateListItemTool())
+	_ = r.Register(NewComposioSharePointDeleteListItemTool())
+	_ = r.Register(NewComposioSharePointUploadFileTool())
+	_ = r.Register(NewComposioSharePointDownloadFileTool())
+	_ = r.Register(NewComposioSharePointSearchTool())
+
 	// Register interactive prompt tool
 	_ = r.Register(NewAskUserTool())
 }

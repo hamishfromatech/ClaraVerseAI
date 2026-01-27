@@ -64,6 +64,10 @@ const INTEGRATION_COLORS: Record<string, string> = {
   mongodb: '#47A248',
   redis: '#DC382D',
   composio_googlesheets: '#34A853', // Google green
+  composio_sharepoint: '#0078D4', // Microsoft blue
+  composio_gmail: '#EA4335', // Google red
+  composio_outlook: '#0078D4', // Microsoft blue
+  composio_onedrive: '#0078D4', // Microsoft blue
 };
 
 // Lucide icon fallbacks
@@ -101,6 +105,10 @@ const FALLBACK_ICONS: Record<string, LucideIcon> = {
   custom_webhook: Webhook,
   rest_api: Globe,
   composio_googlesheets: FileSpreadsheet,
+  composio_sharepoint: FileSpreadsheet,
+  composio_gmail: Mail,
+  composio_outlook: Mail,
+  composio_onedrive: Cloud,
   mongodb: Database,
   redis: Database,
 };
@@ -224,6 +232,21 @@ const SVGIcons: Record<string, (size: number, color: string) => JSX.Element> = {
   redis: (size, color) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
       <path d="M10.5 2.661l-8.571 4.5c-.333.167-.333.5 0 .667l8.571 4.5c.333.167.667.167 1 0l8.571-4.5c.333-.167.333-.5 0-.667l-8.571-4.5c-.333-.167-.667-.167-1 0zM1.929 11.661l8.571 4.5c.333.167.667.167 1 0l8.571-4.5c.333-.167.333-.5 0-.667l-1.5-.786-7.071 3.786c-.333.167-.667.167-1 0L3.429 10.208l-1.5.786c-.333.167-.333.5 0 .667zm0 4l8.571 4.5c.333.167.667.167 1 0l8.571-4.5c.333-.167.333-.5 0-.667l-1.5-.786-7.071 3.786c-.333.167-.667.167-1 0l-7.071-3.786-1.5.786c-.333.167-.333.5 0 .667z" />
+    </svg>
+  ),
+  composio_sharepoint: (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M4 2h16c1.1 0 2 .9 2 2v16c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2zm0 2v16h16V4H4zm2 2h8v2H6V6zm0 4h8v2H6v-2zm0 4h6v2H6v-2zm8 0h2v6h-2v-6zm2-2h-2v-2h2v2zm-2 8h2v2h-2v-2z" />
+    </svg>
+  ),
+  composio_outlook: (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14H4v-7h8v7zm2-7h6v7h-6v-7zm6-5H4V5h14v.5c0 .83-.67 1.5-1.5 1.5h-11C5.67 7 5 6.33 5 5.5V5z" />
+    </svg>
+  ),
+  composio_onedrive: (size, color) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
+      <path d="M4 6c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .35-.06.68-.15 1H17c1.66 0 3 1.34 3 3v8c0 1.66-1.34 3-3 3H7c-1.66 0-3-1.34-3-3V8c0-1.66 1.34-3 3-3h.15C7.06 6.68 7 6.35 7 6zm0 0c0-1.1-.9-2-2-2s-2 .9-2 2 .9 2 2 2-.9 2-2 2z" />
     </svg>
   ),
 };

@@ -35,6 +35,8 @@
 
   /* Background & Surfaces - KaylahGPT Brand */
   --color-background: #1D4148; /* Primary Deep Teal */
+  --color-bg-primary: #1D4148; /* Main background */
+  --color-bg-secondary: #2D2D2D; /* Card/section background */
   --color-surface: #2D2D2D;    /* Deep Charcoal - Grounded/Card Background */
   --color-surface-elevated: #3D3D3D;
   --color-surface-hover: rgba(242, 238, 228, 0.08); /* Cream low opacity for hover */

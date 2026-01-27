@@ -212,6 +212,10 @@
   position: relative;
 }
 
+.ai-config-tool-predictor-dropdown-wrapper {
+  position: relative;
+}
+
 .ai-config-model-dropdown {
   width: 100%;
   display: flex;

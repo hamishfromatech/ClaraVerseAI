@@ -19,6 +19,7 @@ frontend/.env
 *.md
 !README.md
 
+
 # Ignore JSON files except essential ones
 *.json
 !package.json

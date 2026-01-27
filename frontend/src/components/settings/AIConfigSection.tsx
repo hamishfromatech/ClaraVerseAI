@@ -618,7 +618,6 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                               className="ai-config-search-input"
                               placeholder="Search tool predictor models..."
                               value={toolPredictorSearchTerm}
-                              autoFocus
                               onChange={e =>
                                 setToolPredictorSearchTerm(e.target.value.toLowerCase())
                               }

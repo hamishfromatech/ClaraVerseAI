@@ -479,7 +479,7 @@ func main() {
 		ReadTimeout:  360 * time.Second, // 6 minutes to handle long tool executions
 		WriteTimeout: 360 * time.Second, // 6 minutes to handle long tool executions
 		IdleTimeout:  360 * time.Second, // 6 minutes to handle long tool executions
-		BodyLimit:    50 * 1024 * 1024,  // 50MB limit for chat messages with images and large conversations
+		BodyLimit:    200 * 1024 * 1024, // 200MB limit for chat messages with images, audio files, and large conversations
 	})
 
 	// Middleware
@@ -923,6 +923,9 @@ func main() {
 				composio := api.Group("/integrations/composio", middleware.LocalAuthMiddleware(jwtAuth))
 				composio.Get("/googlesheets/authorize", composioAuthHandler.InitiateGoogleSheetsAuth)
 				composio.Get("/gmail/authorize", composioAuthHandler.InitiateGmailAuth)
+				composio.Get("/sharepoint/authorize", composioAuthHandler.InitiateSharePointAuth)
+				composio.Get("/outlook/authorize", composioAuthHandler.InitiateOutlookAuth)
+				composio.Get("/onedrive/authorize", composioAuthHandler.InitiateOneDriveAuth)
 				composio.Get("/connected-account", composioAuthHandler.GetConnectedAccount)
 				composio.Post("/complete-setup", composioAuthHandler.CompleteComposioSetup)
 

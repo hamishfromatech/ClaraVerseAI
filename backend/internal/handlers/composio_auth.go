@@ -28,6 +28,16 @@ var requiredScopes = map[string][]string{
 	"googlesheets": {
 		"https://www.googleapis.com/auth/spreadsheets",
 	},
+	"sharepoint": {
+		"https://graph.microsoft.com/Sites.Read.All",
+		"https://graph.microsoft.com/Sites.ReadWrite.All",
+		"https://graph.microsoft.com/Files.Read.All",
+		"https://graph.microsoft.com/Files.ReadWrite.All",
+	},
+	"onedrive": {
+		"https://graph.microsoft.com/Files.Read.All",
+		"https://graph.microsoft.com/Files.ReadWrite.All",
+	},
 }
 
 // ComposioAuthHandler handles Composio OAuth flow
@@ -438,6 +448,152 @@ func (h *ComposioAuthHandler) CompleteComposioSetup(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(credential)
 }
 
+// InitiateSharePointAuth initiates OAuth flow for SharePoint via Composio
+// GET /api/integrations/composio/sharepoint/authorize
+func (h *ComposioAuthHandler) InitiateSharePointAuth(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+
+	composioAPIKey := os.Getenv("COMPOSIO_API_KEY")
+	if composioAPIKey == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_API_KEY not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Composio integration not configured",
+		})
+	}
+
+	// Use ClaraVerse user ID as Composio entity ID
+	entityID := userID
+
+	// Validate and sanitize redirect URL
+	redirectURL := c.Query("redirect_url")
+	if redirectURL == "" {
+		// Default to frontend settings page
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL == "" {
+			// Only allow localhost fallback in non-production environments
+			if os.Getenv("ENVIRONMENT") == "production" {
+				log.Printf("❌ [COMPOSIO] FRONTEND_URL not set in production")
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Configuration error",
+				})
+			}
+			frontendURL = "http://localhost:5173"
+		}
+		redirectURL = fmt.Sprintf("%s/settings?tab=credentials", frontendURL)
+	} else {
+		// Validate redirect URL against allowed origins
+		if err := validateRedirectURL(redirectURL); err != nil {
+			log.Printf("⚠️ [COMPOSIO] Invalid redirect URL: %s", redirectURL)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid redirect URL",
+			})
+		}
+	}
+
+	// Get auth config ID from environment
+	authConfigID := os.Getenv("COMPOSIO_SHAREPOINT_AUTH_CONFIG_ID")
+	if authConfigID == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_SHAREPOINT_AUTH_CONFIG_ID not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "SharePoint auth config not configured. Please set COMPOSIO_SHAREPOINT_AUTH_CONFIG_ID in environment.",
+		})
+	}
+
+	// ✅ SECURITY FIX: Generate CSRF state token
+	stateToken, err := h.stateStore.GenerateState(userID, "sharepoint")
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to generate state token: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Call Composio API v3 to create a link for OAuth
+	payload := map[string]interface{}{
+		"auth_config_id": authConfigID,
+		"user_id":        entityID,
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to marshal request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Create connection link using v3 endpoint
+	composioURL := "https://backend.composio.dev/api/v3/connected_accounts/link"
+	req, err := http.NewRequest("POST", composioURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to create request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", composioAPIKey)
+
+	resp, err := h.httpClient.Do(req)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to call Composio API: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode >= 400 {
+		log.Printf("❌ [COMPOSIO] API error (status %d): %s", resp.StatusCode, string(respBody))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Sprintf("Composio API error: %s", string(respBody)),
+		})
+	}
+
+	// Parse response to get redirectUrl
+	var composioResp map[string]interface{}
+	if err := json.Unmarshal(respBody, &composioResp); err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse response: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse OAuth response",
+		})
+	}
+
+	// v3 API returns redirect_url
+	redirectURLFromComposio, ok := composioResp["redirect_url"].(string)
+	if !ok {
+		log.Printf("❌ [COMPOSIO] No redirect_url in response: %v", composioResp)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth response from Composio",
+		})
+	}
+
+	// ✅ SECURITY FIX: Append state token to OAuth URL for CSRF protection
+	sharepointOauthURL, err := url.Parse(redirectURLFromComposio)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse OAuth URL: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth URL",
+		})
+	}
+	sharepointQueryParams := sharepointOauthURL.Query()
+	sharepointQueryParams.Set("state", stateToken)
+	sharepointOauthURL.RawQuery = sharepointQueryParams.Encode()
+	authURLWithState := sharepointOauthURL.String()
+
+	log.Printf("✅ [COMPOSIO] Initiated SharePoint OAuth for user %s", userID)
+
+	// Return the OAuth URL to frontend
+	return c.JSON(fiber.Map{
+		"authUrl":     authURLWithState,
+		"entityId":    entityID,
+		"redirectUrl": redirectURL,
+	})
+}
+
 // InitiateGmailAuth initiates OAuth flow for Gmail via Composio
 // GET /api/integrations/composio/gmail/authorize
 func (h *ComposioAuthHandler) InitiateGmailAuth(c *fiber.Ctx) error {
@@ -575,6 +731,298 @@ func (h *ComposioAuthHandler) InitiateGmailAuth(c *fiber.Ctx) error {
 	authURLWithState := gmailOauthURL.String()
 
 	log.Printf("✅ [COMPOSIO] Initiated Gmail OAuth for user %s", userID)
+
+	// Return the OAuth URL to frontend
+	return c.JSON(fiber.Map{
+		"authUrl":     authURLWithState,
+		"entityId":    entityID,
+		"redirectUrl": redirectURL,
+	})
+}
+
+// InitiateOutlookAuth initiates OAuth flow for Outlook via Composio
+// GET /api/integrations/composio/outlook/authorize
+func (h *ComposioAuthHandler) InitiateOutlookAuth(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+
+	composioAPIKey := os.Getenv("COMPOSIO_API_KEY")
+	if composioAPIKey == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_API_KEY not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Composio integration not configured",
+		})
+	}
+
+	// Use ClaraVerse user ID as Composio entity ID
+	entityID := userID
+
+	// Validate and sanitize redirect URL
+	redirectURL := c.Query("redirect_url")
+	if redirectURL == "" {
+		// Default to frontend settings page
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL == "" {
+			// Only allow localhost fallback in non-production environments
+			if os.Getenv("ENVIRONMENT") == "production" {
+				log.Printf("❌ [COMPOSIO] FRONTEND_URL not set in production")
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Configuration error",
+				})
+			}
+			frontendURL = "http://localhost:5173"
+		}
+		redirectURL = fmt.Sprintf("%s/settings?tab=credentials", frontendURL)
+	} else {
+		// Validate redirect URL against allowed origins
+		if err := validateRedirectURL(redirectURL); err != nil {
+			log.Printf("⚠️ [COMPOSIO] Invalid redirect URL: %s", redirectURL)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid redirect URL",
+			})
+		}
+	}
+
+	// Get auth config ID from environment
+	authConfigID := os.Getenv("COMPOSIO_OUTLOOK_AUTH_CONFIG_ID")
+	if authConfigID == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_OUTLOOK_AUTH_CONFIG_ID not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Outlook auth config not configured. Please set COMPOSIO_OUTLOOK_AUTH_CONFIG_ID in environment.",
+		})
+	}
+
+	// ✅ SECURITY FIX: Generate CSRF state token
+	stateToken, err := h.stateStore.GenerateState(userID, "outlook")
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to generate state token: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Call Composio API v3 to create a link for OAuth
+	payload := map[string]interface{}{
+		"auth_config_id": authConfigID,
+		"user_id":        entityID,
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to marshal request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Create connection link using v3 endpoint
+	composioURL := "https://backend.composio.dev/api/v3/connected_accounts/link"
+	req, err := http.NewRequest("POST", composioURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to create request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", composioAPIKey)
+
+	resp, err := h.httpClient.Do(req)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to call Composio API: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode >= 400 {
+		log.Printf("❌ [COMPOSIO] API error (status %d): %s", resp.StatusCode, string(respBody))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Sprintf("Composio API error: %s", string(respBody)),
+		})
+	}
+
+	// Parse response to get redirectUrl
+	var composioResp map[string]interface{}
+	if err := json.Unmarshal(respBody, &composioResp); err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse response: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse OAuth response",
+		})
+	}
+
+	// v3 API returns redirect_url
+	redirectURLFromComposio, ok := composioResp["redirect_url"].(string)
+	if !ok {
+		log.Printf("❌ [COMPOSIO] No redirect_url in response: %v", composioResp)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth response from Composio",
+		})
+	}
+
+	// ✅ SECURITY FIX: Append state token to OAuth URL for CSRF protection
+	outlookOauthURL, err := url.Parse(redirectURLFromComposio)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse OAuth URL: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth URL",
+		})
+	}
+	outlookQueryParams := outlookOauthURL.Query()
+	outlookQueryParams.Set("state", stateToken)
+	outlookOauthURL.RawQuery = outlookQueryParams.Encode()
+	authURLWithState := outlookOauthURL.String()
+
+	log.Printf("✅ [COMPOSIO] Initiated Outlook OAuth for user %s", userID)
+
+	// Return the OAuth URL to frontend
+	return c.JSON(fiber.Map{
+		"authUrl":     authURLWithState,
+		"entityId":    entityID,
+		"redirectUrl": redirectURL,
+	})
+}
+
+// InitiateOneDriveAuth initiates OAuth flow for OneDrive via Composio
+// GET /api/integrations/composio/onedrive/authorize
+func (h *ComposioAuthHandler) InitiateOneDriveAuth(c *fiber.Ctx) error {
+	userID := c.Locals("user_id").(string)
+
+	composioAPIKey := os.Getenv("COMPOSIO_API_KEY")
+	if composioAPIKey == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_API_KEY not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Composio integration not configured",
+		})
+	}
+
+	// Use ClaraVerse user ID as Composio entity ID
+	entityID := userID
+
+	// Validate and sanitize redirect URL
+	redirectURL := c.Query("redirect_url")
+	if redirectURL == "" {
+		// Default to frontend settings page
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL == "" {
+			// Only allow localhost fallback in non-production environments
+			if os.Getenv("ENVIRONMENT") == "production" {
+				log.Printf("❌ [COMPOSIO] FRONTEND_URL not set in production")
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"error": "Configuration error",
+				})
+			}
+			frontendURL = "http://localhost:5173"
+		}
+		redirectURL = fmt.Sprintf("%s/settings?tab=credentials", frontendURL)
+	} else {
+		// Validate redirect URL against allowed origins
+		if err := validateRedirectURL(redirectURL); err != nil {
+			log.Printf("⚠️ [COMPOSIO] Invalid redirect URL: %s", redirectURL)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid redirect URL",
+			})
+		}
+	}
+
+	// Get auth config ID from environment
+	authConfigID := os.Getenv("COMPOSIO_ONEDRIVE_AUTH_CONFIG_ID")
+	if authConfigID == "" {
+		log.Printf("❌ [COMPOSIO] COMPOSIO_ONEDRIVE_AUTH_CONFIG_ID not set")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "OneDrive auth config not configured. Please set COMPOSIO_ONEDRIVE_AUTH_CONFIG_ID in environment.",
+		})
+	}
+
+	// ✅ SECURITY FIX: Generate CSRF state token
+	stateToken, err := h.stateStore.GenerateState(userID, "onedrive")
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to generate state token: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Call Composio API v3 to create a link for OAuth
+	payload := map[string]interface{}{
+		"auth_config_id": authConfigID,
+		"user_id":        entityID,
+	}
+
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to marshal request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	// Create connection link using v3 endpoint
+	composioURL := "https://backend.composio.dev/api/v3/connected_accounts/link"
+	req, err := http.NewRequest("POST", composioURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to create request: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("x-api-key", composioAPIKey)
+
+	resp, err := h.httpClient.Do(req)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to call Composio API: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to initiate OAuth",
+		})
+	}
+	defer resp.Body.Close()
+
+	respBody, _ := io.ReadAll(resp.Body)
+
+	if resp.StatusCode >= 400 {
+		log.Printf("❌ [COMPOSIO] API error (status %d): %s", resp.StatusCode, string(respBody))
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": fmt.Sprintf("Composio API error: %s", string(respBody)),
+		})
+	}
+
+	// Parse response to get redirectUrl
+	var composioResp map[string]interface{}
+	if err := json.Unmarshal(respBody, &composioResp); err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse response: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse OAuth response",
+		})
+	}
+
+	// v3 API returns redirect_url
+	redirectURLFromComposio, ok := composioResp["redirect_url"].(string)
+	if !ok {
+		log.Printf("❌ [COMPOSIO] No redirect_url in response: %v", composioResp)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth response from Composio",
+		})
+	}
+
+	// ✅ SECURITY FIX: Append state token to OAuth URL for CSRF protection
+	onedriveOauthURL, err := url.Parse(redirectURLFromComposio)
+	if err != nil {
+		log.Printf("❌ [COMPOSIO] Failed to parse OAuth URL: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Invalid OAuth URL",
+		})
+	}
+	onedriveQueryParams := onedriveOauthURL.Query()
+	onedriveQueryParams.Set("state", stateToken)
+	onedriveOauthURL.RawQuery = onedriveQueryParams.Encode()
+	authURLWithState := onedriveOauthURL.String()
+
+	log.Printf("✅ [COMPOSIO] Initiated OneDrive OAuth for user %s", userID)
 
 	// Return the OAuth URL to frontend
 	return c.JSON(fiber.Map{
