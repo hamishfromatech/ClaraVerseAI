@@ -176,7 +176,7 @@ func NewAgentBlockExecutor(
 		toolRegistry:      toolRegistry,
 		credentialService: credentialService,
 		httpClient: &http.Client{
-			Timeout: 120 * time.Second,
+			Timeout: 300 * time.Second, // 5 minutes - increased for agent mode
 		},
 	}
 }
@@ -534,12 +534,11 @@ func (e *AgentBlockExecutor) executeOnce(ctx context.Context, block models.Block
 		log.Printf("🔧 [AGENT-BLOCK] Executing %d tool call(s) in iteration %d", len(response.ToolCalls), iterations)
 
 		// Add assistant message with tool calls
+		// Note: OpenAI API requires content field even when tool_calls are present
 		assistantMsg := map[string]any{
 			"role":       "assistant",
+			"content":    response.Content, // Always include content (empty string is fine)
 			"tool_calls": response.ToolCalls,
-		}
-		if response.Content != "" {
-			assistantMsg["content"] = response.Content
 		}
 		messages = append(messages, assistantMsg)
 
@@ -753,7 +752,7 @@ func (e *AgentBlockExecutor) parseConfig(config map[string]any) models.AgentBloc
 	result := models.AgentBlockConfig{
 		Model:        defaultModel,
 		Temperature:  0.7,
-		MaxToolCalls: 15, // Increased to allow agents with multiple search iterations
+		MaxToolCalls: 30, // Increased to allow agents with multiple search iterations
 	}
 
 	// Model
@@ -2168,11 +2167,25 @@ func (e *AgentBlockExecutor) callLLMWithSchema(
 	// Only include tools if non-empty
 	if len(tools) > 0 {
 		requestBody["tools"] = tools
+		log.Printf("🔧 [AGENT-BLOCK] Including %d tools in LLM request", len(tools))
 	}
 
 	bodyBytes, err := json.Marshal(requestBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
+	}
+
+	// Log the request size and message count for debugging
+	log.Printf("📤 [AGENT-BLOCK] LLM request: %d messages, %d tools, %d bytes body",
+		len(messages), len(tools), len(bodyBytes))
+	if len(tools) > 0 && len(messages) > 2 {
+		// Log message types for debugging tool call scenarios
+		for i, msg := range messages {
+			if role, ok := msg["role"].(string); ok {
+				hasToolCalls := msg["tool_calls"] != nil
+				log.Printf("  - Message %d: role=%s, has_tool_calls=%v", i, role, hasToolCalls)
+			}
+		}
 	}
 
 	// Create request
@@ -2419,6 +2432,7 @@ func (e *AgentBlockExecutor) processStreamResponse(reader io.Reader) (*LLMRespon
 					}
 					if args, ok := function["arguments"].(string); ok {
 						acc.Arguments.WriteString(args)
+						log.Printf("📝 [AGENT-BLOCK] Tool call chunk: index=%d, args='%s'", index, args)
 					}
 				}
 			}
@@ -2445,15 +2459,52 @@ func (e *AgentBlockExecutor) processStreamResponse(reader io.Reader) (*LLMRespon
 	// Convert accumulated tool calls to response format
 	for _, acc := range toolCallsMap {
 		if acc.Name != "" {
+			argsStr := acc.Arguments.String()
+			log.Printf("🔍 [AGENT-BLOCK] Accumulated args for '%s': %s", acc.Name, argsStr)
+
+			// Validate that arguments are valid JSON before sending to LLM
+			if argsStr != "" {
+				// First, try to fix common malformed JSON patterns
+				// Pattern 1: {} followed by valid JSON (e.g., {}{"query":"value"})
+				fixedArgs := argsStr
+				if strings.HasPrefix(argsStr, "{}") {
+					// Remove the empty object prefix
+					fixedArgs = strings.TrimPrefix(argsStr, "{}")
+					log.Printf("🔧 [AGENT-BLOCK] Fixed malformed JSON: removed '{}' prefix, now: %s", fixedArgs)
+				}
+				// Pattern 2: Find the last valid JSON object if multiple
+				if !json.Valid([]byte(fixedArgs)) && strings.Contains(fixedArgs, "}{") {
+					// Try to extract the last complete JSON object
+					lastOpenBrace := strings.LastIndex(fixedArgs, "{")
+					if lastOpenBrace > 0 {
+						candidate := fixedArgs[lastOpenBrace:]
+						if json.Valid([]byte(candidate)) {
+							fixedArgs = candidate
+							log.Printf("🔧 [AGENT-BLOCK] Fixed malformed JSON: extracted last JSON object, now: %s", fixedArgs)
+						}
+					}
+				}
+
+				// Check if JSON is now valid
+				if !json.Valid([]byte(fixedArgs)) {
+					log.Printf("⚠️ [AGENT-BLOCK] Tool '%s' has invalid JSON arguments (original): %s", acc.Name, argsStr)
+					log.Printf("⚠️ [AGENT-BLOCK] Tool '%s' has invalid JSON arguments (fixed attempt): %s", acc.Name, fixedArgs)
+					continue // Skip malformed tool calls
+				}
+
+				argsStr = fixedArgs
+			}
 			toolCall := map[string]any{
 				"id":   acc.ID,
 				"type": acc.Type,
 				"function": map[string]any{
 					"name":      acc.Name,
-					"arguments": acc.Arguments.String(),
+					"arguments": argsStr,
 				},
 			}
 			response.ToolCalls = append(response.ToolCalls, toolCall)
+			log.Printf("✅ [AGENT-BLOCK] Tool call: id=%s, name=%s, args_len=%d, args=%s",
+				acc.ID, acc.Name, len(argsStr), argsStr)
 		}
 	}
 

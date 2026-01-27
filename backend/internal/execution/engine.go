@@ -287,17 +287,17 @@ func (e *WorkflowEngine) ExecuteWithOptions(
 		}
 
 		// Create timeout context
-		// Default: 30s for most blocks, 120s for LLM blocks (they need more time for API calls)
+		// Default: 30s for most blocks, 600s for LLM blocks (agent mode needs more time for multiple tool calls)
 		timeout := 30 * time.Second
 		if block.Type == "llm_inference" {
-			timeout = 120 * time.Second // LLM blocks get 2 minutes by default
+			timeout = 600 * time.Second // LLM blocks get 10 minutes by default (increased for agent mode)
 		}
-		// User-specified timeout can override, but LLM blocks get at least 120s
+		// User-specified timeout can override, but LLM blocks get at least 600s
 		if block.Timeout > 0 {
 			userTimeout := time.Duration(block.Timeout) * time.Second
-			if block.Type == "llm_inference" && userTimeout < 120*time.Second {
-				// LLM blocks need at least 120s for reasoning/streaming
-				timeout = 120 * time.Second
+			if block.Type == "llm_inference" && userTimeout < 600*time.Second {
+				// LLM blocks need at least 600s for agent mode with multiple tool calls
+				timeout = 600 * time.Second
 			} else {
 				timeout = userTimeout
 			}

@@ -302,7 +302,7 @@ function AssistantMessageComponent({
   onVersionNavigate,
   onOpenArtifacts,
 }: AssistantMessageProps) {
-  const backendUrl = import.meta.env.VITE_API_BASE_URL || '';
+  const backendUrl = window.location.origin;
 
   // Sources modal state
   const [showSources, setShowSources] = useState(false);

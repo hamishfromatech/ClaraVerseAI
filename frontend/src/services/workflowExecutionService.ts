@@ -52,8 +52,11 @@ class WorkflowExecutionService {
    */
   private getWebSocketUrl(): string {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-    const wsHost = baseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+    // Use window.location.host to connect to the same host as the frontend
+    // This works for both development and production
+    // The VITE_API_BASE_URL is only used for API calls, not WebSocket
+    const wsHost = window.location.host;
 
     // Get auth token
     const token = useAuthStore.getState().accessToken;

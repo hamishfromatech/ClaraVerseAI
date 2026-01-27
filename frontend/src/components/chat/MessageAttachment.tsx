@@ -12,7 +12,7 @@ import { useCachedImage } from '@/hooks/useCachedImage';
 import { DataTablePreview } from './DataTablePreview';
 import { AudioAttachment as AudioAttachmentComponent } from './AudioAttachment';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = window.location.origin;
 
 // Sub-component for individual image to use the hook
 interface CachedImageProps {

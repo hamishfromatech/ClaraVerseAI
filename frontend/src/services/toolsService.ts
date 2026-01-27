@@ -1,6 +1,8 @@
 import { apiClient } from '@/lib/apiClient';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+// Use window.location.origin to connect to the same host as the frontend
+// This works for both development and production without needing environment variables
+const API_BASE_URL = window.location.origin;
 
 /**
  * Tool interface matching backend ToolResponse

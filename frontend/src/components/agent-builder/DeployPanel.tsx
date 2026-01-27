@@ -92,8 +92,8 @@ export function DeployPanel({ isOpen, onClose }: DeployPanelProps) {
   const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   // Computed values
-  const endpoint = `${import.meta.env.VITE_API_BASE_URL}/api/trigger/${currentAgent?.id || 'xxx'}`;
-  const statusUrl = `${import.meta.env.VITE_API_BASE_URL}/api/trigger/status/:executionId`;
+  const endpoint = `${window.location.origin}/api/trigger/${currentAgent?.id || 'xxx'}`;
+  const statusUrl = `${window.location.origin}/api/trigger/status/:executionId`;
   const apiKey = apiKeyData?.key || existingApiKey?.key || '';
   const maskedKey = '••••••••••••••••••';
 
