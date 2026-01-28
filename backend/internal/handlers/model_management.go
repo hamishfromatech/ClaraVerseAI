@@ -739,26 +739,18 @@ func (h *ModelManagementHandler) SetModelTier(c *fiber.Ctx) error {
 	})
 }
 
-// ClearModelTier removes a model from its tier
-// DELETE /api/admin/models/:modelId/tier
-func (h *ModelManagementHandler) ClearModelTier(c *fiber.Ctx) error {
-	var req struct {
-		Tier string `json:"tier"`
-	}
+// ClearTier removes a model from its tier
+// DELETE /api/admin/tiers/:tier
+func (h *ModelManagementHandler) ClearTier(c *fiber.Ctx) error {
+	tier := c.Params("tier")
 
-	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid request body",
-		})
-	}
-
-	if req.Tier == "" {
+	if tier == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "tier is required",
 		})
 	}
 
-	if err := h.modelMgmtService.ClearTier(req.Tier); err != nil {
+	if err := h.modelMgmtService.ClearTier(tier); err != nil {
 		log.Printf("❌ Failed to clear tier: %v", err)
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": fmt.Sprintf("Failed to clear tier: %v", err),
@@ -766,7 +758,7 @@ func (h *ModelManagementHandler) ClearModelTier(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message": fmt.Sprintf("Tier %s cleared", req.Tier),
+		"message": fmt.Sprintf("Tier %s cleared", tier),
 	})
 }
 

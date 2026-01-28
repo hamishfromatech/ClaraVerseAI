@@ -30,9 +30,14 @@ export function ArtifactRenderer({ toolResult, backendUrl }: ArtifactRendererPro
   const isAbsoluteUrl =
     parsedResult.download_url.startsWith('http://') ||
     parsedResult.download_url.startsWith('https://');
-  const downloadUrl = isAbsoluteUrl
+  const isLocalhostUrl = parsedResult.download_url.includes('localhost');
+  let downloadUrl = isAbsoluteUrl
     ? parsedResult.download_url
     : `${backendUrl}${parsedResult.download_url}`;
+  if (isLocalhostUrl && !downloadUrl.startsWith(backendUrl)) {
+    const url = new URL(parsedResult.download_url);
+    downloadUrl = `${backendUrl}${url.pathname}${url.search}`;
+  }
 
   const filename = parsedResult.filename || 'Document';
 

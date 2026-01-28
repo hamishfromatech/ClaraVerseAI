@@ -1,8 +1,8 @@
 import { useSubscriptionStore } from '@/store/useSubscriptionStore';
 import { authClient } from '@/lib/auth';
 
-// Use relative URL when not specified (works with nginx proxy in all-in-one container)
-const API_BASE_URL = window.location.origin;
+// Use VITE_API_BASE_URL if set (production), otherwise window.location.origin (for nginx proxy)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 
 export class ApiError extends Error {
   status: number;

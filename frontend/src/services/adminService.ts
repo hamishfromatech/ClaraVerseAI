@@ -194,7 +194,7 @@ export const adminService = {
   },
 
   clearModelTier(tier: string): Promise<{ message: string }> {
-    return api.delete(`/api/admin/models/tier?tier=${encodeURIComponent(tier)}`);
+    return api.delete(`/api/admin/tiers/${encodeURIComponent(tier)}`);
   },
 
   // User Management (GDPR-Compliant)

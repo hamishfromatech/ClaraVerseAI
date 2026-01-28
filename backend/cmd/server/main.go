@@ -1004,6 +1004,7 @@ func main() {
 
 				// Global tier management (specific paths before :modelId)
 				adminRoutes.Get("/tiers", modelMgmtHandler.GetTiers)
+				adminRoutes.Delete("/tiers/:tier", modelMgmtHandler.ClearTier)
 
 				// Model fetching from provider API
 				adminRoutes.Post("/providers/:providerId/fetch", modelMgmtHandler.FetchModelsFromProvider)
@@ -1013,7 +1014,6 @@ func main() {
 				adminRoutes.Put("/models/:modelId", modelMgmtHandler.UpdateModel)
 				adminRoutes.Delete("/models/:modelId", modelMgmtHandler.DeleteModel)
 				adminRoutes.Post("/models/:modelId/tier", modelMgmtHandler.SetModelTier)
-				adminRoutes.Delete("/models/:modelId/tier", modelMgmtHandler.ClearModelTier)
 
 				// Model testing
 				adminRoutes.Post("/models/:modelId/test/connection", modelMgmtHandler.TestModelConnection)

@@ -162,13 +162,9 @@ func (s *Service) CreateFile(userID string, content []byte, filename, mimeType s
 	log.Printf("✅ [SECURE-FILE] Created file %s (%s) for user %s, expires %s",
 		fileID, filename, userID, expiresAt.Format(time.RFC3339))
 
-	// Build download URL with full backend URL for LLM tools
-	// LLM agents pass this URL to other tools (Discord, SendGrid, etc.) which need full URLs
-	backendURL := os.Getenv("BACKEND_URL")
-	if backendURL == "" {
-		backendURL = "http://localhost:3001" // Default fallback for development
-	}
-	downloadURL := fmt.Sprintf("%s/api/files/%s?code=%s", backendURL, fileID, accessCode)
+	// Return relative URL - the frontend will prepend window.location.origin
+	// This works in both development (via proxy) and production (same origin)
+	downloadURL := fmt.Sprintf("/api/files/%s?code=%s", fileID, accessCode)
 
 	return &Result{
 		ID:          fileID,

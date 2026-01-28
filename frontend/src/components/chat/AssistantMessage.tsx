@@ -302,7 +302,7 @@ function AssistantMessageComponent({
   onVersionNavigate,
   onOpenArtifacts,
 }: AssistantMessageProps) {
-  const backendUrl = window.location.origin;
+  const backendUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
 
   // Sources modal state
   const [showSources, setShowSources] = useState(false);
@@ -698,9 +698,16 @@ function AssistantMessageComponent({
     const isAbsoluteUrl =
       parsedResult.download_url.startsWith('http://') ||
       parsedResult.download_url.startsWith('https://');
-    const downloadUrl = isAbsoluteUrl
+    // For localhost URLs, replace with correct backend URL to handle old messages
+    const isLocalhostUrl = parsedResult.download_url.includes('localhost');
+    let downloadUrl = isAbsoluteUrl
       ? parsedResult.download_url
       : `${backendUrl}${parsedResult.download_url}`;
+    if (isLocalhostUrl && !downloadUrl.startsWith(backendUrl)) {
+      // Extract the path from the localhost URL and prepend correct backend URL
+      const url = new URL(parsedResult.download_url);
+      downloadUrl = `${backendUrl}${url.pathname}${url.search}`;
+    }
     const isPresentation = downloadTool.name === 'create_presentation';
     const fileTypeLabel = isPresentation
       ? `${parsedResult.slide_count || ''} Slides`
@@ -816,7 +823,12 @@ function AssistantMessageComponent({
         // Use secure download URL - check if already absolute
         const isAbsoluteUrl =
           file.download_url.startsWith('http://') || file.download_url.startsWith('https://');
-        const downloadUrl = isAbsoluteUrl ? file.download_url : `${backendUrl}${file.download_url}`;
+        const isLocalhostUrl = file.download_url.includes('localhost');
+        let downloadUrl = isAbsoluteUrl ? file.download_url : `${backendUrl}${file.download_url}`;
+        if (isLocalhostUrl && !downloadUrl.startsWith(backendUrl)) {
+          const url = new URL(file.download_url);
+          downloadUrl = `${backendUrl}${url.pathname}${url.search}`;
+        }
         window.open(downloadUrl, '_blank');
       } else if (file.data) {
         // Fall back to base64 download
@@ -935,9 +947,14 @@ function AssistantMessageComponent({
       const isAbsoluteUrl =
         parsedResult.download_url.startsWith('http://') ||
         parsedResult.download_url.startsWith('https://');
-      const downloadUrl = isAbsoluteUrl
+      const isLocalhostUrl = parsedResult.download_url.includes('localhost');
+      let downloadUrl = isAbsoluteUrl
         ? parsedResult.download_url
         : `${backendUrl}${parsedResult.download_url}`;
+      if (isLocalhostUrl && !downloadUrl.startsWith(backendUrl)) {
+        const url = new URL(parsedResult.download_url);
+        downloadUrl = `${backendUrl}${url.pathname}${url.search}`;
+      }
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {parsedResult.message && (
@@ -1143,9 +1160,14 @@ function AssistantMessageComponent({
       const isAbsoluteUrl =
         parsedResult.download_url.startsWith('http://') ||
         parsedResult.download_url.startsWith('https://');
-      const downloadUrl = isAbsoluteUrl
+      const isLocalhostUrl = parsedResult.download_url.includes('localhost');
+      let downloadUrl = isAbsoluteUrl
         ? parsedResult.download_url
         : `${backendUrl}${parsedResult.download_url}`;
+      if (isLocalhostUrl && !downloadUrl.startsWith(backendUrl)) {
+        const url = new URL(parsedResult.download_url);
+        downloadUrl = `${backendUrl}${url.pathname}${url.search}`;
+      }
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
           {parsedResult.message && (

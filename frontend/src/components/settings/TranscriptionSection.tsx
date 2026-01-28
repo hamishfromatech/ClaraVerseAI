@@ -41,19 +41,19 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
     <div className="space-y-6 mt-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Mic className="w-6 h-6" />
+        <h2 className="text-2xl font-bold flex items-center gap-2 text-[var(--color-text-primary)]">
+          <Mic className="w-6 h-6 text-[var(--color-accent)]" />
           Transcription Settings
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
+        <p className="text-sm text-[var(--color-text-tertiary)] mt-1">
           Configure how voice messages and audio files are converted to text
         </p>
       </div>
 
       {/* Provider Selection */}
-      <div style={{ backgroundColor: '#0d0d0d' }} className="rounded-lg p-6 border border-gray-700">
-        <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-          <Headphones className="w-5 h-5" />
+      <div className="rounded-lg p-6 border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
+        <h3 className="text-lg font-semibold flex items-center gap-2 mb-4 text-[var(--color-text-primary)]">
+          <Headphones className="w-5 h-5 text-[var(--color-accent)]" />
           Transcription Engine
         </h3>
 
@@ -62,15 +62,15 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
             onClick={() => handleProviderChange('local')}
             className={`flex flex-col items-start p-4 rounded-lg border transition-all ${
               transcriptionProvider === 'local'
-                ? 'border-gray-400 bg-gray-800/50'
-                : 'border-gray-800 bg-black hover:border-gray-700'
+                ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
+                : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] hover:border-[var(--color-accent)]/50'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${transcriptionProvider === 'local' ? 'bg-green-500' : 'bg-gray-600'}`} />
-              <span className="font-medium">Local Whisper</span>
+              <div className={`w-2 h-2 rounded-full ${transcriptionProvider === 'local' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-text-tertiary)]'}`} />
+              <span className="font-medium text-[var(--color-text-primary)]">Local Whisper</span>
             </div>
-            <p className="text-xs text-gray-500 text-left">
+            <p className="text-xs text-[var(--color-text-tertiary)] text-left">
               Runs on your local machine using whisper-node. Private and free.
             </p>
           </button>
@@ -79,15 +79,15 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
             onClick={() => handleProviderChange('remote')}
             className={`flex flex-col items-start p-4 rounded-lg border transition-all ${
               transcriptionProvider === 'remote'
-                ? 'border-gray-400 bg-gray-800/50'
-                : 'border-gray-800 bg-black hover:border-gray-700'
+                ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
+                : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] hover:border-[var(--color-accent)]/50'
             }`}
           >
             <div className="flex items-center gap-2 mb-1">
-              <div className={`w-2 h-2 rounded-full ${transcriptionProvider === 'remote' ? 'bg-blue-500' : 'bg-gray-600'}`} />
-              <span className="font-medium">Cloud API (Groq/OpenAI)</span>
+              <div className={`w-2 h-2 rounded-full ${transcriptionProvider === 'remote' ? 'bg-[var(--color-accent)]' : 'bg-[var(--color-text-tertiary)]'}`} />
+              <span className="font-medium text-[var(--color-text-primary)]">Cloud API (Groq/OpenAI)</span>
             </div>
-            <p className="text-xs text-gray-500 text-left">
+            <p className="text-xs text-[var(--color-text-tertiary)] text-left">
               Uses high-performance cloud providers. Requires API keys.
             </p>
           </button>
@@ -96,15 +96,12 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
 
       {/* Model Selection (Only for Local) */}
       {transcriptionProvider === 'local' && (
-        <div
-          style={{ backgroundColor: '#0d0d0d', borderColor: '#e91e63' }}
-          className="rounded-lg p-6 border"
-        >
-          <h3 className="text-lg font-semibold flex items-center gap-2 mb-2">
-            <Settings2 className="w-5 h-5" />
+        <div className="rounded-lg p-6 border border-[var(--color-accent)] bg-[var(--color-bg-secondary)]">
+          <h3 className="text-lg font-semibold flex items-center gap-2 mb-2 text-[var(--color-text-primary)]">
+            <Settings2 className="w-5 h-5 text-[var(--color-accent)]" />
             Local Model Size
           </h3>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-[var(--color-text-tertiary)] mb-4">
             Select the Whisper model to use. Larger models are more accurate but use more RAM and are slower.
           </p>
 
@@ -115,19 +112,19 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
                 onClick={() => handleModelChange(model.id)}
                 className={`flex flex-col items-start p-3 rounded border transition-all ${
                   transcriptionModel === model.id
-                    ? 'border-pink-500 bg-pink-500/5'
-                    : 'border-gray-800 bg-black hover:border-gray-700'
+                    ? 'border-[var(--color-accent)] bg-[var(--color-accent)]/10'
+                    : 'border-[var(--color-border)] bg-[var(--color-bg-primary)] hover:border-[var(--color-accent)]/50'
                 }`}
               >
-                <span className="font-medium text-sm">{model.label}</span>
-                <span className="text-[10px] text-gray-500">{model.description}</span>
+                <span className="font-medium text-sm text-[var(--color-text-primary)]">{model.label}</span>
+                <span className="text-[10px] text-[var(--color-text-tertiary)]">{model.description}</span>
               </button>
             ))}
           </div>
 
-          <div className="mt-4 flex items-start gap-2 p-3 bg-gray-900/50 rounded-lg border border-gray-800">
-            <Info className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
-            <p className="text-xs text-gray-400">
+          <div className="mt-4 flex items-start gap-2 p-3 bg-[var(--color-bg-primary)] rounded-lg border border-[var(--color-border)]">
+            <Info className="w-4 h-4 text-[var(--color-accent)] mt-0.5 flex-shrink-0" />
+            <p className="text-xs text-[var(--color-text-tertiary)]">
               Note: The first time you select a new model, it will be downloaded automatically (150MB - 3GB depending on size).
             </p>
           </div>
@@ -136,15 +133,12 @@ export const TranscriptionSection: React.FC<TranscriptionSectionProps> = ({ onSa
 
       {/* Cloud Info */}
       {transcriptionProvider === 'remote' && (
-        <div
-          style={{ backgroundColor: '#0d0d0d' }}
-          className="rounded-lg p-6 border border-gray-700"
-        >
+        <div className="rounded-lg p-6 border border-[var(--color-border)] bg-[var(--color-bg-secondary)]">
           <div className="flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+            <Info className="w-5 h-5 text-[var(--color-accent)] mt-0.5" />
             <div>
-              <h3 className="font-semibold mb-1">Cloud Transcription</h3>
-              <p className="text-sm text-gray-400">
+              <h3 className="font-semibold mb-1 text-[var(--color-text-primary)]">Cloud Transcription</h3>
+              <p className="text-sm text-[var(--color-text-tertiary)]">
                 Cloud transcription uses Groq (whisper-large-v3) as primary and OpenAI (whisper-1) as fallback.
                 Make sure you have valid API keys configured in the <strong>Manage Providers</strong> section above.
               </p>
