@@ -9,7 +9,7 @@ const apps = [
     id: 'chat',
     icon: MessageSquare,
     title: 'Chat',
-    description: 'Talk with A-Tech AI assistant',
+    description: 'Talk with Blutone AI assistant',
     href: '/chat',
   },
   {

@@ -94,11 +94,11 @@ export interface CommandCenterHandle {
 // Helper function to get tier color for indicator dot
 const getTierColor = (tier: string): string => {
   const colors: Record<string, string> = {
-    tier1: '#8b5cf6', // Purple for Elite
-    tier2: '#3b82f6', // Blue for Premium
-    tier3: '#10b981', // Green for Standard
+    tier1: '#1DB4E9', // Electric Cyan for Elite
+    tier2: '#1DB4E9', // Electric Cyan for Premium
+    tier3: '#79C043', // Vivid Lime for Standard
     tier4: '#f59e0b', // Orange for Fast
-    tier5: '#ec4899', // Pink for New
+    tier5: '#1DB4E9', // Electric Cyan for New
   };
   return colors[tier] || '#6b7280'; // Gray fallback
 };

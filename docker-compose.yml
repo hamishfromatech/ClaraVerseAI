@@ -2,9 +2,9 @@ services:
   # MongoDB (for conversations, workflows, and data persistence)
   mongodb:
     image: mongo:7
-    container_name: claraverse-mongodb
+    container_name: blutone-mongodb
     ports:
-      - "27019:27017"
+      - "27021:27017"
     volumes:
       - mongodb-data:/data/db
     environment:
@@ -17,16 +17,16 @@ services:
       start_period: 30s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
 
   # Redis (for scheduled jobs + WebSocket pub/sub)
   # Required for: scheduled agent triggers, cross-instance messaging
   redis:
     image: redis:7-alpine
-    container_name: claraverse-redis
+    container_name: blutone-redis
     command: redis-server --appendonly yes --maxmemory 100mb --maxmemory-policy allkeys-lru
     ports:
-      - "6381:6379"
+      - "6383:6379"
     volumes:
       - redis-data:/data
     restart: unless-stopped
@@ -37,16 +37,16 @@ services:
       start_period: 5s
       retries: 5
     networks:
-      - claraverse-network
+      - blutone-network
 
   # MySQL (for providers, models, and capabilities)
   # Replaces SQLite for production-ready persistence
   mysql:
     image: mysql:8.0
-    container_name: claraverse-mysql
+    container_name: blutone-mysql
     command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - "3308:3306"
+      - "3310:3306"
     volumes:
       - mysql-data-new:/var/lib/mysql
       - ./backend/migrations:/docker-entrypoint-initdb.d:ro
@@ -63,11 +63,11 @@ services:
       start_period: 60s
       retries: 12
     networks:
-      - claraverse-network
+      - blutone-network
 
   searxng:
     image: searxng/searxng:latest
-    container_name: claraverse-searxng
+    container_name: blutone-searxng
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
     environment:
@@ -78,7 +78,7 @@ services:
       - SETGID
     restart: unless-stopped
     networks:
-      - claraverse-network
+      - blutone-network
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/"]
       interval: 30s
@@ -90,7 +90,7 @@ services:
     build:
       context: ./backend/e2b-service
       dockerfile: Dockerfile
-    container_name: claraverse-e2b
+    container_name: blutone-e2b
     environment:
       # E2B Local Mode Configuration (v2.0 - no API key needed!)
       - E2B_MODE=${E2B_MODE:-local}
@@ -113,13 +113,13 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
 
   whisper-service:
     build:
       context: ./backend/faster-whisper-service
       dockerfile: Dockerfile
-    container_name: claraverse-whisper
+    container_name: blutone-whisper
     volumes:
       - whisper-models:/app/models
     restart: unless-stopped
@@ -130,15 +130,15 @@ services:
       start_period: 10s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
 
   tts-service:
     build:
       context: ./backend/pocket-tts-service
       dockerfile: Dockerfile
-    container_name: claraverse-tts
+    container_name: blutone-tts
     ports:
-      - "3006:3006"
+      - "3010:3006"
     volumes:
       - tts-cache:/app/cache
       - tts-custom-voices:/app/custom_voices
@@ -153,7 +153,7 @@ services:
       start_period: 30s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
 
   backend:
     build:
@@ -161,9 +161,9 @@ services:
       dockerfile: Dockerfile
       args:
         SKIP_TESTS: ${SKIP_TESTS:-false}
-    container_name: claraverse-backend
+    container_name: blutone-backend
     ports:
-      - "3003:3001"
+      - "3005:3001"
     volumes:
       # Persistent data
       - backend-data:/app/data
@@ -180,7 +180,7 @@ services:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
       # CORS
-      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:82,http://localhost:5173,https://clara.atechds.com}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       # SearXNG integration (supports multiple URLs for load balancing)
       - SEARXNG_URLS=${SEARXNG_URLS:-http://searxng:8080}
       - SEARXNG_URL=${SEARXNG_URLS:-http://searxng:8080}
@@ -242,7 +242,7 @@ services:
       start_period: 10s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -256,9 +256,9 @@ services:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}  # Empty = relative URL, use same origin as frontend
         VITE_WS_URL: ${VITE_WS_URL:-}  # Empty = relative URL
         VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY}
-    container_name: claraverse-frontend
+    container_name: blutone-frontend
     ports:
-      - "82:80"
+      - "85:80"
     depends_on:
       backend:
         condition: service_healthy
@@ -270,7 +270,7 @@ services:
       start_period: 5s
       retries: 3
     networks:
-      - claraverse-network
+      - blutone-network
 
 volumes:
   backend-data:
@@ -293,5 +293,5 @@ volumes:
     driver: local
 
 networks:
-  claraverse-network:
+  blutone-network:
     driver: bridge

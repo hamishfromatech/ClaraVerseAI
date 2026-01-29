@@ -41,8 +41,8 @@
 
 /* Summary */
 .policy-summary {
-  background: rgba(233, 30, 99, 0.05);
-  border: 1px solid rgba(233, 30, 99, 0.15);
+  background: rgba(29, 180, 233, 0.05);
+  border: 1px solid rgba(29, 180, 233, 0.15);
   border-radius: 10px;
   padding: 1rem 1.25rem;
   margin-bottom: 1.5rem;
@@ -51,7 +51,7 @@
 .policy-summary h3 {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--color-accent, #e91e63);
+  color: var(--color-accent, #1DB4E9);
   margin: 0 0 0.5rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -59,7 +59,7 @@
 
 .policy-summary p {
   margin: 0;
-  color: var(--color-text-secondary, #a1a1aa);
+  color: var(--color-text-secondary, #B1B3B6);
   font-size: 0.8125rem;
 }
 
@@ -89,7 +89,7 @@
 }
 
 .policy-section p {
-  color: var(--color-text-tertiary, #a1a1aa);
+  color: var(--color-text-tertiary, #B1B3B6);
   margin: 0 0 0.75rem;
   font-size: 0.8125rem;
 }
@@ -104,7 +104,7 @@
   position: relative;
   padding-left: 1rem;
   margin-bottom: 0.375rem;
-  color: var(--color-text-tertiary, #a1a1aa);
+  color: var(--color-text-tertiary, #B1B3B6);
   font-size: 0.8125rem;
 }
 
@@ -116,7 +116,7 @@
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: var(--color-accent, #e91e63);
+  background: var(--color-accent, #1DB4E9);
 }
 
 .policy-section ul li strong {
@@ -132,7 +132,7 @@
 }
 
 .policy-legal strong {
-  color: var(--color-accent, #e91e63);
+  color: var(--color-accent, #1DB4E9);
 }
 
 /* Table */
@@ -163,7 +163,7 @@
 }
 
 .policy-table td {
-  color: var(--color-text-tertiary, #a1a1aa);
+  color: var(--color-text-tertiary, #B1B3B6);
 }
 
 .policy-table td:first-child {
@@ -205,9 +205,9 @@
   font-family: ui-monospace, monospace;
   font-size: 0.625rem;
   padding: 0.125rem 0.375rem;
-  background: rgba(233, 30, 99, 0.1);
+  background: rgba(29, 180, 233, 0.1);
   border-radius: 4px;
-  color: var(--color-accent, #e91e63);
+  color: var(--color-accent, #1DB4E9);
 }
 
 /* Third Party */
@@ -253,7 +253,7 @@
 .policy-email-link {
   display: inline-block;
   padding: 0.5rem 1rem;
-  background: var(--color-accent, #e91e63);
+  background: var(--color-accent, #1DB4E9);
   color: #fff;
   font-weight: 500;
   font-size: 0.8125rem;

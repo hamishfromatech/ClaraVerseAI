@@ -1,33 +1,33 @@
 /* ============================================
-   A-Tech AI Design System v1.0
-   CSS Variables - Black White Gray Edition
+   Blutone Tech AI Design System v1.0
+   CSS Variables - Electric Cyan Edition
    ============================================ */
 
-/* A-Tech AI Theme - Default */
-[data-theme='atech'] {
-  /* A-Tech Gray Accent */
-  --color-accent: #ffffff;
-  --color-accent-hover: #e0e0e0;
-  --color-accent-active: #c0c0c0;
-  --color-accent-light: rgba(255, 255, 255, 0.1);
-  --color-accent-border: rgba(255, 255, 255, 0.3);
+/* Blutone Tech AI Theme - Default */
+[data-theme='blutone'] {
+  /* Electric Cyan Accent (Primary CTA) */
+  --color-accent: #1DB4E9;
+  --color-accent-hover: #17a8d9;
+  --color-accent-active: #1496c4;
+  --color-accent-light: rgba(29, 180, 233, 0.15);
+  --color-accent-border: rgba(29, 180, 233, 0.4);
 
-  /* Gradients with gray/white */
-  --gradient-accent: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-  --gradient-glow: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-  --gradient-shine: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  /* Gradients with Electric Cyan */
+  --gradient-accent: linear-gradient(135deg, #1DB4E9 0%, #17a8d9 100%);
+  --gradient-glow: radial-gradient(circle, rgba(29, 180, 233, 0.25) 0%, transparent 70%);
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(29, 180, 233, 0.4), transparent);
 
   /* Glow shadows */
-  --shadow-glow-sm: 0 0 20px rgba(255, 255, 255, 0.1);
-  --shadow-glow-md: 0 10px 30px rgba(255, 255, 255, 0.15);
-  --shadow-glow-lg: 0 20px 60px rgba(255, 255, 255, 0.2);
+  --shadow-glow-sm: 0 0 20px rgba(29, 180, 233, 0.15);
+  --shadow-glow-md: 0 10px 30px rgba(29, 180, 233, 0.25);
+  --shadow-glow-lg: 0 20px 60px rgba(29, 180, 233, 0.35);
 
   /* HSL for shadcn components */
-  --primary: 0 0% 100%;
-  --ring: 0 0% 100%;
+  --primary: 191 87% 50%;
+  --ring: 191 87% 50%;
 
-  /* Border focus with white/gray */
-  --color-border-focus: rgba(255, 255, 255, 0.5);
+  /* Border focus with Electric Cyan */
+  --color-border-focus: rgba(29, 180, 233, 0.6);
 }
 
 :root {
@@ -40,27 +40,27 @@
   --color-surface-hover: rgba(255, 255, 255, 0.08);
 
   /* Borders */
-  --color-border: rgba(255, 255, 255, 0.1);
-  --color-border-hover: rgba(255, 255, 255, 0.2);
-  --color-border-focus: rgba(255, 255, 255, 0.5);
+  --color-border: rgba(177, 179, 182, 0.25); /* Soft Slate */
+  --color-border-hover: rgba(177, 179, 182, 0.4);
+  --color-border-focus: rgba(29, 180, 233, 0.6); /* Electric Cyan focus */
 
   /* Text Colors */
   --color-text-primary: #ffffff;
-  --color-text-secondary: #d0d0d0; /* Brighter for better readability */
-  --color-text-tertiary: #9a9a9a;
-  --color-text-disabled: #5a5a5a;
+  --color-text-secondary: #A0A1A5; /* Cool Gray for prominent text */
+  --color-text-tertiary: #B1B3B6; /* Soft Slate for subtle text */
+  --color-text-disabled: #6a6a6a;
 
-  /* A-Tech Gray/White Accent (Primary) */
-  --color-accent: #ffffff;
-  --color-accent-hover: #e0e0e0;
-  --color-accent-active: #c0c0c0;
-  --color-accent-light: rgba(255, 255, 255, 0.1);
-  --color-accent-border: rgba(255, 255, 255, 0.3);
+  /* Electric Cyan Accent (Primary CTA) */
+  --color-accent: #1DB4E9;
+  --color-accent-hover: #17a8d9;
+  --color-accent-active: #1496c4;
+  --color-accent-light: rgba(29, 180, 233, 0.15);
+  --color-accent-border: rgba(29, 180, 233, 0.4);
 
   /* Status Colors */
-  --color-success: #30d158;
-  --color-success-light: rgba(48, 209, 88, 0.1);
-  --color-success-border: rgba(48, 209, 88, 0.3);
+  --color-success: #79C043; /* Vivid Lime */
+  --color-success-light: rgba(121, 192, 67, 0.15);
+  --color-success-border: rgba(121, 192, 67, 0.35);
 
   --color-warning: #ffd60a;
   --color-warning-light: rgba(255, 214, 10, 0.1);
@@ -75,10 +75,10 @@
   --color-info-border: rgba(100, 210, 255, 0.3);
 
   /* Gradients */
-  --gradient-text: linear-gradient(180deg, #ffffff 0%, #a0a0a0 100%);
-  --gradient-accent: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
-  --gradient-glow: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
-  --gradient-shine: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  --gradient-text: linear-gradient(180deg, #1DB4E9 0%, #79C043 100%);
+  --gradient-accent: linear-gradient(135deg, #1DB4E9 0%, #17a8d9 100%);
+  --gradient-glow: radial-gradient(circle, rgba(29, 180, 233, 0.2) 0%, transparent 70%);
+  --gradient-shine: linear-gradient(90deg, transparent, rgba(29, 180, 233, 0.35), transparent);
 
   /* ==================== SHADCN THEME VARIABLES ==================== */
 
@@ -89,7 +89,7 @@
   --card-foreground: 0 0% 96%;
   --popover: 0 0% 4%;
   --popover-foreground: 0 0% 96%;
-  --primary: 0 0% 100%;
+  --primary: 191 87% 50%; /* Electric Cyan in HSL */
   --primary-foreground: 0 0% 0%;
   --secondary: 0 0% 15%;
   --secondary-foreground: 0 0% 96%;
@@ -101,7 +101,7 @@
   --destructive-foreground: 0 0% 96%;
   --border: 0 0% 15%;
   --input: 0 0% 15%;
-  --ring: 0 0% 100%;
+  --ring: 191 87% 50%; /* Electric Cyan in HSL */
   --radius: 1rem;
 
   /* ==================== SPACING ==================== */
@@ -177,10 +177,10 @@
   --shadow-xl: 0 30px 80px rgba(0, 0, 0, 0.5);
   --shadow-2xl: 0 40px 100px rgba(0, 0, 0, 0.6);
 
-  /* Accent Glow Shadows */
-  --shadow-glow-sm: 0 0 20px rgba(255, 255, 255, 0.1);
-  --shadow-glow-md: 0 10px 30px rgba(255, 255, 255, 0.15);
-  --shadow-glow-lg: 0 20px 60px rgba(255, 255, 255, 0.2);
+  /* Accent Glow Shadows (Electric Cyan) */
+  --shadow-glow-sm: 0 0 20px rgba(29, 180, 233, 0.2);
+  --shadow-glow-md: 0 10px 30px rgba(29, 180, 233, 0.25);
+  --shadow-glow-lg: 0 20px 60px rgba(29, 180, 233, 0.3);
 
   /* Border Radius */
   --radius-none: 0;
@@ -302,23 +302,23 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(177, 179, 182, 0.3); /* Soft Slate */
   border-radius: 4px;
   transition: background var(--transition-fast);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(160, 161, 165, 0.5); /* Cool Gray */
 }
 
 ::-webkit-scrollbar-thumb:active {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(29, 180, 233, 0.5); /* Electric Cyan */
 }
 
 /* Firefox */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+  scrollbar-color: rgba(177, 179, 182, 0.3) transparent;
 }
 
 /* ==================== ACCESSIBILITY ==================== */

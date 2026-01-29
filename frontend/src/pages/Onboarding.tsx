@@ -64,7 +64,7 @@ export const Onboarding = () => {
       <div className="onboarding-container">
         <div className="onboarding-left">
           <div className="onboarding-image-container">
-            <img src="/image-1.webp" alt="ClaraVerse" className="onboarding-image" />
+            <img src="/image-1.webp" alt="Blutone Tech AI" className="onboarding-image" />
           </div>
         </div>
         <div className="onboarding-auth" />
@@ -77,7 +77,7 @@ export const Onboarding = () => {
       {/* Left side: Single image (60%) */}
       <div className="onboarding-left">
         <div className="onboarding-image-container">
-          <img src="/image-1.webp" alt="ClaraVerse" className="onboarding-image" />
+          <img src="/image-1.webp" alt="Blutone Tech AI" className="onboarding-image" />
         </div>
       </div>
 

@@ -48,21 +48,21 @@ const badgeInfo: Record<
     title: 'Balanced Model',
     description:
       'A well-balanced model offering good performance at a reasonable cost. Great for everyday tasks and general conversations.',
-    color: '#8b5cf6',
+    color: '#1DB4E9',
   },
   fastest: {
     icon: <Zap size={20} />,
     title: 'Fastest Model',
     description:
       'Optimized for speed and efficiency. Best for quick responses, simple tasks, and when low latency matters most.',
-    color: '#06b6d4',
+    color: '#1DB4E9', // Electric Cyan
   },
   new: {
     icon: <FlaskConical size={20} />,
     title: 'Newly Added',
     description:
-      'A recently added model to ClaraVerse. Try it out and explore its capabilities - it might become your new favorite!',
-    color: '#10b981',
+      'A recently added model to Blutone AI. Try it out and explore its capabilities - it might become your new favorite!',
+    color: '#79C043',
   },
 };
 

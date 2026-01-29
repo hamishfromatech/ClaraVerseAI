@@ -1014,9 +1014,9 @@ func main() {
 				}
 
 				// Register routes with wildcard + middleware
-				adminRoutes.Put("/models*", modelIdMiddleware, modelMgmtHandler.UpdateModel)
-				adminRoutes.Delete("/models*", modelIdMiddleware, modelMgmtHandler.DeleteModel)
-				adminRoutes.Post("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+				adminRoutes.Put("/models+", modelIdMiddleware, modelMgmtHandler.UpdateModel)
+				adminRoutes.Delete("/models+", modelIdMiddleware, modelMgmtHandler.DeleteModel)
+				adminRoutes.Post("/models+/*", modelIdMiddleware, func(c *fiber.Ctx) error {
 					// Handle /tier, /test/*, /aliases, /benchmark, /test-results
 					suffix, _ := c.Locals("suffix").(string)
 					if suffix == "/tier" {
@@ -1040,7 +1040,7 @@ func main() {
 					}
 					return c.SendStatus(404)
 				})
-				adminRoutes.Delete("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+				adminRoutes.Delete("/models+/*", modelIdMiddleware, func(c *fiber.Ctx) error {
 					suffix, _ := c.Locals("suffix").(string)
 					if suffix == "/tier" {
 						return modelMgmtHandler.ClearModelTier(c)

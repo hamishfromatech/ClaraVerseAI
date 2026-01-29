@@ -184,7 +184,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({
     <div className={`auth-form-container ${className}`}>
       <div className="auth-form-content">
         <div className="auth-banner">
-          <img src={bannerImage} alt="ClaraVerse" className="auth-banner-image" />
+          <img src={bannerImage} alt="Blutone Tech AI" className="auth-banner-image" />
         </div>
 
         <div className="auth-form-header">
@@ -197,9 +197,9 @@ export const AuthForm: React.FC<AuthFormProps> = ({
           </h2>
           <p>
             {mode === 'signin'
-              ? 'Sign in to continue to ClaraVerse'
+              ? 'Sign in to continue to Blutone Tech AI'
               : mode === 'signup'
-                ? 'Sign up to get started with ClaraVerse'
+                ? 'Sign up to get started with Blutone Tech AI'
                 : 'Enter your email to receive a password reset link'}
           </p>
         </div>

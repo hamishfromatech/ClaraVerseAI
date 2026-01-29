@@ -52,7 +52,7 @@ export const PrivacySection: React.FC<PrivacySectionProps> = ({ onSave }) => {
               <p className="privacy-option-warning">
                 <AlertTriangle size={12} />
                 <span>
-                  Stored in browser. Others with device access can view. Clara has no access.
+                  Stored in browser. Others with device access can view. Blutone has no access.
                 </span>
               </p>
             )}

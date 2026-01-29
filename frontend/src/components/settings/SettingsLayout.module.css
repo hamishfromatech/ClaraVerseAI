@@ -65,10 +65,10 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: rgba(121, 192, 67, 0.1);
+  border: 1px solid rgba(121, 192, 67, 0.2);
   border-radius: var(--radius-md);
-  color: #22c55e;
+  color: #79C043;
   font-size: var(--text-sm);
   font-weight: 500;
   opacity: 0;
