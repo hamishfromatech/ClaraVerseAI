@@ -992,7 +992,6 @@ func main() {
 						modelID := strings.TrimPrefix(path, prefix)
 						// Remove any trailing segments (like /tier, /aliases, /test/*, etc.)
 						if idx := strings.Index(modelID, "/tier"); idx >= 0 {
-							modelID = modelID[:idx]
 							c.Locals("suffix", "/tier"+modelID[idx+5:])
 							modelID = modelID[:idx]
 						} else if idx := strings.Index(modelID, "/aliases"); idx >= 0 {
@@ -1016,7 +1015,7 @@ func main() {
 				// Register routes with wildcard + middleware
 				adminRoutes.Put("/models+", modelIdMiddleware, modelMgmtHandler.UpdateModel)
 				adminRoutes.Delete("/models+", modelIdMiddleware, modelMgmtHandler.DeleteModel)
-				adminRoutes.Post("/models+/*", modelIdMiddleware, func(c *fiber.Ctx) error {
+				adminRoutes.All("/models+/*", modelIdMiddleware, func(c *fiber.Ctx) error {
 					// Handle /tier, /test/*, /aliases, /benchmark, /test-results
 					suffix, _ := c.Locals("suffix").(string)
 					if suffix == "/tier" {
@@ -1031,7 +1030,8 @@ func main() {
 						return modelMgmtHandler.RunModelBenchmark(c)
 					} else if suffix == "/test-results" {
 						return modelMgmtHandler.GetModelTestResults(c)
-					} else if strings.HasPrefix(suffix, "/aliases") {
+					} else if suffix == "/aliases" {
+						// Exactly /aliases (not /aliases/:alias)
 						if c.Method() == "GET" {
 							return modelMgmtHandler.GetModelAliases(c)
 						} else if c.Method() == "POST" {
