@@ -26,7 +26,7 @@ func NewCredentialTester(credentialService *services.CredentialService) *Credent
 	return &CredentialTester{
 		credentialService: credentialService,
 		httpClient: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout: 30 * time.Minute,
 		},
 	}
 }

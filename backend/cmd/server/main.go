@@ -479,7 +479,7 @@ func main() {
 		ReadTimeout:  360 * time.Second, // 6 minutes to handle long tool executions
 		WriteTimeout: 360 * time.Second, // 6 minutes to handle long tool executions
 		IdleTimeout:  360 * time.Second, // 6 minutes to handle long tool executions
-		BodyLimit:    50 * 1024 * 1024,  // 50MB limit for chat messages with images and large conversations
+		BodyLimit:    2 * 1024 * 1024 * 1024,  // 2GB limit for large file uploads
 	})
 
 	// Middleware
@@ -738,6 +738,7 @@ func main() {
 		api.Get("/upload/:id/status", middleware.OptionalLocalAuthMiddleware(jwtAuth), uploadHandler.CheckFileStatus)
 
 		// Audio transcription endpoint (requires authentication + rate limiting for expensive GPU operation)
+		// Use larger body limit (50MB) for audio files (Fiber's global limit is 50MB, handler validates to 25MB)
 		api.Post("/audio/transcribe", middleware.OptionalLocalAuthMiddleware(jwtAuth), transcribeLimiter, audioHandler.Transcribe)
 
 		// TTS endpoints (proxies to internal pocket-tts service)
@@ -1016,6 +1017,13 @@ func main() {
 				// Register routes with wildcard + middleware
 				adminRoutes.Put("/models*", modelIdMiddleware, modelMgmtHandler.UpdateModel)
 				adminRoutes.Delete("/models*", modelIdMiddleware, modelMgmtHandler.DeleteModel)
+				// Benchmark route - needs explicit matching due to URL encoding of colons
+				adminRoutes.Post("/models*/benchmark", modelIdMiddleware, modelMgmtHandler.RunModelBenchmark)
+				// Aliases routes - need explicit matching due to URL encoding of colons
+				adminRoutes.Get("/models*/aliases", modelIdMiddleware, modelMgmtHandler.GetModelAliases)
+				adminRoutes.Post("/models*/aliases", modelIdMiddleware, modelMgmtHandler.CreateModelAlias)
+				adminRoutes.Put("/models*/aliases/*", modelIdMiddleware, modelMgmtHandler.UpdateModelAlias)
+				adminRoutes.Delete("/models*/aliases/*", modelIdMiddleware, modelMgmtHandler.DeleteModelAlias)
 				adminRoutes.Post("/models*/*", modelIdMiddleware, func(c *fiber.Ctx) error {
 					// Handle /tier, /test/*, /aliases, /benchmark, /test-results
 					suffix, _ := c.Locals("suffix").(string)
@@ -1120,51 +1128,55 @@ func main() {
 		log.Println("✅ External upload endpoint registered with open CORS (/api/external/upload)")
 	}
 
-	// Serve uploaded files (authenticated - replaced static serving for security)
-	app.Get("/uploads/:filename", middleware.OptionalLocalAuthMiddleware(jwtAuth), func(c *fiber.Ctx) error {
+	// Serve uploaded files (public access - secured by UUID filenames which are hard to guess)
+	app.Get("/uploads/:filename", func(c *fiber.Ctx) error {
 		filename := c.Params("filename")
 
-		// Get user ID from auth middleware
-		userID, ok := c.Locals("user_id").(string)
-		if !ok || userID == "" || userID == "anonymous" {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Authentication required to access files",
+		// Security: validate filename to prevent path traversal
+		if filename != filepath.Base(filename) || strings.ContainsAny(filename, "/\\") {
+			log.Printf("🚫 [FILE-ACCESS] Invalid filename requested: %s", filename)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Invalid filename",
 			})
 		}
 
-		// Extract file ID from filename (UUID before extension)
-		fileID := strings.TrimSuffix(filename, filepath.Ext(filename))
-
-		// Get file from cache and verify ownership
-		fileCache := filecache.GetService()
-		file, found := fileCache.Get(fileID)
-
-		if !found {
-			log.Printf("⚠️  [FILE-ACCESS] File not found or expired: %s (user: %s)", fileID, userID)
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "File not found or has expired",
-			})
+		// Construct file path
+		uploadsDir := os.Getenv("UPLOADS_DIR")
+		if uploadsDir == "" {
+			uploadsDir = "./uploads"
 		}
+		filePath := filepath.Join(uploadsDir, filename)
 
-		// Verify ownership
-		if file.UserID != userID {
-			log.Printf("🚫 [SECURITY] User %s denied access to file %s (owned by %s)", userID, fileID, file.UserID)
-			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-				"error": "Access denied to this file",
-			})
-		}
-
-		// Verify file exists on disk
-		if file.FilePath == "" || !strings.HasSuffix(file.FilePath, filename) {
+		// Check if file exists on disk
+		if _, err := os.Stat(filePath); os.IsNotExist(err) {
+			log.Printf("⚠️  [FILE-ACCESS] File not found: %s", filePath)
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "File not found",
 			})
 		}
 
-		log.Printf("✅ [FILE-ACCESS] User %s accessing file %s", userID, filename)
+		log.Printf("✅ [FILE-ACCESS] Serving file %s", filename)
+
+		// Set proper content type based on file extension
+		ext := strings.ToLower(filepath.Ext(filename))
+		switch ext {
+		case ".png":
+			c.Set("Content-Type", "image/png")
+		case ".jpg", ".jpeg":
+			c.Set("Content-Type", "image/jpeg")
+		case ".gif":
+			c.Set("Content-Type", "image/gif")
+		case ".webp":
+			c.Set("Content-Type", "image/webp")
+		case ".svg":
+			c.Set("Content-Type", "image/svg+xml")
+		}
+
+		// Cache control for images (1 hour)
+		c.Set("Cache-Control", "public, max-age=3600")
 
 		// Serve file
-		return c.SendFile(file.FilePath)
+		return c.SendFile(filePath)
 	})
 
 	// WebSocket route (requires auth)

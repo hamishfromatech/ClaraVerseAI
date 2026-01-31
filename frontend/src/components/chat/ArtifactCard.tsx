@@ -43,15 +43,34 @@ const getArtifactTypeLabel = (type: string): string => {
  */
 const downloadArtifact = (artifact: Artifact): void => {
   // For image artifacts, download the first image
-  if (artifact.type === 'image' && artifact.images && artifact.images.length > 0) {
-    const firstImage = artifact.images[0];
-    const link = document.createElement('a');
-    link.href = `data:image/${firstImage.format};base64,${firstImage.data}`;
-    link.download = `${artifact.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${firstImage.format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return;
+  if (artifact.type === 'image') {
+    let imageUrl = '';
+    let format = 'png';
+
+    // Case 1: Tool-generated images with base64 data in images array
+    if (artifact.images && artifact.images.length > 0) {
+      const firstImage = artifact.images[0];
+      const isFileId = firstImage.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      format = firstImage.format || 'png';
+      imageUrl = isFileId && firstImage.data
+        ? `/uploads/${firstImage.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+        : `data:image/${format};base64,${firstImage.data}`;
+    }
+    // Case 2: Uploaded images with file_id (UUID) in content
+    else if (artifact.content) {
+      const isFileId = artifact.content.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      imageUrl = isFileId ? `/uploads/${artifact.content}.png` : artifact.content;
+    }
+
+    if (imageUrl) {
+      const link = document.createElement('a');
+      link.href = imageUrl;
+      link.download = `${artifact.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      return;
+    }
   }
 
   const extensions: Record<string, string> = {
@@ -97,10 +116,16 @@ export function ArtifactCard({ artifacts, chatId }: ArtifactCardProps) {
     for (const art of artifacts) {
       if (art.type === 'image' && art.images) {
         for (const img of art.images) {
+          // Check if data is a file_id (UUID) or base64
+          const isFileId = img.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+          const format = img.format || 'png';
+          const src = isFileId && img.data
+            ? `/uploads/${img.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+            : `data:image/${format};base64,${img.data}`;
           images.push({
-            src: `data:image/${img.format};base64,${img.data}`,
+            src,
             title: art.title || img.caption,
-            format: img.format,
+            format,
           });
         }
       }
@@ -129,9 +154,26 @@ export function ArtifactCard({ artifacts, chatId }: ArtifactCardProps) {
 
   // Get thumbnail for image artifacts
   const getImageThumbnail = () => {
+    // Case 1: Tool-generated images with base64 data in images array
     if (artifact.type === 'image' && artifact.images && artifact.images.length > 0) {
       const firstImage = artifact.images[0];
-      return `data:image/${firstImage.format};base64,${firstImage.data}`;
+      // Check if data is a file_id (UUID) or base64
+      const isFileId = firstImage.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      const format = firstImage.format || 'png';
+      return isFileId && firstImage.data
+        ? `/uploads/${firstImage.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+        : `data:image/${format};base64,${firstImage.data}`;
+    }
+    // Case 2: Uploaded images with file_id (UUID) in content
+    if (artifact.type === 'image' && artifact.content) {
+      const isFileId = artifact.content.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+      if (isFileId) {
+        return `/uploads/${artifact.content}.png`;
+      }
+      // If content is already a URL, use it directly
+      if (artifact.content.startsWith('/uploads/') || artifact.content.startsWith('http')) {
+        return artifact.content;
+      }
     }
     return null;
   };

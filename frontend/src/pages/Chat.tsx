@@ -2475,12 +2475,12 @@ export const Chat = () => {
                           'You are a supportive and empathetic life coach. Listen actively and offer constructive advice.',
                       },
                       {
-                        label: "Clara's choice",
+                        label: "Humphrey's Choice",
                         icon: <Sparkles size={16} />,
                         prompt:
                           'Surprise me with something interesting! It could be a fun fact, a short story, or a creative idea.',
                         systemInstruction:
-                          'You are Clara, a creative and entertaining AI assistant. Be spontaneous and engaging.',
+                          'You are Humphrey, a creative and entertaining AI assistant. Be spontaneous and engaging.',
                       },
                     ]}
                     isLoading={isLoading}

@@ -1188,7 +1188,7 @@ Be helpful, clear, and concise. If you don't know something, say so.`,
 	httpReq.Header.Set("Content-Type", "application/json")
 	httpReq.Header.Set("Authorization", "Bearer "+provider.APIKey)
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(httpReq)
 	if err != nil {
 		log.Printf("❌ [ASK] HTTP request failed: %v", err)

@@ -953,7 +953,7 @@ func callComposioGmailAPI(apiKey string, entityID string, action string, payload
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-key", apiKey)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)
@@ -1009,7 +1009,7 @@ func getGmailConnectedAccountID(apiKey string, userID string, appName string) (s
 
 	req.Header.Set("x-api-key", apiKey)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch connected accounts: %w", err)

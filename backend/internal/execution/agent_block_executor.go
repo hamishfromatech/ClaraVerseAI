@@ -176,7 +176,7 @@ func NewAgentBlockExecutor(
 		toolRegistry:      toolRegistry,
 		credentialService: credentialService,
 		httpClient: &http.Client{
-			Timeout: 120 * time.Second,
+			Timeout: 30 * time.Minute,
 		},
 	}
 }

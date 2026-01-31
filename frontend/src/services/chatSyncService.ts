@@ -232,8 +232,23 @@ function apiToAttachmentFormat(att: ApiAttachment): Attachment {
 
 /**
  * Convert frontend ToolCall to API format
+ * Note: Excludes base64 plot data to avoid MongoDB 16MB document size limit
+ * Images are stored on disk and should be loaded via file_id
  */
 function toolCallToApiFormat(tc: ToolCall): ApiToolCall {
+  // Extract file_id from tool result JSON if available
+  let fileId = '';
+  try {
+    if (tc.result) {
+      const resultData = JSON.parse(tc.result);
+      if (resultData.file_id) {
+        fileId = resultData.file_id;
+      }
+    }
+  } catch {
+    // Not valid JSON, continue without file_id
+  }
+
   return {
     id: tc.id,
     name: tc.name,
@@ -244,7 +259,7 @@ function toolCallToApiFormat(tc: ToolCall): ApiToolCall {
     result: tc.result,
     plots: tc.plots?.map(p => ({
       format: p.format,
-      data: p.data,
+      data: fileId ? fileId : '', // Use file_id instead of base64 data to avoid MongoDB 16MB limit
     })),
     timestamp: tc.timestamp,
     isExpanded: tc.isExpanded,
@@ -253,6 +268,8 @@ function toolCallToApiFormat(tc: ToolCall): ApiToolCall {
 
 /**
  * Convert API ToolCall to frontend format
+ * Note: When data is a file_id (not base64), we keep it as-is and the frontend
+ * will load the image from the file endpoint
  */
 function apiToToolCallFormat(tc: ApiToolCall): ToolCall {
   return {
@@ -265,7 +282,7 @@ function apiToToolCallFormat(tc: ApiToolCall): ToolCall {
     result: tc.result,
     plots: tc.plots?.map(p => ({
       format: p.format,
-      data: p.data,
+      data: p.data, // May be file_id or base64 data
     })) as PlotData[] | undefined,
     timestamp: tc.timestamp,
     isExpanded: tc.isExpanded,
@@ -274,15 +291,20 @@ function apiToToolCallFormat(tc: ApiToolCall): ToolCall {
 
 /**
  * Convert frontend Artifact to API format
+ * Note: Excludes base64 image data to avoid MongoDB 16MB document size limit
+ * For generated images, file_id should be stored in metadata to allow loading from disk
  */
 function artifactToApiFormat(art: Artifact): ApiArtifact {
+  // Check if there's a file_id in metadata for this artifact
+  const fileId = art.metadata?.file_id as string;
+
   return {
     id: art.id,
     type: art.type,
     title: art.title,
     content: art.content,
     images: art.images?.map(img => ({
-      data: img.data,
+      data: fileId || '', // Use file_id from metadata if available, otherwise empty
       format: img.format,
       caption: img.caption,
     })),

@@ -208,7 +208,8 @@
   border-radius: 9999px;
 }
 
-.ai-config-model-dropdown-wrapper {
+.ai-config-model-dropdown-wrapper,
+.ai-config-tool-predictor-dropdown-wrapper {
   position: relative;
 }
 

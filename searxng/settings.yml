@@ -34,7 +34,7 @@ engines:
   - name: brave
     engine: brave
     shortcut: br
-    disabled: false
+    disabled: true  # Disabled due to rate limiting
     time_range_support: true
 
   - name: wikipedia
@@ -63,7 +63,7 @@ engines:
   - name: qwant
     engine: qwant
     shortcut: qw
-    disabled: false
+    disabled: true  # Disabled due to API issues returning invalid JSON
     categories: general
 
   - name: yahoo
@@ -74,7 +74,7 @@ engines:
   - name: mojeek
     engine: mojeek
     shortcut: mjk
-    disabled: false
+    disabled: true  # Disabled due to access denied errors
 
   # Image search engines
   - name: google images

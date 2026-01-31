@@ -159,7 +159,9 @@ Note: The range parameter should include the sheet name (e.g., 'Sheet1!A1:D10').
 					"description": "2D array of values to write [[row1], [row2], ...] or JSON string",
 					"items": map[string]interface{}{
 						"type": "array",
-						"items": map[string]interface{}{}, // Allow any type (string, number, boolean, etc.)
+						"items": map[string]interface{}{
+							"type": "string", // Google Sheets values are read as strings
+						},
 					},
 				},
 			},
@@ -208,7 +210,9 @@ Use this to add new data without overwriting existing content (logs, form respon
 					"description": "2D array of values to append [[row1], [row2], ...] or JSON string",
 					"items": map[string]interface{}{
 						"type": "array",
-						"items": map[string]interface{}{}, // Allow any type (string, number, boolean, etc.)
+						"items": map[string]interface{}{
+							"type": "string", // Google Sheets values are read as strings
+						},
 					},
 				},
 			},
@@ -1152,7 +1156,9 @@ Example: Update contacts by email, inventory by SKU, leads by Lead ID, etc.`,
 					"description": "Array of row data arrays [[row1], [row2], ...]",
 					"items": map[string]interface{}{
 						"type": "array",
-						"items": map[string]interface{}{}, // Allow any type
+						"items": map[string]interface{}{
+							"type": "string", // Google Sheets values are read as strings
+						},
 					},
 				},
 				"headers": map[string]interface{}{
@@ -1243,7 +1249,7 @@ func getConnectedAccountID(apiKey string, userID string, appName string) (string
 
 	req.Header.Set("x-api-key", apiKey)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)
@@ -1327,7 +1333,7 @@ func callComposioAPI(apiKey string, action string, payload map[string]interface{
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-api-key", apiKey)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to send request: %w", err)

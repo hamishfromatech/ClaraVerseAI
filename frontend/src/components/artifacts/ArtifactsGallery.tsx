@@ -266,13 +266,16 @@ export function ArtifactsGallery({
       // Generate thumbnails one at a time with a small delay to avoid overwhelming the browser
       for (const artifact of allArtifactsRaw) {
         try {
+          // Check for pre-generated thumbnail in metadata (for image artifacts)
+          const preGeneratedThumbnail = (artifact.metadata?.thumbnail as string) || '';
           const thumbnail = await getCachedThumbnail(
             artifact.id,
             artifact.content,
             artifact.type,
             300,
             200,
-            artifact.images
+            artifact.images,
+            preGeneratedThumbnail
           );
           if (thumbnail) {
             newThumbnails.set(artifact.id, thumbnail);

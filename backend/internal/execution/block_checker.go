@@ -35,7 +35,7 @@ func NewBlockChecker(providerService *services.ProviderService) *BlockChecker {
 	return &BlockChecker{
 		providerService: providerService,
 		httpClient: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout: 30 * time.Minute,
 		},
 	}
 }

@@ -29,7 +29,7 @@ func NewLLMExecutor(chatService *services.ChatService, providerService *services
 		chatService:     chatService,
 		providerService: providerService,
 		httpClient: &http.Client{
-			Timeout: 120 * time.Second,
+			Timeout: 30 * time.Minute,
 		},
 	}
 }

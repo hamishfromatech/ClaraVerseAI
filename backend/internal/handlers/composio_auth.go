@@ -41,7 +41,7 @@ type ComposioAuthHandler struct {
 func NewComposioAuthHandler(credentialService *services.CredentialService) *ComposioAuthHandler {
 	return &ComposioAuthHandler{
 		credentialService: credentialService,
-		httpClient:        &http.Client{Timeout: 30 * time.Second},
+		httpClient:        &http.Client{Timeout: 30 * time.Minute},
 		stateStore:        security.NewOAuthStateStore(),
 	}
 }

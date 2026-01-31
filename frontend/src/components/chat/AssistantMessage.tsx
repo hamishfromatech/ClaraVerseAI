@@ -36,6 +36,7 @@ import { api } from '@/services/api';
 import { ttsService } from '@/services/ttsService';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { CustomSpinner } from '@/components/ui';
+import { generateThumbnailFromBase64 } from '@/utils/thumbnailGenerator';
 import styles from '@/pages/Chat.module.css';
 
 /**
@@ -350,10 +351,18 @@ function AssistantMessageComponent({
     const allImages: GalleryImage[] = [];
     imageTools.forEach(tool => {
       tool.plots?.forEach(plot => {
+        const isFileId = plot.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const format = plot.format || 'png';
+        const src = isFileId && plot.data
+          ? `/uploads/${plot.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+          : plot.data
+            ? `data:image/${format};base64,${plot.data}`
+            : '';
+
         allImages.push({
-          src: `data:image/${plot.format || 'png'};base64,${plot.data}`,
+          src,
           title: `Generated Image ${allImages.length + 1}`,
-          format: plot.format || 'png',
+          format,
         });
       });
     });
@@ -1015,11 +1024,22 @@ function AssistantMessageComponent({
       tool.plots &&
       tool.plots.length > 0
     ) {
-      const generatedImages: GalleryImage[] = tool.plots.map((plot, idx) => ({
-        src: `data:image/${plot.format || 'png'};base64,${plot.data}`,
-        title: `Generated Image ${idx + 1}`,
-        format: plot.format || 'png',
-      }));
+      const generatedImages: GalleryImage[] = tool.plots.map((plot, idx) => {
+        // Determine image source: if data looks like a file_id (UUID format), use URL, otherwise use base64
+        const isFileId = plot.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const format = plot.format || 'png';
+        const src = isFileId && plot.data
+          ? `/uploads/${plot.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+          : plot.data
+            ? `data:image/${format};base64,${plot.data}`
+            : '';
+
+        return {
+          src,
+          title: `Generated Image ${idx + 1}`,
+          format,
+        };
+      });
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -1070,7 +1090,15 @@ function AssistantMessageComponent({
                 }}
               >
                 <img
-                  src={`data:image/${plot.format || 'png'};base64,${plot.data}`}
+                  src={(() => {
+                    const isFileId = plot.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+                    const format = plot.format || 'png';
+                    return isFileId && plot.data
+                      ? `/uploads/${plot.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+                      : plot.data
+                        ? `data:image/${format};base64,${plot.data}`
+                        : '';
+                  })()}
                   alt={`Generated Image ${plotIdx + 1}`}
                   style={{
                     width: '100%',
@@ -1244,11 +1272,22 @@ function AssistantMessageComponent({
       tool.plots &&
       tool.plots.length > 0
     ) {
-      const generatedImages: GalleryImage[] = tool.plots.map((plot, idx) => ({
-        src: `data:image/${plot.format || 'png'};base64,${plot.data}`,
-        title: `Generated Image ${idx + 1}`,
-        format: plot.format || 'png',
-      }));
+      const generatedImages: GalleryImage[] = tool.plots.map((plot, idx) => {
+        // Determine image source: if data looks like a file_id (UUID format), use URL, otherwise use base64
+        const isFileId = plot.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+        const format = plot.format || 'png';
+        const src = isFileId && plot.data
+          ? `/uploads/${plot.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+          : plot.data
+            ? `data:image/${format};base64,${plot.data}`
+            : '';
+
+        return {
+          src,
+          title: `Generated Image ${idx + 1}`,
+          format,
+        };
+      });
 
       return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
@@ -1300,7 +1339,15 @@ function AssistantMessageComponent({
                 }}
               >
                 <img
-                  src={`data:image/${plot.format || 'png'};base64,${plot.data}`}
+                  src={(() => {
+                    const isFileId = plot.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+                    const format = plot.format || 'png';
+                    return isFileId && plot.data
+                      ? `/uploads/${plot.data}.${format === 'jpg' ? 'jpg' : 'png'}`
+                      : plot.data
+                        ? `data:image/${format};base64,${plot.data}`
+                        : '';
+                  })()}
                   alt={`Generated Image ${plotIdx + 1}`}
                   style={{
                     width: '100%',
@@ -1396,7 +1443,23 @@ function AssistantMessageComponent({
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3)' }}>
         {tool.plots && tool.plots.length > 0 && (
           <button
-            onClick={() => {
+            onClick={async () => {
+              // Generate thumbnail for the first image to store in metadata
+              // This ensures thumbnails work even when loading from database
+              let thumbnail = '';
+              if (tool.plots && tool.plots.length > 0) {
+                try {
+                  thumbnail = await generateThumbnailFromBase64(
+                    tool.plots[0].data,
+                    tool.plots[0].format,
+                    300,
+                    200
+                  );
+                } catch (e) {
+                  console.warn('[AssistantMessage] Failed to generate thumbnail:', e);
+                }
+              }
+
               const imageArtifact: Artifact = {
                 id: `tool-images-${tool.id}`,
                 type: 'image',
@@ -1407,7 +1470,7 @@ function AssistantMessageComponent({
                   format: plot.format,
                   caption: `Visualization ${plotIdx + 1}`,
                 })),
-                metadata: { toolName: tool.name },
+                metadata: { toolName: tool.name, thumbnail },
               };
               onOpenArtifacts([imageArtifact]);
             }}

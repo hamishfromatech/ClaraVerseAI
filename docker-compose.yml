@@ -175,7 +175,7 @@ services:
       # Override paths for Docker environment
       - DATABASE_URL=mysql://claraverse_user:${MYSQL_PASSWORD:-claraverse_pass_2024}@mysql:3306/claraverse?parseTime=true
       - MYSQL_DATABASE=claraverse
-      - UPLOAD_DIR=/app/uploads
+      - UPLOADS_DIR=/app/uploads
       # Supabase Authentication
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}

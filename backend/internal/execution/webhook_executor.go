@@ -20,7 +20,7 @@ type WebhookExecutor struct {
 // NewWebhookExecutor creates a new webhook executor
 func NewWebhookExecutor() *WebhookExecutor {
 	return &WebhookExecutor{
-		client: &http.Client{Timeout: 30 * time.Second},
+		client: &http.Client{Timeout: 30 * time.Minute},
 	}
 }
 

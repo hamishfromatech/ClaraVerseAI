@@ -37,7 +37,7 @@ export const ImageRenderer = memo(function ImageRenderer({ artifact }: ImageRend
   const currentImage = images[safeIndex];
 
   // Safety check for currentImage
-  if (!currentImage || !currentImage.format || !currentImage.data) {
+  if (!currentImage || !currentImage.format) {
     return (
       <div className={styles.error}>
         <AlertCircle size={24} />
@@ -47,7 +47,23 @@ export const ImageRenderer = memo(function ImageRenderer({ artifact }: ImageRend
     );
   }
 
-  const imageSrc = `data:image/${currentImage.format};base64,${currentImage.data}`;
+  // Determine image source: if data looks like a file_id (UUID format), use URL, otherwise use base64
+  const isFileId = currentImage.data.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+  const imageSrc = isFileId
+    ? `/uploads/${currentImage.data}.${currentImage.format === 'jpg' ? 'jpg' : 'png'}`
+    : currentImage.data
+      ? `data:image/${currentImage.format};base64,${currentImage.data}`
+      : '';
+
+  if (!imageSrc) {
+    return (
+      <div className={styles.error}>
+        <AlertCircle size={24} />
+        <p>Invalid image data</p>
+        <span>The image data is corrupted or incomplete.</span>
+      </div>
+    );
+  }
 
   const goToPrevious = () => {
     setCurrentIndex(prev => Math.max(0, prev - 1));
@@ -101,11 +117,22 @@ export const ImageRenderer = memo(function ImageRenderer({ artifact }: ImageRend
         <div className={styles.thumbnailStrip}>
           {images.map((img, idx) => {
             // Skip invalid images in thumbnails
-            if (!img || !img.format || !img.data) return null;
+            if (!img || !img.format) return null;
+
+            // Determine image source: if data looks like a file_id (UUID format), use URL, otherwise use base64
+            const isFileId = img.data?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+            const src = isFileId
+              ? `/uploads/${img.data}.${img.format === 'jpg' ? 'jpg' : 'png'}`
+              : img.data
+                ? `data:image/${img.format};base64,${img.data}`
+                : '';
+
+            if (!src) return null;
+
             return (
               <img
                 key={idx}
-                src={`data:image/${img.format};base64,${img.data}`}
+                src={src}
                 alt={img.caption || `Thumbnail ${idx + 1}`}
                 className={`${styles.thumbnail} ${idx === safeIndex ? styles.thumbnailActive : ''}`}
                 onClick={() => setCurrentIndex(idx)}

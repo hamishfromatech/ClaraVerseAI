@@ -67,11 +67,13 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
   const [modelDropdownOpen, setModelDropdownOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [modelImageErrors, setModelImageErrors] = useState<Record<string, boolean>>({});
+  const modelSearchInputRef = useRef<HTMLInputElement>(null);
 
   // Tool predictor model dropdown state
   const [toolPredictorDropdownOpen, setToolPredictorDropdownOpen] = useState(false);
   const [toolPredictorSearchTerm, setToolPredictorSearchTerm] = useState('');
   const [toolPredictorModels, setToolPredictorModels] = useState<Model[]>([]);
+  const toolPredictorSearchInputRef = useRef<HTMLInputElement>(null);
 
   // New provider form state
   const [newProviderForm, setNewProviderForm] = useState<NewProviderForm>(defaultNewProviderForm);
@@ -148,6 +150,26 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [modelDropdownOpen, toolPredictorDropdownOpen, newProviderModelDropdownOpen]);
+
+  // Focus model search input when dropdown opens (without scrolling)
+  useEffect(() => {
+    if (modelDropdownOpen && modelSearchInputRef.current) {
+      // Small delay to ensure dropdown is fully rendered
+      setTimeout(() => {
+        modelSearchInputRef.current?.focus({ preventScroll: true });
+      }, 50);
+    }
+  }, [modelDropdownOpen]);
+
+  // Focus tool predictor search input when dropdown opens (without scrolling)
+  useEffect(() => {
+    if (toolPredictorDropdownOpen && toolPredictorSearchInputRef.current) {
+      // Small delay to ensure dropdown is fully rendered
+      setTimeout(() => {
+        toolPredictorSearchInputRef.current?.focus({ preventScroll: true });
+      }, 50);
+    }
+  }, [toolPredictorDropdownOpen]);
 
   // Update dropdown position on scroll or resize
   useEffect(() => {
@@ -474,7 +496,7 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                               className="ai-config-search-input"
                               placeholder="Search models..."
                               value={searchTerm}
-                              autoFocus
+                              ref={modelSearchInputRef}
                               onChange={e => setSearchTerm(e.target.value.toLowerCase())}
                             />
                           </div>
@@ -618,7 +640,7 @@ export const AIConfigSection: React.FC<AIConfigSectionProps> = ({ onSave }) => {
                               className="ai-config-search-input"
                               placeholder="Search tool predictor models..."
                               value={toolPredictorSearchTerm}
-                              autoFocus
+                              ref={toolPredictorSearchInputRef}
                               onChange={e =>
                                 setToolPredictorSearchTerm(e.target.value.toLowerCase())
                               }

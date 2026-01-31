@@ -52,7 +52,7 @@ class WorkflowExecutionService {
    */
   private getWebSocketUrl(): string {
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
     const wsHost = baseUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
     // Get auth token

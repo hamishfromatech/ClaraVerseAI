@@ -507,7 +507,7 @@ func (s *CredentialService) revokeComposioIfNeeded(ctx context.Context, credenti
 
 	req.Header.Set("x-api-key", composioAPIKey)
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("failed to delete connection: %w", err)
@@ -533,7 +533,7 @@ func (s *CredentialService) getComposioConnectedAccountID(ctx context.Context, a
 
 	req.Header.Set("x-api-key", apiKey)
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to fetch connected accounts: %w", err)

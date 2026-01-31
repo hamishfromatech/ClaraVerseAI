@@ -151,45 +151,23 @@ export async function cleanupThumbnailCache(): Promise<void> {
 }
 
 /**
- * Generate a thumbnail data URL for an artifact
- * Returns a promise that resolves to a base64 data URL
+ * Generate a thumbnail from base64 image data
+ * Used to pre-generate thumbnails for storage in artifact metadata
+ * This avoids regenerating thumbnails when loading from database
+ *
+ * @param base64Data - Base64 encoded image data (without data:image/ prefix)
+ * @param format - Image format (png, jpg, etc.)
+ * @param width - Thumbnail width (default: 300)
+ * @param height - Thumbnail height (default: 200)
+ * @returns Promise resolving to base64 thumbnail data URL
  */
-export async function generateThumbnail(
-  content: string,
-  type: 'html' | 'svg' | 'mermaid' | 'image',
+export async function generateThumbnailFromBase64(
+  base64Data: string,
+  format: string = 'png',
   width: number = 300,
-  height: number = 200,
-  images?: ArtifactImage[]
+  height: number = 200
 ): Promise<string> {
-  switch (type) {
-    case 'svg':
-      return generateSVGThumbnail(content, width, height);
-    case 'mermaid':
-      return generateMermaidThumbnail(content, width, height);
-    case 'html':
-      return generateHTMLThumbnail(content, width, height);
-    case 'image':
-      return generateImageThumbnail(images, width, height);
-    default:
-      return '';
-  }
-}
-
-/**
- * Generate thumbnail for image artifact
- * For image artifacts, we resize the first image to thumbnail size
- */
-async function generateImageThumbnail(
-  images: ArtifactImage[] | undefined,
-  width: number,
-  height: number
-): Promise<string> {
-  if (!images || images.length === 0) {
-    return '';
-  }
-
-  const firstImage = images[0];
-  const dataUrl = `data:image/${firstImage.format};base64,${firstImage.data}`;
+  const dataUrl = `data:image/${format};base64,${base64Data}`;
 
   return new Promise((resolve, reject) => {
     try {
@@ -204,6 +182,107 @@ async function generateImageThumbnail(
       }
 
       const img = new Image();
+
+      img.onload = () => {
+        // Fill background
+        ctx.fillStyle = '#0a0a0a';
+        ctx.fillRect(0, 0, width, height);
+
+        // Calculate scaling to fit
+        const scale = Math.min(width / img.width, height / img.height);
+        const x = (width - img.width * scale) / 2;
+        const y = (height - img.height * scale) / 2;
+
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+
+        // Convert to data URL
+        const thumbnailDataUrl = canvas.toDataURL('image/jpeg', 0.7); // Use JPEG for smaller file size
+        resolve(thumbnailDataUrl);
+      };
+
+      img.onerror = (e) => {
+        console.error('[Thumbnail] Failed to load base64 image:', format, e);
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = dataUrl;
+    } catch (error) {
+      console.error('[Thumbnail] Error generating thumbnail from base64:', error);
+      reject(error);
+    }
+  });
+}
+
+/**
+ * Generate a thumbnail data URL for an artifact
+ * Returns a promise that resolves to a base64 data URL
+ */
+export async function generateThumbnail(
+  content: string,
+  type: 'html' | 'svg' | 'mermaid' | 'image',
+  width: number = 300,
+  height: number = 200,
+  images?: ArtifactImage[],
+  imageUrl?: string
+): Promise<string> {
+  switch (type) {
+    case 'svg':
+      return generateSVGThumbnail(content, width, height);
+    case 'mermaid':
+      return generateMermaidThumbnail(content, width, height);
+    case 'html':
+      return generateHTMLThumbnail(content, width, height);
+    case 'image':
+      return generateImageThumbnail(images, width, height, imageUrl);
+    default:
+      return '';
+  }
+}
+
+/**
+ * Generate thumbnail for image artifact
+ * For image artifacts, we resize the first image to thumbnail size
+ * Supports both:
+ * - Tool-generated images with base64 data in artifact.images
+ * - Uploaded images with URLs in artifact.content
+ */
+async function generateImageThumbnail(
+  images: ArtifactImage[] | undefined,
+  width: number,
+  height: number,
+  imageUrl?: string
+): Promise<string> {
+  let dataUrl = '';
+
+  // Case 1: Tool-generated images with base64 data
+  if (images && images.length > 0) {
+    const firstImage = images[0];
+    dataUrl = `data:image/${firstImage.format};base64,${firstImage.data}`;
+  }
+  // Case 2: Uploaded images - check if imageUrl is a file_id (UUID) or full URL
+  else if (imageUrl) {
+    // Check if imageUrl is a file_id (UUID format) - if so, construct the upload URL
+    const isFileId = imageUrl.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+    dataUrl = isFileId ? `/uploads/${imageUrl}.png` : imageUrl;
+  } else {
+    return '';
+  }
+
+  return new Promise((resolve, reject) => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        reject(new Error('Failed to get canvas context'));
+        return;
+      }
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous'; // Allow cross-origin for uploaded images
+
       img.onload = () => {
         // Fill background
         ctx.fillStyle = '#0a0a0a';
@@ -221,12 +300,14 @@ async function generateImageThumbnail(
         resolve(thumbnailDataUrl);
       };
 
-      img.onerror = () => {
+      img.onerror = (e) => {
+        console.error('[Thumbnail] Failed to load image:', imageUrl || images?.[0]?.format, e);
         reject(new Error('Failed to load image'));
       };
 
       img.src = dataUrl;
     } catch (error) {
+      console.error('[Thumbnail] Error generating image thumbnail:', error);
       reject(error);
     }
   });
@@ -451,9 +532,10 @@ const memoryCache = new Map<string, string>();
 
 /**
  * Get or generate a thumbnail with multi-level caching:
- * 1. In-memory cache (fastest, current session only)
- * 2. IndexedDB cache (persistent across sessions, includes failed renders)
- * 3. Generate new thumbnail if not cached
+ * 1. Check for pre-generated thumbnail in metadata (fastest for image artifacts)
+ * 2. In-memory cache (current session only)
+ * 3. IndexedDB cache (persistent across sessions, includes failed renders)
+ * 4. Generate new thumbnail if not cached
  */
 export async function getCachedThumbnail(
   artifactId: string,
@@ -461,9 +543,17 @@ export async function getCachedThumbnail(
   type: 'html' | 'svg' | 'mermaid' | 'image',
   width?: number,
   height?: number,
-  images?: ArtifactImage[]
+  images?: ArtifactImage[],
+  thumbnail?: string
 ): Promise<string> {
   const cacheKey = `${artifactId}-${type}`;
+
+  // Level 0: Check for pre-generated thumbnail in metadata (fastest for image artifacts)
+  if (thumbnail && thumbnail.length > 100) {
+    // Cache in memory for faster subsequent access
+    memoryCache.set(cacheKey, thumbnail);
+    return thumbnail;
+  }
 
   // Level 1: Check in-memory cache (fastest)
   if (memoryCache.has(cacheKey)) {
@@ -486,15 +576,17 @@ export async function getCachedThumbnail(
 
   // Level 3: Generate new thumbnail
   try {
-    const thumbnail = await generateThumbnail(content, type, width, height, images);
+    // For image type, pass content as imageUrl if no images array
+    const imageUrl = type === 'image' && (!images || images.length === 0) ? content : undefined;
+    const generatedThumbnail = await generateThumbnail(content, type, width, height, images, imageUrl);
 
     // Cache in both memory and IndexedDB
-    memoryCache.set(cacheKey, thumbnail);
+    memoryCache.set(cacheKey, generatedThumbnail);
     // Persist ALL results to IndexedDB, including empty strings for failed renders
     // This prevents re-attempting to render broken mermaid diagrams on every page load
-    await saveToCache(artifactId, type, thumbnail, contentHash);
+    await saveToCache(artifactId, type, generatedThumbnail, contentHash);
 
-    return thumbnail;
+    return generatedThumbnail;
   } catch (error) {
     console.error('Failed to generate thumbnail:', error);
     // Cache empty string in both memory and IndexedDB

@@ -601,7 +601,7 @@ Be THOROUGH - it's better to include too much detail than to lose critical conte
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.APIKey)
 
-	client := &http.Client{Timeout: 60 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("❌ [SUMMARY] Request failed: %v", err)
@@ -1741,7 +1741,7 @@ func (s *ChatService) StreamChatCompletion(userConn *models.UserConnection) erro
 	req.Header.Set("Authorization", "Bearer "+config.APIKey)
 
 	// Send request
-	client := &http.Client{Timeout: 120 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		return fmt.Errorf("request failed: %w", err)
@@ -2695,10 +2695,10 @@ func (s *ChatService) GetSystemPrompt(userConn *models.UserConnection, includeAs
 	return temporalContext + defaultPrompt + memoryContext
 }
 
-// getDefaultSystemPrompt returns the ClaraVerse-specific system prompt
+// getDefaultSystemPrompt returns the Humphrey-specific system prompt
 // Tailored to the platform's actual capabilities and tools
 func getDefaultSystemPrompt() string {
-	return `You are ClaraVerse AI, an intelligent and helpful assistant with access to powerful tools.
+	return `You are Humphrey, an intelligent and helpful assistant with access to powerful tools.
 
 ## Your Capabilities
 
@@ -2957,7 +2957,7 @@ func (s *ChatService) generateConversationTitle(userConn *models.UserConnection,
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+config.APIKey)
 
-	client := &http.Client{Timeout: 30 * time.Second}
+	client := &http.Client{Timeout: 30 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("❌ [TITLE] Request failed: %v", err)
